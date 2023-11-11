@@ -1,11 +1,13 @@
-# $OpenBSD: Makefile,v 1.17 2021/04/28 12:55:37 patrick Exp $
+# $OpenBSD: Makefile,v 1.18 2023/01/05 22:17:43 deraadt Exp $
 
 .include <bsd.own.mk>
+
+DRIVER_TEMPLATE=Yes
 
 PROG=	clang
 BINDIR=	/usr/bin
 LIBEXECDIR=/usr/libexec
-SRCS=	driver.cpp \
+SRCS+=	driver.cpp \
 	cc1_main.cpp \
 	cc1as_main.cpp \
 	cc1gen_reproducer_main.cpp
@@ -45,7 +47,11 @@ LLVM_LIBDEPS=	LLVM \
 		clangAnalysis \
 		clangEdit \
 		clangAST \
+		clangASTMatchers \
 		clangLex \
-		clangBasic
+		clangBasic \
+		clangExtractAPI \
+		clangSupport \
+		clangIndex
 
 .include <bsd.prog.mk>

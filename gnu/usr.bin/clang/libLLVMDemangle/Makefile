@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.5 2020/08/03 14:45:25 patrick Exp $
+# $OpenBSD: Makefile,v 1.6 2021/12/17 14:55:45 patrick Exp $
 
 LIB=	LLVMDemangle
 NOPROFILE=
@@ -9,6 +9,7 @@ SRCS+=	Demangle.cpp \
 	ItaniumDemangle.cpp \
 	MicrosoftDemangle.cpp \
 	MicrosoftDemangleNodes.cpp \
-	RustDemangle.cpp
+	RustDemangle.cpp \
+	DLangDemangle.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/llvm/lib/Demangle

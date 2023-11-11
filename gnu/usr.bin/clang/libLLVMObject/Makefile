@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.9 2021/04/28 12:55:39 patrick Exp $
+# $OpenBSD: Makefile,v 1.10 2021/12/17 14:55:45 patrick Exp $
 
 LIB=	LLVMObject
 NOPROFILE=
@@ -8,10 +8,12 @@ CPPFLAGS+=	-I${LLVM_SRCS}/include/llvm/Object
 SRCS+=	Archive.cpp \
 	ArchiveWriter.cpp \
 	Binary.cpp \
+	BuildID.cpp \
 	COFFImportFile.cpp \
 	COFFModuleDefinition.cpp \
 	COFFObjectFile.cpp \
 	Decompressor.cpp \
+	ObjectDXContainer.cpp \
 	ObjectELF.cpp \
 	ELFObjectFile.cpp \
 	ObjectError.cpp \
@@ -24,6 +26,7 @@ SRCS+=	Archive.cpp \
 	ModuleSymbolTable.cpp \
 	Object.cpp \
 	ObjectFile.cpp \
+	OffloadBinary.cpp \
 	RecordStreamer.cpp \
 	RelocationResolver.cpp \
 	SymbolicFile.cpp \
@@ -35,6 +38,9 @@ SRCS+=	Archive.cpp \
 	WindowsMachineFlag.cpp \
 	WindowsResource.cpp \
 	XCOFFObjectFile.cpp
+
+ObjectDXContainer.cpp:
+	ln -s ${LLVM_SRCS}/lib/Object/DXContainer.cpp $@
 
 ObjectELF.cpp:
 	ln -s ${LLVM_SRCS}/lib/Object/ELF.cpp $@

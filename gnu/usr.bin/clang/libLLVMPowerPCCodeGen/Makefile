@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.9 2021/04/28 12:55:40 patrick Exp $
+# $OpenBSD: Makefile,v 1.10 2021/12/17 14:55:45 patrick Exp $
 
 LIB=	LLVMPowerPCCodeGen
 NOPROFILE=
@@ -19,6 +19,7 @@ SRCS+=	PPCBoolRetToInt.cpp \
 	PPCCallingConv.cpp \
 	PPCCCState.cpp \
 	PPCCTRLoops.cpp \
+	PPCCTRLoopsVerify.cpp \
 	PPCExpandAtomicPseudoInsts.cpp \
 	PPCHazardRecognizers.cpp \
 	PPCInstrInfo.cpp \
@@ -47,7 +48,8 @@ SRCS+=	PPCBoolRetToInt.cpp \
 	PPCVSXSwapRemoval.cpp \
 	PPCExpandISEL.cpp \
 	PPCPreEmitPeephole.cpp \
-	PPCLowerMASSVEntries.cpp
+	PPCLowerMASSVEntries.cpp \
+	PPCGenScalarMASSEntries.cpp
 
 .PATH:	${.CURDIR}/../../../llvm/llvm/lib/Target/PowerPC
 .PATH:	${.CURDIR}/../../../llvm/llvm/lib/Target/PowerPC/GISel

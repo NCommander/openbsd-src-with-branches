@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.10 2021/04/28 12:55:39 patrick Exp $
+# $OpenBSD: Makefile,v 1.11 2021/12/17 14:55:45 patrick Exp $
 
 LIB=	LLVMInstrumentation
 NOPROFILE=
@@ -17,12 +17,17 @@ SRCS+=	AddressSanitizer.cpp \
 	Instrumentation.cpp \
 	InstrOrderFile.cpp \
 	InstrProfiling.cpp \
+	KCFI.cpp \
 	PGOInstrumentation.cpp \
 	PGOMemOPSizeOpt.cpp \
 	PoisonChecking.cpp \
 	SanitizerCoverage.cpp \
+	InstrumentationSanitizerBinaryMetadata.cpp \
 	ValueProfileCollector.cpp \
 	ThreadSanitizer.cpp \
 	HWAddressSanitizer.cpp
+
+InstrumentationSanitizerBinaryMetadata.cpp:
+	ln -s ${LLVM_SRCS}/lib/Transforms/Instrumentation/SanitizerBinaryMetadata.cpp $@
 
 .PATH:	${.CURDIR}/../../../llvm/llvm/lib/Transforms/Instrumentation

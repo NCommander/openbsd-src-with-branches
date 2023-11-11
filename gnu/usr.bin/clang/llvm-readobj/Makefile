@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.2 2021/12/17 14:55:47 patrick Exp $
+# $OpenBSD: Makefile,v 1.1 2022/07/09 16:25:37 jca Exp $
 
 .include <bsd.own.mk>
 
@@ -7,7 +7,9 @@ BINDIR=	/usr/bin
 LINKS=	${BINDIR}/llvm-readobj ${BINDIR}/llvm-readelf
 MAN=	llvm-readelf.1 llvm-readobj.1
 
-SRCS=	ARMWinEHPrinter.cpp \
+DRIVER_TEMPLATE=Yes
+
+SRCS+=	ARMWinEHPrinter.cpp \
 	COFFDumper.cpp \
 	COFFImportDumper.cpp \
 	ELFDumper.cpp \

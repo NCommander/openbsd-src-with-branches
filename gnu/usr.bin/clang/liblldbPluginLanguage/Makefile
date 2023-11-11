@@ -1,29 +1,32 @@
-# $OpenBSD: Makefile,v 1.3 2020/08/03 14:45:30 patrick Exp $
+# $OpenBSD: Makefile,v 1.4 2021/04/28 12:55:41 patrick Exp $
 
 LIB=	lldbPluginLanguage
 NOPIC=
 NOPROFILE=
 
 .include <bsd.own.mk>
+
 # CPlusPlus
 SRCS=	BlockPointer.cpp \
+	Coroutines.cpp \
 	CPlusPlusLanguage.cpp \
 	CPlusPlusNameParser.cpp \
 	CxxStringTypes.cpp \
+	GenericBitset.cpp \
+	GenericOptional.cpp \
 	LibCxx.cpp \
 	LibCxxAtomic.cpp \
-	LibCxxBitset.cpp \
 	LibCxxInitializerList.cpp \
 	LibCxxList.cpp \
 	LibCxxMap.cpp \
-	LibCxxOptional.cpp \
 	LibCxxQueue.cpp \
+	LibCxxRangesRefView.cpp \
+	LibCxxSpan.cpp \
 	LibCxxTuple.cpp \
 	LibCxxUnorderedMap.cpp \
 	LibCxxVariant.cpp \
 	LibCxxVector.cpp \
 	LibStdcpp.cpp \
-	LibStdcpp.h \
 	LibStdcppTuple.cpp \
 	LibStdcppUniquePointer.cpp \
 	MSVCUndecoratedNameParser.cpp

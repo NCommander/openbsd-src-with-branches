@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.9 2020/08/03 14:45:28 patrick Exp $
+# $OpenBSD: Makefile,v 1.10 2021/04/28 12:55:40 patrick Exp $
 
 LIB=	LLVMVectorize
 NOPROFILE=
@@ -14,7 +14,7 @@ SRCS+=	LoadStoreVectorizer.cpp \
 	VectorCombine.cpp \
 	VPlan.cpp \
 	VPlanHCFGBuilder.cpp \
-	VPlanPredicator.cpp \
+	VPlanRecipes.cpp \
 	VPlanSLP.cpp \
 	VPlanTransforms.cpp \
 	VPlanVerifier.cpp

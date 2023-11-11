@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.25 2022/07/26 15:37:34 jca Exp $
+# $OpenBSD: Makefile,v 1.26 2022/08/08 09:25:13 fcambus Exp $
 
 .include <bsd.own.mk>
 
@@ -9,9 +9,11 @@ SUBDIR=	include/llvm/Config
 SUBDIR+=libLLVMSupport
 SUBDIR+=libLLVMTableGen
 SUBDIR+=llvm-tblgen
+SUBDIR+=include/llvm/ExecutionEngine/JITLink
 SUBDIR+=include/llvm/IR
 SUBDIR+=include/llvm/Frontend/OpenACC
 SUBDIR+=include/llvm/Frontend/OpenMP
+SUBDIR+=include/llvm/TargetParser
 
 .for arch in ${LLVM_ARCHS}
 .if "${arch}" == ${LLVM_ARCH} || "${arch}" == "AMDGPU" || make(obj)
@@ -22,13 +24,17 @@ SUBDIR+=include/llvm/${arch}
 SUBDIR+=libLLVM
 SUBDIR+=llvm-config
 
+SUBDIR+=libclangSupport
+
 SUBDIR+=clang-tblgen
 SUBDIR+=include/clang
 
 SUBDIR+=libclangBasic
+SUBDIR+=libclangBasicTargets
 SUBDIR+=libclangLex
 SUBDIR+=libclangParse
 SUBDIR+=libclangAST
+SUBDIR+=libclangASTMatchers
 SUBDIR+=libclangSema
 SUBDIR+=libclangCodeGen
 SUBDIR+=libclangAnalysis
@@ -39,17 +45,17 @@ SUBDIR+=libclangSerialization
 SUBDIR+=libclangFrontend
 SUBDIR+=libclangRewriteFrontend
 SUBDIR+=libclangFrontendTool
+SUBDIR+=libclangExtractAPI
+SUBDIR+=libclangIndex
 
 SUBDIR+=clang
 
 SUBDIR+=include/lld/ELF
 
 SUBDIR+=liblldCommon
-SUBDIR+=liblldCore
 SUBDIR+=liblldELF
 
 SUBDIR+=lld
-
 
 .if ${BUILD_LLDB:L} == "yes" || make(obj)
 SUBDIR+=lldb-tblgen
@@ -100,6 +106,7 @@ SUBDIR+=lldb
 SUBDIR+=lldb-server
 .endif
 
+SUBDIR+=libLLVMObjCopy
 SUBDIR+=include/llvm-objcopy
 SUBDIR+=llvm-objcopy
 SUBDIR+=include/llvm-objdump

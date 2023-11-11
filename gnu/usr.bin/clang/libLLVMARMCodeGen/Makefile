@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.9 2021/04/28 12:55:38 patrick Exp $
+# $OpenBSD: Makefile,v 1.10 2021/12/17 14:55:45 patrick Exp $
 
 LIB=	LLVMARMCodeGen
 NOPROFILE=
@@ -10,12 +10,14 @@ SRCS+=	A15SDOptimizer.cpp \
 	ARMBaseInstrInfo.cpp \
 	ARMBaseRegisterInfo.cpp \
 	ARMBasicBlockInfo.cpp \
+	ARMBranchTargets.cpp \
 	ARMCallingConv.cpp \
 	ARMCallLowering.cpp \
 	ARMConstantIslandPass.cpp \
 	ARMConstantPoolValue.cpp \
 	ARMExpandPseudoInsts.cpp \
 	ARMFastISel.cpp \
+	ARMFixCortexA57AES1742098Pass.cpp \
 	ARMFrameLowering.cpp \
 	ARMHazardRecognizer.cpp \
 	ARMInstructionSelector.cpp \

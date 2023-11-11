@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.7 2020/08/03 14:45:28 patrick Exp $
+# $OpenBSD: Makefile,v 1.8 2021/12/17 14:55:46 patrick Exp $
 
 LIB=	clangCodeGen
 NOPIC=
@@ -7,6 +7,7 @@ NOPROFILE=
 CPPFLAGS+=	${CLANG_INCLUDES}
 
 .include <bsd.own.mk>
+
 SRCS=	BackendUtil.cpp \
 	CGAtomic.cpp \
 	CGBlocks.cpp \
@@ -30,6 +31,7 @@ SRCS=	BackendUtil.cpp \
 	CGExprConstant.cpp \
 	CGExprScalar.cpp \
 	CGGPUBuiltin.cpp \
+	CGHLSLRuntime.cpp \
 	CGLoopInfo.cpp \
 	CGNonTrivialStruct.cpp \
 	CGObjC.cpp \
@@ -38,9 +40,7 @@ SRCS=	BackendUtil.cpp \
 	CGObjCRuntime.cpp \
 	CGOpenCLRuntime.cpp \
 	CGOpenMPRuntime.cpp \
-	CGOpenMPRuntimeAMDGCN.cpp \
 	CGOpenMPRuntimeGPU.cpp \
-	CGOpenMPRuntimeNVPTX.cpp \
 	CGRecordLayoutBuilder.cpp \
 	CGStmt.cpp \
 	CGStmtOpenMP.cpp \

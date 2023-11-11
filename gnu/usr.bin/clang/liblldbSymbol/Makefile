@@ -1,10 +1,11 @@
-# $OpenBSD: Makefile,v 1.4 2021/04/28 12:55:42 patrick Exp $
+# $OpenBSD: Makefile,v 1.5 2021/12/17 14:55:47 patrick Exp $
 
 LIB=	lldbSymbol
 NOPIC=
 NOPROFILE=
 
 .include <bsd.own.mk>
+
 SRCS=	ArmUnwindInfo.cpp \
 	Block.cpp \
 	CompactUnwindInfo.cpp \
@@ -20,11 +21,13 @@ SRCS=	ArmUnwindInfo.cpp \
 	LineEntry.cpp \
 	LineTable.cpp \
 	LocateSymbolFile.cpp \
+	ObjectContainer.cpp \
 	ObjectFile.cpp \
 	PostfixExpression.cpp \
 	Symbol.cpp \
 	SymbolContext.cpp \
 	SymbolFile.cpp \
+	SymbolFileOnDemand.cpp \
 	SymbolVendor.cpp \
 	Symtab.cpp \
 	Type.cpp \
