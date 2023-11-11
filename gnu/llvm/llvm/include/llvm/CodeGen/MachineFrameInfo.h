@@ -15,8 +15,8 @@
 
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/CodeGen/Register.h"
+#include "llvm/CodeGen/TargetFrameLowering.h"
 #include "llvm/Support/Alignment.h"
-#include "llvm/Support/DataTypes.h"
 #include <cassert>
 #include <vector>
 
@@ -49,14 +49,13 @@ class CalleeSavedInfo {
   /// The long-term solution is to model the liveness of callee-saved registers
   /// by implicit uses on the return instructions, however, the required
   /// changes in the ARM backend would be quite extensive.
-  bool Restored;
+  bool Restored = true;
   /// Flag indicating whether the register is spilled to stack or another
   /// register.
-  bool SpilledToReg;
+  bool SpilledToReg = false;
 
 public:
-  explicit CalleeSavedInfo(unsigned R, int FI = 0)
-  : Reg(R), FrameIdx(FI), Restored(true), SpilledToReg(false) {}
+  explicit CalleeSavedInfo(unsigned R, int FI = 0) : Reg(R), FrameIdx(FI) {}
 
   // Accessors.
   Register getReg()                        const { return Reg; }
@@ -180,14 +179,14 @@ private:
     /// If true, the object has been sign-extended.
     bool isSExt = false;
 
-    uint8_t SSPLayout;
+    uint8_t SSPLayout = SSPLK_None;
 
     StackObject(uint64_t Size, Align Alignment, int64_t SPOffset,
                 bool IsImmutable, bool IsSpillSlot, const AllocaInst *Alloca,
                 bool IsAliased, uint8_t StackID = 0)
         : SPOffset(SPOffset), Size(Size), Alignment(Alignment),
           isImmutable(IsImmutable), isSpillSlot(IsSpillSlot), StackID(StackID),
-          Alloca(Alloca), isAliased(IsAliased), SSPLayout(SSPLK_None) {}
+          Alloca(Alloca), isAliased(IsAliased) {}
   };
 
   /// The alignment of the stack.
@@ -274,15 +273,6 @@ private:
   /// The frame index for the stack protector.
   int StackProtectorIdx = -1;
 
-  struct ReturnProtector {
-    /// The register to use for return protector calculations
-    unsigned Register = 0;
-    /// Set to true if this function needs return protectors
-    bool Needed = false;
-    /// Does the return protector cookie need to be stored in frame
-    bool NeedsStore = true;
-  } RPI;
-
   /// The frame index for the function context. Used for SjLj exceptions.
   int FunctionContextIdx = -1;
 
@@ -345,11 +335,16 @@ private:
   /// Not null, if shrink-wrapping found a better place for the epilogue.
   MachineBasicBlock *Restore = nullptr;
 
+  /// Size of the UnsafeStack Frame
+  uint64_t UnsafeStackSize = 0;
+
 public:
-  explicit MachineFrameInfo(unsigned StackAlignment, bool StackRealignable,
+  explicit MachineFrameInfo(Align StackAlignment, bool StackRealignable,
                             bool ForcedRealign)
-      : StackAlignment(assumeAligned(StackAlignment)),
+      : StackAlignment(StackAlignment),
         StackRealignable(StackRealignable), ForcedRealign(ForcedRealign) {}
+
+  MachineFrameInfo(const MachineFrameInfo &) = delete;
 
   /// Return true if there are any stack objects in this function.
   bool hasStackObjects() const { return !Objects.empty(); }
@@ -364,21 +359,11 @@ public:
   void setStackProtectorIndex(int I) { StackProtectorIdx = I; }
   bool hasStackProtectorIndex() const { return StackProtectorIdx != -1; }
 
-  /// Get / Set return protector calculation register
-  unsigned getReturnProtectorRegister() const { return RPI.Register; }
-  void setReturnProtectorRegister(unsigned I) { RPI.Register = I; }
-  bool hasReturnProtectorRegister() const { return RPI.Register != 0; }
-  /// Get / Set if this frame needs a return protector
-  void setReturnProtectorNeeded(bool I) { RPI.Needed = I; }
-  bool getReturnProtectorNeeded() const { return RPI.Needed; }
-  /// Get / Set if the return protector cookie needs to be stored in frame
-  void setReturnProtectorNeedsStore(bool I) { RPI.NeedsStore = I; }
-  bool getReturnProtectorNeedsStore() const { return RPI.NeedsStore; }
-
   /// Return the index for the function context object.
   /// This object is used for SjLj exceptions.
   int getFunctionContextIndex() const { return FunctionContextIdx; }
   void setFunctionContextIndex(int I) { FunctionContextIdx = I; }
+  bool hasFunctionContextIndex() const { return FunctionContextIdx != -1; }
 
   /// This method may be called any time after instruction
   /// selection is complete to determine if there is a call to
@@ -403,6 +388,20 @@ public:
   /// \@llvm.experimental.patchpoint.
   bool hasPatchPoint() const { return HasPatchPoint; }
   void setHasPatchPoint(bool s = true) { HasPatchPoint = s; }
+
+  /// Return true if this function requires a split stack prolog, even if it
+  /// uses no stack space. This is only meaningful for functions where
+  /// MachineFunction::shouldSplitStack() returns true.
+  //
+  // For non-leaf functions we have to allow for the possibility that the call
+  // is to a non-split function, as in PR37807. This function could also take
+  // the address of a non-split function. When the linker tries to adjust its
+  // non-existent prologue, it would fail with an error. Mark the object file so
+  // that such failures are not errors. See this Go language bug-report
+  // https://go-review.googlesource.com/c/go/+/148819/
+  bool needsSplitStackProlog() const {
+    return getStackSize() != 0 || hasTailCall();
+  }
 
   /// Return the minimum frame object index.
   int getObjectIndexBegin() const { return -NumFixedObjects; }
@@ -488,14 +487,21 @@ public:
     return Objects[ObjectIdx + NumFixedObjects].Alignment;
   }
 
+  /// Should this stack ID be considered in MaxAlignment.
+  bool contributesToMaxAlignment(uint8_t StackID) {
+    return StackID == TargetStackID::Default ||
+           StackID == TargetStackID::ScalableVector;
+  }
+
   /// setObjectAlignment - Change the alignment of the specified stack object.
   void setObjectAlignment(int ObjectIdx, Align Alignment) {
     assert(unsigned(ObjectIdx + NumFixedObjects) < Objects.size() &&
            "Invalid Object Idx!");
     Objects[ObjectIdx + NumFixedObjects].Alignment = Alignment;
 
-    // Only ensure max alignment for the default stack.
-    if (getStackID(ObjectIdx) == 0)
+    // Only ensure max alignment for the default and scalable vector stack.
+    uint8_t StackID = getStackID(ObjectIdx);
+    if (contributesToMaxAlignment(StackID))
       ensureMaxAlignment(Alignment);
   }
 
@@ -505,6 +511,14 @@ public:
     assert(unsigned(ObjectIdx+NumFixedObjects) < Objects.size() &&
            "Invalid Object Idx!");
     return Objects[ObjectIdx+NumFixedObjects].Alloca;
+  }
+
+  /// Remove the underlying Alloca of the specified stack object if it
+  /// exists. This generally should not be used and is for reduction tooling.
+  void clearObjectAllocation(int ObjectIdx) {
+    assert(unsigned(ObjectIdx + NumFixedObjects) < Objects.size() &&
+           "Invalid Object Idx!");
+    Objects[ObjectIdx + NumFixedObjects].Alloca = nullptr;
   }
 
   /// Return the assigned stack offset of the specified object
@@ -791,6 +805,9 @@ public:
   void setSavePoint(MachineBasicBlock *NewSave) { Save = NewSave; }
   MachineBasicBlock *getRestorePoint() const { return Restore; }
   void setRestorePoint(MachineBasicBlock *NewRestore) { Restore = NewRestore; }
+
+  uint64_t getUnsafeStackSize() const { return UnsafeStackSize; }
+  void setUnsafeStackSize(uint64_t Size) { UnsafeStackSize = Size; }
 
   /// Return a set of physical registers that are pristine.
   ///

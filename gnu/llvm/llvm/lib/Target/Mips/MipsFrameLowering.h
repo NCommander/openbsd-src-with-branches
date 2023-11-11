@@ -14,7 +14,6 @@
 #define LLVM_LIB_TARGET_MIPS_MIPSFRAMELOWERING_H
 
 #include "Mips.h"
-#include "MipsReturnProtectorLowering.h"
 #include "llvm/CodeGen/TargetFrameLowering.h"
 
 namespace llvm {
@@ -25,11 +24,8 @@ protected:
   const MipsSubtarget &STI;
 
 public:
-
-  const MipsReturnProtectorLowering RPL;
-
   explicit MipsFrameLowering(const MipsSubtarget &sti, Align Alignment)
-      : TargetFrameLowering(StackGrowsDown, Alignment, 0, Alignment), STI(sti), RPL() {
+      : TargetFrameLowering(StackGrowsDown, Alignment, 0, Alignment), STI(sti) {
   }
 
   static const MipsFrameLowering *create(const MipsSubtarget &ST);
@@ -38,13 +34,14 @@ public:
 
   bool hasBP(const MachineFunction &MF) const;
 
-  bool isFPCloseToIncomingSP() const override { return false; }
+  bool allocateScavengingFrameIndexesNearIncomingSP(
+    const MachineFunction &MF) const override {
+    return false;
+  }
 
   bool enableShrinkWrapping(const MachineFunction &MF) const override {
     return true;
   }
-
-  const ReturnProtectorLowering *getReturnProtector() const override;
 
   MachineBasicBlock::iterator
   eliminateCallFramePseudoInstr(MachineFunction &MF,

@@ -62,15 +62,17 @@ add_llvm_target(AArch64CodeGen
   AArch64ISelDAGToDAG.cpp
   AArch64ISelLowering.cpp
   AArch64InstrInfo.cpp
+  AArch64KCFI.cpp
   AArch64LoadStoreOptimizer.cpp
   AArch64LowerHomogeneousPrologEpilog.cpp
   AArch64MachineFunctionInfo.cpp
+  AArch64MachineScheduler.cpp
   AArch64MacroFusion.cpp
+  AArch64MIPeepholeOpt.cpp
   AArch64MCInstLower.cpp
   AArch64PromoteConstant.cpp
   AArch64PBQPRegAlloc.cpp
   AArch64RegisterInfo.cpp
-  AArch64ReturnProtectorLowering.cpp
   AArch64SLSHardening.cpp
   AArch64SelectionDAGInfo.cpp
   AArch64SpeculationHardening.cpp
@@ -81,6 +83,7 @@ add_llvm_target(AArch64CodeGen
   AArch64TargetMachine.cpp
   AArch64TargetObjectFile.cpp
   AArch64TargetTransformInfo.cpp
+  SMEABIPass.cpp
   SVEIntrinsicOpts.cpp
   AArch64SIMDInstrOpt.cpp
 
@@ -100,6 +103,7 @@ add_llvm_target(AArch64CodeGen
   SelectionDAG
   Support
   Target
+  TargetParser
   TransformUtils
   GlobalISel
   CFGuard

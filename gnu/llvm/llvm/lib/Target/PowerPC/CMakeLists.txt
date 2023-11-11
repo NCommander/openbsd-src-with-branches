@@ -27,6 +27,7 @@ add_llvm_target(PowerPCCodeGen
   PPCCallingConv.cpp
   PPCCCState.cpp
   PPCCTRLoops.cpp
+  PPCCTRLoopsVerify.cpp
   PPCExpandAtomicPseudoInsts.cpp
   PPCHazardRecognizers.cpp
   PPCInstrInfo.cpp
@@ -42,7 +43,6 @@ add_llvm_target(PowerPCCodeGen
   PPCMacroFusion.cpp
   PPCMIPeephole.cpp
   PPCRegisterInfo.cpp
-  PPCReturnProtectorLowering.cpp
   PPCSubtarget.cpp
   PPCTargetMachine.cpp
   PPCTargetObjectFile.cpp
@@ -56,6 +56,7 @@ add_llvm_target(PowerPCCodeGen
   PPCExpandISEL.cpp
   PPCPreEmitPeephole.cpp
   PPCLowerMASSVEntries.cpp
+  PPCGenScalarMASSEntries.cpp
   GISel/PPCCallLowering.cpp
   GISel/PPCRegisterBankInfo.cpp
   GISel/PPCLegalizerInfo.cpp
@@ -73,6 +74,7 @@ add_llvm_target(PowerPCCodeGen
   SelectionDAG
   Support
   Target
+  TargetParser
   TransformUtils
   GlobalISel
 

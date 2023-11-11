@@ -833,22 +833,26 @@ def MipsJumpTargetAsmOperand : AsmOperandClass {
 def jmptarget   : Operand<OtherVT> {
   let EncoderMethod = "getJumpTargetOpValue";
   let ParserMatchClass = MipsJumpTargetAsmOperand;
+  let PrintMethod = "printJumpOperand";
 }
 def brtarget    : Operand<OtherVT> {
   let EncoderMethod = "getBranchTargetOpValue";
   let OperandType = "OPERAND_PCREL";
   let DecoderMethod = "DecodeBranchTarget";
   let ParserMatchClass = MipsJumpTargetAsmOperand;
+  let PrintMethod = "printBranchOperand";
 }
 def brtarget1SImm16 : Operand<OtherVT> {
   let EncoderMethod = "getBranchTargetOpValue1SImm16";
   let OperandType = "OPERAND_PCREL";
   let DecoderMethod = "DecodeBranchTarget1SImm16";
   let ParserMatchClass = MipsJumpTargetAsmOperand;
+  let PrintMethod = "printBranchOperand";
 }
 def calltarget  : Operand<iPTR> {
   let EncoderMethod = "getJumpTargetOpValue";
   let ParserMatchClass = MipsJumpTargetAsmOperand;
+  let PrintMethod = "printJumpOperand";
 }
 
 def imm64: Operand<i64>;
@@ -2010,31 +2014,6 @@ def LONG_BRANCH_ADDiu : PseudoSE<(outs GPR32Opnd:$dst),
 def LONG_BRANCH_ADDiu2Op : PseudoSE<(outs GPR32Opnd:$dst),
   (ins GPR32Opnd:$src, brtarget:$tgt), []> {
   bit hasNoSchedulingInfo = 1;
-}
-
-// Pseudo instructions used by retguard. In order to calculste the PC
-// for PIC code, we use a pair of pseudos to get the function address
-// into T9, which is normally used to hold this value but is trashed
-// by function epilogue.
-let isCodeGenOnly = 1, hasNoSchedulingInfo = 1 in {
-
-  // Use BAL to get the PC into RA, then calculate the address of the
-  // current function and save this value in $rd. $rs and $rt are used
-  // as scratch registers and are trashed by this pseudo. $tgt is the
-  // symbol to branch to when calling BAL.
-  let Size = 32 in {
-  def RETGUARD_GET_FUNCTION_ADDR: PseudoSE<(outs GPR64:$rd),
-    (ins GPR64:$rs, GPR64:$rt, brtarget:$tgt), []>;
-  }
-
-  // Emit the symbol used for $tgt in RETGUARD_GET_FUNCTION_ADDR. We
-  // emit this symbol immediately before the usual function return, with
-  // the effect that the BAL branches to an immediate return and resumes
-  // execution through the rest of the RETGUARD epilogue. We pair BAL
-  // with RET to satisfy return branch predictors.
-  let Size = 0 in {
-  def RETGUARD_EMIT_SYMBOL: PseudoSE<(outs), (ins brtarget:$tgt), []>;
-  }
 }
 
 //===----------------------------------------------------------------------===//
