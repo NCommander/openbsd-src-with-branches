@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_dl.h,v 1.11 2017/01/24 10:08:30 krw Exp $	*/
+/*	$OpenBSD: if_dl.h,v 1.12 2017/05/04 15:00:24 bluhm Exp $	*/
 /*	$NetBSD: if_dl.h,v 1.8 1995/03/26 20:30:13 jtc Exp $	*/
 
 /*
@@ -77,6 +77,12 @@ static inline struct sockaddr_dl *
 satosdl(struct sockaddr *sa)
 {
 	return ((struct sockaddr_dl *)(sa));
+}
+
+static inline const struct sockaddr_dl *
+satosdl_const(const struct sockaddr *sa)
+{
+	return ((const struct sockaddr_dl *)(sa));
 }
 
 static inline struct sockaddr *
