@@ -1,8 +1,8 @@
-# $OpenBSD: Makefile,v 1.1 2021/09/15 10:21:30 fcambus Exp $
+# $OpenBSD: Makefile,v 1.2 2021/12/17 14:55:43 patrick Exp $
 
 .include <bsd.own.mk>
 
-LLVM_V=		13.0.0
+LLVM_V=		16
 LIBDIR=		/usr/lib/clang/${LLVM_V}/lib
 
 .if ${COMPILER_VERSION:L} != "clang"
