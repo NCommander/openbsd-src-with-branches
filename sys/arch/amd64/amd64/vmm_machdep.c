@@ -1,4 +1,4 @@
-/* $OpenBSD: vmm_machdep.c,v 1.7 2023/09/05 14:00:40 mlarkin Exp $ */
+/* $OpenBSD: vmm_machdep.c,v 1.8 2023/09/06 03:35:57 dv Exp $ */
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -4922,8 +4922,8 @@ svm_handle_np_fault(struct vcpu *vcpu)
 		ret = EAGAIN;
 		break;
 	default:
-		printf("unknown memory type %d for GPA 0x%llx\n",
-		    gpa_memtype, gpa);
+		printf("%s: unknown memory type %d for GPA 0x%llx\n",
+		    __func__, gpa_memtype, gpa);
 		return (EINVAL);
 	}
 
@@ -5020,8 +5020,8 @@ vmx_handle_np_fault(struct vcpu *vcpu)
 		}
 		break;
 	default:
-		printf("unknown memory type %d for GPA 0x%llx\n",
-		    gpa_memtype, gpa);
+		printf("%s: unknown memory type %d for GPA 0x%llx\n",
+		    __func__, gpa_memtype, gpa);
 		return (EINVAL);
 	}
 
