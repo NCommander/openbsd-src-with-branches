@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_purp.c,v 1.28 2023/07/02 17:12:17 tb Exp $ */
+/* $OpenBSD: x509_purp.c,v 1.29 2023/08/18 08:42:41 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2001.
  */
@@ -711,7 +711,8 @@ x509v3_cache_extensions_internal(X509 *x)
 	if (!x509_extension_oids_are_unique(x))
 		x->ex_flags |= EXFLAG_INVALID;
 
-	x509_verify_cert_info_populate(x);
+	if (!x509_verify_cert_info_populate(x))
+		x->ex_flags |= EXFLAG_INVALID;
 
 	x->ex_flags |= EXFLAG_SET;
 }
