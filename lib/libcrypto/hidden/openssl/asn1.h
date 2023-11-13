@@ -1,4 +1,4 @@
-/* $OpenBSD: asn1.h,v 1.5 2023/07/28 10:30:16 tb Exp $ */
+/* $OpenBSD: asn1.h,v 1.6 2023/07/28 10:33:13 tb Exp $ */
 /*
  * Copyright (c) 2023 Bob Beck <beck@openbsd.org>
  *
@@ -249,5 +249,7 @@ LCRYPTO_USED(SMIME_text);
 LCRYPTO_USED(ERR_load_ASN1_strings);
 LCRYPTO_USED(ASN1_time_parse);
 LCRYPTO_USED(ASN1_time_tm_cmp);
+LCRYPTO_USED(OPENSSL_gmtime);
+LCRYPTO_USED(OPENSSL_timegm);
 
 #endif /* _LIBCRYPTO_ASN1_H */
