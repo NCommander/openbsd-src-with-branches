@@ -106,7 +106,7 @@ X509_certificate_type(const X509 *x, const EVP_PKEY *pkey)
 		break;
 	}
 
-	i = OBJ_obj2nid(x->sig_alg->algorithm);
+	i = X509_get_signature_nid(x);
 	if (i && OBJ_find_sigid_algs(i, NULL, &i)) {
 		switch (i) {
 		case NID_rsaEncryption:
