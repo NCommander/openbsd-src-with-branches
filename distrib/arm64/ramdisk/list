@@ -1,4 +1,4 @@
-#	$OpenBSD: list,v 1.21 2023/04/03 10:51:50 kn Exp $
+#	$OpenBSD: list,v 1.22 2023/04/28 01:24:14 kevlo Exp $
 
 SRCDIRS distrib/special
 
@@ -45,6 +45,7 @@ LINK	instbin					sbin/mount_ext2fs
 LINK	instbin					sbin/mount_ffs
 LINK	instbin					sbin/mount_msdos
 LINK	instbin					sbin/mount_nfs
+LINK	instbin					sbin/mount_udf
 LINK	instbin					sbin/newfs
 LINK	instbin					sbin/newfs_ext2fs
 LINK	instbin					sbin/newfs_msdos
