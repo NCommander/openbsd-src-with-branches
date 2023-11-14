@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.108 2021/12/05 22:36:19 deraadt Exp $	*/
+/*	$OpenBSD: route.c,v 1.109 2022/06/28 15:17:23 bluhm Exp $	*/
 /*	$NetBSD: route.c,v 1.15 1996/05/07 02:55:06 thorpej Exp $	*/
 
 /*
@@ -37,6 +37,7 @@
 #include <net/if.h>
 #include <net/if_types.h>
 #define _KERNEL
+#include <net/art.h>
 #include <net/route.h>
 #undef _KERNEL
 #include <netinet/ip_ipsp.h>
