@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr_disk.c,v 1.270 2022/11/11 18:53:29 krw Exp $	*/
+/*	$OpenBSD: subr_disk.c,v 1.271 2023/02/10 07:00:12 miod Exp $	*/
 /*	$NetBSD: subr_disk.c,v 1.17 1996/03/16 23:17:08 christos Exp $	*/
 
 /*
@@ -1754,7 +1754,7 @@ done:
 }
 
 int
-disk_map(char *path, char *mappath, int size, int flags)
+disk_map(const char *path, char *mappath, int size, int flags)
 {
 	struct disk *dk, *mdk;
 	u_char uid[8];
