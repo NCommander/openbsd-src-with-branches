@@ -1,4 +1,4 @@
-/*	$OpenBSD: application.c,v 1.36 2023/11/12 16:07:34 martijn Exp $	*/
+/*	$OpenBSD: application.c,v 1.37 2023/11/13 10:14:29 martijn Exp $	*/
 
 /*
  * Copyright (c) 2021 Martijn van Duren <martijn@openbsd.org>
@@ -257,7 +257,7 @@ appl_addagentcaps(const char *ctxname, struct ber_oid *oid, const char *descr,
 		return APPL_ERROR_UNSUPPORTEDCONTEXT;
 	}
 
-	if ((cap = malloc(sizeof(*ctx))) == NULL) {
+	if ((cap = malloc(sizeof(*cap))) == NULL) {
 		log_warn("%s: Can't add agent capabilities %s",
 		    backend->ab_name, oidbuf);
 		return APPL_ERROR_PROCESSINGERROR;
