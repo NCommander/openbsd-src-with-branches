@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmparam.h,v 1.29 2016/12/23 12:38:16 visa Exp $	*/
+/*	$OpenBSD: vmparam.h,v 1.30 2023/03/19 20:32:13 kettenis Exp $	*/
 /*	$NetBSD: vmparam.h,v 1.5 1994/10/26 21:10:10 cgd Exp $	*/
 
 /*
@@ -51,7 +51,7 @@
  * Virtual memory related constants, all in bytes
  */
 #ifndef MAXTSIZ
-#define	MAXTSIZ		(64*1024*1024)		/* max text size */
+#define	MAXTSIZ		(128*1024*1024)		/* max text size */
 #endif
 #ifndef DFLDSIZ
 #define	DFLDSIZ		(128*1024*1024)		/* initial data size limit */
