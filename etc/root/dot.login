@@ -1,15 +1,11 @@
-# $OpenBSD: dot.login,v 1.13 2009/05/06 22:02:05 millert Exp $
+# $OpenBSD: dot.login,v 1.14 2009/12/20 15:35:35 deraadt Exp $
 #
 # csh login file
 
 if ( -x /usr/bin/tset ) then
 	set noglob histchars=""
 	onintr finish
-	if ( $?XTERM_VERSION ) then
-		eval `tset -IsQ '-munknown:?vt220' $TERM`
-	else
-		eval `tset -sQ '-munknown:?vt220' $TERM`
-	endif
+	eval `tset -IsQ '-munknown:?vt220' $TERM`
 	finish:
 	unset noglob histchars
 	onintr
