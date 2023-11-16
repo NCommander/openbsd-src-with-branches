@@ -1,4 +1,4 @@
-/*	$OpenBSD: dns.c,v 1.90 2021/06/14 17:58:15 eric Exp $	*/
+/*	$OpenBSD: dns.c,v 1.91 2023/11/08 08:46:34 op Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -263,7 +263,8 @@ dns_dispatch_mx(struct asr_result *ar, void *arg)
 		print_dname(rr.rr.mx.exchange, buf, sizeof(buf));
 		buf[strlen(buf) - 1] = '\0';
 
-		if (rr.rr.mx.preference == 0 && !strcmp(buf, "")) {
+		if ((rr.rr.mx.preference == 0 && !strcmp(buf, "")) ||
+		    !strcmp(buf, "localhost")) {
 			nullmx = 1;
 			continue;
 		}
