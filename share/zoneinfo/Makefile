@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2023/11/17 21:51:37 millert Exp $
+#	$OpenBSD: Makefile,v 1.17 2023/11/17 21:54:20 millert Exp $
 
 # DATAFORM selects the data format.  OpenBSD always uses "main"
 # Available formats represent essentially the same data, albeit
@@ -124,7 +124,7 @@ other_two: leapseconds ${TDATA}
 	(cd ${.CURDIR}/datfiles; \
 	    ${ZIC} -d ${TZDIR}/posix -L /dev/null ${TDATA})
 	(cd ${.CURDIR}/datfiles; \
-	    ${ZIC} -d ${TZDIR}/right -L leapseconds ${TDATA})
+	    ${ZIC} -d ${TZDIR}/right -L ${.OBJDIR}/leapseconds ${TDATA})
 
 posix_right: posix_only other_two
 
