@@ -1,4 +1,4 @@
-/*	$OpenBSD: archdep.h,v 1.27 2021/11/14 22:07:39 guenther Exp $ */
+/*	$OpenBSD: archdep.h,v 1.28 2022/01/17 01:35:36 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -41,7 +41,7 @@ RELOC_DYN(const Elf_RelA *r, const Elf_Sym *s, Elf_Addr *p, unsigned long v)
 	if (ELF_R_TYPE(r->r_info) == RELOC_RELATIVE) {
 		*p = v + r->r_addend;
 	} else {
-		_dl_exit(6);
+		_csu_abort();
 	}
 }
 
