@@ -1,4 +1,4 @@
-/*	$OpenBSD: crypto_init.c,v 1.10 2023/07/02 19:52:01 tb Exp $ */
+/*	$OpenBSD: crypto_init.c,v 1.11 2023/07/08 08:28:23 beck Exp $ */
 /*
  * Copyright (c) 2018 Bob Beck <beck@openbsd.org>
  *
@@ -22,9 +22,6 @@
 
 #include <openssl/asn1.h>
 #include <openssl/conf.h>
-#ifndef OPENSSL_NO_ENGINE
-#include <openssl/engine.h>
-#endif
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/objects.h>
@@ -84,9 +81,6 @@ OPENSSL_cleanup(void)
 	ERR_free_strings();
 
 	CRYPTO_cleanup_all_ex_data();
-#ifndef OPENSSL_NO_ENGINE
-	ENGINE_cleanup();
-#endif
 	EVP_cleanup();
 
 	ASN1_STRING_TABLE_cleanup();
