@@ -1,4 +1,4 @@
-/* $OpenBSD: md_init.h,v 1.20 2020/10/20 15:26:59 visa Exp $ */
+/* $OpenBSD: md_init.h,v 1.21 2023/11/18 16:26:16 deraadt Exp $ */
 
 /*-
  * Copyright (c) 2001 Ross Harvey
@@ -144,7 +144,7 @@
 	"	.ent	_csu_abort		\n" \
 	"	.type	_csu_abort, @function	\n" \
 	"_csu_abort:				\n" \
-	"	teq	zero, zero, 0x52	\n" \
+	"	teq	$zero, $zero, 0x52	\n" \
 	"	.end	_csu_abort		\n" \
 	"	.previous")
 
