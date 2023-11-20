@@ -1,4 +1,4 @@
-/*	$OpenBSD: server.c,v 1.127 2023/07/12 12:37:27 tb Exp $	*/
+/*	$OpenBSD: server.c,v 1.128 2023/09/03 10:18:18 nicm Exp $	*/
 
 /*
  * Copyright (c) 2006 - 2015 Reyk Floeter <reyk@openbsd.org>
@@ -1300,7 +1300,7 @@ server_close(struct client *clt, const char *msg)
 {
 	struct server		*srv = clt->clt_srv;
 
-	if (clt->clt_fcgi_error != NULL) {
+	if (clt->clt_fcgi_count-- > 0) {
 		clt->clt_fcgi_error = msg;
 		return;
 	}
