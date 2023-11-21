@@ -20,7 +20,7 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /*
- * 	$Id: mkisofs.h,v 1.3 2013/08/08 05:30:23 guenther Exp $
+ * 	$Id: mkisofs.h,v 1.4 2015/09/09 20:02:31 miod Exp $
  */
 
 /* APPLE_HYB James Pearson j.pearson@ge.ucl.ac.uk 12/3/99 */
@@ -462,6 +462,7 @@ extern char * system_id;
 extern char * volume_id;
 extern char * boot_catalog;
 extern char * boot_image;
+extern char * efi_boot_image;
 extern int volume_set_size;
 extern int volume_sequence_number;
 

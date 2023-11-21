@@ -2,7 +2,7 @@
  * Header file defaults.h - assorted default values for character strings in
  * the volume descriptor.
  *
- * 	$Id: defaults.h,v 1.8 1999/03/02 03:41:25 eric Exp $
+ * 	$Id: defaults.h,v 1.1 2000/10/10 20:40:13 beck Exp $
  */
 
 #define  PREPARER_DEFAULT 	NULL
@@ -17,6 +17,7 @@
 #define  VOLUME_ID_DEFAULT 	"CDROM"
 #define  BOOT_CATALOG_DEFAULT   "boot.catalog"
 #define  BOOT_IMAGE_DEFAULT     NULL
+#define  EFI_BOOT_IMAGE_DEFAULT NULL
 #ifdef APPLE_HYB
 #define	 DEFTYPE		"TEXT"  /* default Apple TYPE */
 #define  DEFCREATOR		"unix"  /* default Apple CREATOR */
