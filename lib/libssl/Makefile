@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.79 2023/05/05 21:23:02 tb Exp $
+# $OpenBSD: Makefile,v 1.80 2023/07/06 07:56:32 beck Exp $
 
 .include <bsd.own.mk>
 .ifndef NOMAN
@@ -44,7 +44,6 @@ SRCS= \
 	pqueue.c \
 	s3_cbc.c \
 	s3_lib.c \
-	ssl_algs.c \
 	ssl_asn1.c \
 	ssl_both.c \
 	ssl_cert.c \
