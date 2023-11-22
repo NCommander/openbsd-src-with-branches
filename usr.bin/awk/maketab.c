@@ -1,4 +1,4 @@
-/*	$OpenBSD: maketab.c,v 1.20 2020/07/30 17:45:44 millert Exp $	*/
+/*	$OpenBSD: maketab.c,v 1.21 2023/10/30 17:52:54 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -53,8 +53,8 @@ struct xx
 	{ ARRAY, "array", NULL },
 	{ INDIRECT, "indirect", "$(" },
 	{ SUBSTR, "substr", "substr" },
-	{ SUB, "sub", "sub" },
-	{ GSUB, "gsub", "gsub" },
+	{ SUB, "dosub", "sub" },
+	{ GSUB, "dosub", "gsub" },
 	{ INDEX, "sindex", "sindex" },
 	{ SPRINTF, "awksprintf", "sprintf " },
 	{ ADD, "arith", " + " },
