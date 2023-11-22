@@ -1,4 +1,4 @@
-/*	$OpenBSD: gethostnamadr_async.c,v 1.47 2023/11/14 08:27:33 florian Exp $	*/
+/*	$OpenBSD: gethostnamadr_async.c,v 1.48 2023/11/20 12:15:16 florian Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -205,7 +205,8 @@ gethostnamadr_async_run(struct asr_query *as, struct asr_result *ar)
 			}
 
 			if (!hnok_lenient(as->as.hostnamadr.name)) {
-				ar->ar_gai_errno = EAI_FAIL;
+				ar->ar_h_errno = NETDB_INTERNAL;
+				ar->ar_errno = EINVAL;
 				async_set_state(as, ASR_STATE_HALT);
 				break;
 			}
