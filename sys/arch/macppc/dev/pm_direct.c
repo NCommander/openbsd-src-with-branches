@@ -1,4 +1,4 @@
-/*	$OpenBSD: pm_direct.c,v 1.33 2022/10/23 08:00:10 kn Exp $	*/
+/*	$OpenBSD: pm_direct.c,v 1.34 2022/12/28 07:40:23 jca Exp $	*/
 /*	$NetBSD: pm_direct.c,v 1.9 2000/06/08 22:10:46 tsubai Exp $	*/
 
 /*
@@ -853,3 +853,22 @@ pmu_fileserver_mode(int on)
 	}
 	pmgrop(&p);
 }
+
+int
+pmu_set_kbl(unsigned int level)
+{
+	if (level > 0xff)
+		return (EINVAL);
+
+	PMData p;
+
+	p.command = 0x4F;
+	p.num_data = 3;
+	p.s_buf = p.r_buf = p.data;
+	p.data[0] = 0;
+	p.data[1] = 0;
+	p.data[2] = level;
+	pmgrop(&p);
+	return (0);
+}
+

@@ -1,4 +1,4 @@
-/*	$OpenBSD: pm_direct.h,v 1.14 2022/09/18 21:36:41 gkoehler Exp $	*/
+/*	$OpenBSD: pm_direct.h,v 1.15 2022/10/21 22:42:36 gkoehler Exp $	*/
 /*	$NetBSD: pm_direct.h,v 1.7 2005/01/07 04:59:58 briggs Exp $	*/
 
 /*
@@ -67,6 +67,7 @@ struct pmu_battery_info
 };
 
 int pm_battery_info(int, struct pmu_battery_info *);
+int pmu_set_kbl(unsigned int);
 
 void pm_eject_pcmcia(int);
 void pmu_fileserver_mode(int);
