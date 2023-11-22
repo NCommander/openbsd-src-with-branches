@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_init.c,v 1.3 2022/11/26 16:08:55 tb Exp $ */
+/* $OpenBSD: ssl_init.c,v 1.4 2023/07/08 16:40:13 beck Exp $ */
 /*
  * Copyright (c) 2018 Bob Beck <beck@openbsd.org>
  *
@@ -31,7 +31,6 @@ OPENSSL_init_ssl_internal(void)
 {
 	ssl_init_thread = pthread_self();
 	SSL_load_error_strings();
-	SSL_library_init();
 }
 
 int
