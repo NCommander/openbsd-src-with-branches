@@ -1,4 +1,4 @@
-/*	$OpenBSD: tables.c,v 1.13 2017/02/13 19:13:14 krw Exp $	*/
+/*	$OpenBSD: tables.c,v 1.14 2019/05/08 22:00:55 krw Exp $	*/
 
 /* Tables of information... */
 
@@ -184,7 +184,7 @@ struct option dhcp_options[256] = {
 	{ "option-105", "X",				&dhcp_universe, 105 },
 	{ "option-106", "X",				&dhcp_universe, 106 },
 	{ "option-107", "X",				&dhcp_universe, 107 },
-	{ "option-108", "X",				&dhcp_universe, 108 },
+	{ "ipv6-only-preferred", "L",			&dhcp_universe, 108 },
 	{ "option-109", "X",				&dhcp_universe, 109 },
 	{ "option-110", "X",				&dhcp_universe, 110 },
 	{ "option-111", "X",				&dhcp_universe, 111 },
