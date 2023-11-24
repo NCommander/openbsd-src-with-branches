@@ -1,4 +1,4 @@
-/*	$OpenBSD: exception.S,v 1.6 2022/12/02 12:27:08 jca Exp $	*/
+/*	$OpenBSD: exception.S,v 1.7 2023/11/20 16:10:37 miod Exp $	*/
 
 /*-
  * Copyright (c) 2015-2018 Ruslan Bukin <br@bsdpad.com>
@@ -202,8 +202,7 @@
 
 	/* handle the ast */
 	mv	a0, sp
-	la	t0, ast
-	jalr	t0
+	call	ast
 	j	1b
 2:
 .endm
