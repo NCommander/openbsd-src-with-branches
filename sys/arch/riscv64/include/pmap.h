@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.h,v 1.6 2021/05/16 03:29:35 jsg Exp $	*/
+/*	$OpenBSD: pmap.h,v 1.7 2023/02/16 20:32:39 miod Exp $	*/
 
 /*
  * Copyright (c) 2019-2020 Brian Bamsch <bbamsch@google.com>
@@ -105,6 +105,8 @@ void pmap_avail_fixup(void);
 void pmap_physload_avail(void);
 
 #define PMAP_GROWKERNEL
+
+#define	PHYS_TO_DMAP(pa)	((pa) - dmap_phys_base + DMAP_MIN_ADDRESS)
 
 struct pv_entry;
 
