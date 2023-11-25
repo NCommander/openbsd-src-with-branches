@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 # ex:ts=8 sw=4:
-# $OpenBSD: FwUpdate.pm,v 1.34 2022/03/10 07:18:24 hastings Exp $
+# $OpenBSD: FwUpdate.pm,v 1.35 2023/06/13 09:07:17 espie Exp $
 #
 # Copyright (c) 2014 Marc Espie <espie@openbsd.org>
 #
@@ -82,7 +82,6 @@ sub handle_options($state)
 
 sub finish_init($state)
 {
-	delete $state->{signer_list}; # XXX uncache value
 	$state->{subst}->add('FW_UPDATE', 1);
 }
 
