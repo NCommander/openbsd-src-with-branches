@@ -1,5 +1,5 @@
 # ex:ts=8 sw=4:
-# $OpenBSD: State.pm,v 1.74 2023/06/13 09:07:17 espie Exp $
+# $OpenBSD: State.pm,v 1.75 2023/11/24 18:19:25 espie Exp $
 #
 # Copyright (c) 2007-2014 Marc Espie <espie@openbsd.org>
 #
@@ -311,18 +311,5 @@ sub find_window_size($self)
 		};
 	}
 }
-
-OpenBSD::Auto::cache(signer_list,
-	sub($self) {
-		if ($self->defines('SIGNER')) {
-			return [split /,/, $self->{subst}->value('SIGNER')];
-		} else {
-			if ($self->defines('FW_UPDATE')) {
-				return [qr{^.*fw$}];
-			} else {
-				return [qr{^.*pkg$}];
-			}
-		}
-	});
 
 1;
