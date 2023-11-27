@@ -1,4 +1,4 @@
-/*	$OpenBSD: main.c,v 1.68 2023/04/28 10:24:38 claudio Exp $ */
+/*	$OpenBSD: main.c,v 1.69 2023/11/23 11:59:53 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -322,6 +322,8 @@ const struct option	 lopts[] = {
     { "no-motd",	no_argument,	&opts.no_motd,		1 },
     { "numeric-ids",	no_argument,	&opts.numeric_ids,	1 },
     { "omit-dir-times",	no_argument,	&opts.ignore_dir_times,	1 },
+    { "no-O",		no_argument,	&opts.ignore_dir_times,	0 },
+    { "no-omit-dir-times",	no_argument,	&opts.ignore_dir_times,	0 },
     { "owner",		no_argument,	&opts.preserve_uids,	1 },
     { "no-owner",	no_argument,	&opts.preserve_uids,	0 },
     { "perms",		no_argument,	&opts.preserve_perms,	1 },
