@@ -1,4 +1,4 @@
-/*	$OpenBSD: stfpcie.c,v 1.1 2023/07/08 10:06:13 kettenis Exp $	*/
+/*	$OpenBSD: stfpcie.c,v 1.2 2023/08/30 09:01:51 kettenis Exp $	*/
 /*
  * Copyright (c) 2023 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -392,7 +392,7 @@ stfpcie_attach(struct device *parent, struct device *self, void *aux)
 	gpio_controller_config_pin(perst_gpio, GPIO_CONFIG_OUTPUT);
 	gpio_controller_set_pin(perst_gpio, 1);
 
-	/* Disable additonal functions. */
+	/* Disable additional functions. */
 	for (i = 1; i < 4; i++) {
 		reg = regmap_read_4(rm, stg_base + STG_ARFUN);
 		reg &= ~STG_ARFUN_AXI4_SLVL_MASK;
