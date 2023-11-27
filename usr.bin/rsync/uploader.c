@@ -1,4 +1,4 @@
-/*	$OpenBSD: uploader.c,v 1.34 2023/04/28 10:24:39 claudio Exp $ */
+/*	$OpenBSD: uploader.c,v 1.35 2023/11/23 11:59:53 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  * Copyright (c) 2019 Florian Obser <florian@openbsd.org>
@@ -1099,8 +1099,7 @@ rsync_uploader_tail(struct upload *u, struct sess *sess)
 {
 	size_t	 i;
 
-
-	if (!sess->opts->preserve_times &&
+	if ((!sess->opts->preserve_times || sess->opts->ignore_dir_times) &&
 	    !sess->opts->preserve_perms)
 		return 1;
 
