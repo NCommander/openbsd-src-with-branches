@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_ipip.c,v 1.98 2022/01/02 22:36:04 jsg Exp $ */
+/*	$OpenBSD: ip_ipip.c,v 1.99 2023/09/16 09:33:27 mpi Exp $ */
 /*
  * The authors of this code are John Ioannidis (ji@tla.org),
  * Angelos D. Keromytis (kermit@csd.uch.gr) and
@@ -481,8 +481,8 @@ ipip_output(struct mbuf **mp, struct tdb *tdb)
 		ip6o->ip6_vfc |= IPV6_VERSION;
 		ip6o->ip6_plen = htons(m->m_pkthdr.len - sizeof(*ip6o));
 		ip6o->ip6_hlim = ip_defttl;
-		in6_embedscope(&ip6o->ip6_src, &tdb->tdb_src.sin6, NULL);
-		in6_embedscope(&ip6o->ip6_dst, &tdb->tdb_dst.sin6, NULL);
+		in6_embedscope(&ip6o->ip6_src, &tdb->tdb_src.sin6, NULL, NULL);
+		in6_embedscope(&ip6o->ip6_dst, &tdb->tdb_dst.sin6, NULL, NULL);
 
 		if (tp == IPVERSION) {
 			/* Save ECN notification */
