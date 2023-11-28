@@ -1,4 +1,4 @@
-/* $OpenBSD: ocsp_ht.c,v 1.25 2018/05/13 10:42:03 tb Exp $ */
+/* $OpenBSD: ocsp_ht.c,v 1.26 2023/07/08 10:44:00 beck Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2006.
  */
@@ -371,7 +371,7 @@ next_line:
 
 			rctx->state = OHS_ASN1_HEADER;
 		}
-		/* FALLTRHOUGH */
+		/* FALLTHROUGH */
 
 	case OHS_ASN1_HEADER:
 		/* Now reading ASN1 header: can read at least 2 bytes which

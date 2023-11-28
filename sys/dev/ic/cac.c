@@ -1,4 +1,4 @@
-/*	$OpenBSD: cac.c,v 1.75 2022/01/09 05:42:38 jsg Exp $	*/
+/*	$OpenBSD: cac.c,v 1.76 2022/04/16 19:19:59 naddy Exp $	*/
 /*	$NetBSD: cac.c,v 1.15 2000/11/08 19:20:35 ad Exp $	*/
 
 /*
@@ -959,7 +959,7 @@ cac_sensor_refresh(void *arg)
 			break;
 
 		case BIOC_SVINVALID:
-			/* FALLTRHOUGH */
+			/* FALLTHROUGH */
 		default:
 			sc->sc_sensors[i].value = 0; /* unknown */
 			sc->sc_sensors[i].status = SENSOR_S_UNKNOWN;

@@ -1,4 +1,4 @@
-/* $OpenBSD: mfi.c,v 1.189 2023/05/25 19:35:58 kurt Exp $ */
+/* $OpenBSD: mfi.c,v 1.190 2023/07/06 10:17:43 visa Exp $ */
 /*
  * Copyright (c) 2006 Marco Peereboom <marco@peereboom.us>
  *
@@ -2506,7 +2506,7 @@ mfi_refresh_sensors(void *arg)
 			break;
 
 		case BIOC_SVINVALID:
-			/* FALLTRHOUGH */
+			/* FALLTHROUGH */
 		default:
 			sc->sc_sensors[i].value = 0; /* unknown */
 			sc->sc_sensors[i].status = SENSOR_S_UNKNOWN;
