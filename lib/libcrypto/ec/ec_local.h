@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_local.h,v 1.25 2023/07/28 09:28:37 tb Exp $ */
+/* $OpenBSD: ec_local.h,v 1.26 2023/07/28 15:50:33 tb Exp $ */
 /*
  * Originally written by Bodo Moeller for the OpenSSL project.
  */
@@ -223,7 +223,6 @@ struct ec_group_st {
 
 struct ec_key_st {
 	const EC_KEY_METHOD *meth;
-	ENGINE	*engine;
 
 	int version;
 

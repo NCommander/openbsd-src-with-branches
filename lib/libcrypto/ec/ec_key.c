@@ -1,4 +1,4 @@
-/* $OpenBSD: ec_key.c,v 1.37 2023/08/03 18:53:56 tb Exp $ */
+/* $OpenBSD: ec_key.c,v 1.38 2023/11/19 15:46:09 tb Exp $ */
 /*
  * Written by Nils Larsch for the OpenSSL project.
  */
@@ -191,7 +191,7 @@ EC_KEY_dup(const EC_KEY *ec_key)
 {
 	EC_KEY *ret;
 
-	if ((ret = EC_KEY_new_method(ec_key->engine)) == NULL)
+	if ((ret = EC_KEY_new_method(NULL)) == NULL)
 		return NULL;
 	if (EC_KEY_copy(ret, ec_key) == NULL) {
 		EC_KEY_free(ret);

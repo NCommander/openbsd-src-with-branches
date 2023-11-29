@@ -1,4 +1,4 @@
-/* $OpenBSD: dsa_lib.c,v 1.44 2023/08/12 06:14:36 tb Exp $ */
+/* $OpenBSD: dsa_lib.c,v 1.45 2023/11/19 15:46:09 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -397,7 +397,7 @@ LCRYPTO_ALIAS(DSA_set_flags);
 ENGINE *
 DSA_get0_engine(DSA *d)
 {
-	return d->engine;
+	return NULL;
 }
 LCRYPTO_ALIAS(DSA_get0_engine);
 
