@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.276 2023/09/29 08:57:49 tb Exp $
+# $OpenBSD: Makefile,v 1.277 2023/11/19 10:36:14 tb Exp $
 
 .include <bsd.own.mk>
 
@@ -158,6 +158,7 @@ MAN=	\
 	EVP_BytesToKey.3 \
 	EVP_CIPHER_CTX_ctrl.3 \
 	EVP_CIPHER_CTX_get_cipher_data.3 \
+	EVP_CIPHER_CTX_init.3 \
 	EVP_CIPHER_CTX_set_flags.3 \
 	EVP_CIPHER_do_all.3 \
 	EVP_CIPHER_meth_new.3 \
