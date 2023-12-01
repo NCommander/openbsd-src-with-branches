@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_pcb.c,v 1.125 2023/11/28 13:23:20 bluhm Exp $	*/
+/*	$OpenBSD: in6_pcb.c,v 1.126 2023/11/29 18:30:48 bluhm Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -245,7 +245,7 @@ in6_pcbaddrisavail(struct inpcb *inp, struct sockaddr_in6 *sin6, int wild,
 int
 in6_pcbconnect(struct inpcb *inp, struct mbuf *nam)
 {
-	struct in6_addr *in6a = NULL;
+	const struct in6_addr *in6a;
 	struct sockaddr_in6 *sin6;
 	struct inpcb *t;
 	int error;
