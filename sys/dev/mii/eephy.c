@@ -1,4 +1,4 @@
-/*	$OpenBSD: eephy.c,v 1.59 2022/01/09 05:42:44 jsg Exp $	*/
+/*	$OpenBSD: eephy.c,v 1.60 2022/04/06 18:59:29 naddy Exp $	*/
 /*
  * Principal Author: Parag Patel
  * Copyright (c) 2001
@@ -290,11 +290,8 @@ eephy_reset(struct mii_softc *sc)
 
 	/*
 	 * Do a software reset for these settings to take effect.
-	 * Disable autonegotiation, such that all capabilities get
-	 * advertised when it is switched back on.
 	 */
 	reg = PHY_READ(sc, E1000_CR);
-	reg &= ~E1000_CR_AUTO_NEG_ENABLE;
 	PHY_WRITE(sc, E1000_CR, reg | E1000_CR_RESET);
 }
 
