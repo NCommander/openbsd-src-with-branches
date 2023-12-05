@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vr.c,v 1.158 2022/01/09 05:42:56 jsg Exp $	*/
+/*	$OpenBSD: if_vr.c,v 1.159 2022/03/11 18:00:50 mpi Exp $	*/
 
 /*
  * Copyright (c) 1997, 1998
@@ -1603,6 +1603,7 @@ vr_stop(struct vr_softc *sc)
 	ifp->if_timer = 0;
 
 	timeout_del(&sc->sc_to);
+	timeout_del(&sc->sc_rxto);
 
 	ifp->if_flags &= ~IFF_RUNNING;
 	ifq_clr_oactive(&ifp->if_snd);
