@@ -1,7 +1,7 @@
-#	$OpenBSD: Makefile,v 1.7 2019/09/02 22:23:11 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.8 2020/12/17 14:16:10 bluhm Exp $
 
 SUBDIR +=	arp autoport
-SUBDIR +=	broadcast_bind
+SUBDIR +=	bindconnect broadcast_bind
 SUBDIR +=	carp
 SUBDIR +=	frag
 SUBDIR +=	in_pcbbind ipsec
