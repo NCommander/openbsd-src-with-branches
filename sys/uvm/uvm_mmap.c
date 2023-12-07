@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_mmap.c,v 1.181 2023/04/11 00:45:09 jsg Exp $	*/
+/*	$OpenBSD: uvm_mmap.c,v 1.182 2023/05/09 10:35:20 kn Exp $	*/
 /*	$NetBSD: uvm_mmap.c,v 1.49 2001/02/18 21:19:08 chs Exp $	*/
 
 /*
@@ -641,6 +641,16 @@ sys_pinsyscall(struct proc *p, void *v, register_t *retval)
 	vm->vm_execve = start;
 	vm->vm_execve_end = end;
 	vm_map_unlock(map);
+	return (0);
+}
+
+ /*
+ * sys_pinsyscalls
+ */
+int
+sys_pinsyscalls(struct proc *p, void *v, register_t *retval)
+{
+	/* STUB until other parts are ready */
 	return (0);
 }
 
