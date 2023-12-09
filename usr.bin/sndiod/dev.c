@@ -1,4 +1,4 @@
-/*	$OpenBSD: dev.c,v 1.105 2022/04/29 09:12:57 ratchov Exp $	*/
+/*	$OpenBSD: dev.c,v 1.106 2022/12/26 19:16:03 jmc Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -1389,7 +1389,7 @@ dev_migrate(struct dev *odev)
 		if (s->opt == NULL || s->opt->dev != odev)
 			continue;
 		if (s->ops != NULL) {
-			s->ops->exit(s);
+			s->ops->exit(s->arg);
 			s->ops = NULL;
 		}
 	}
