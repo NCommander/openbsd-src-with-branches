@@ -1,4 +1,4 @@
-/*	$OpenBSD: evp_test.c,v 1.9 2023/11/27 22:39:26 tb Exp $ */
+/*	$OpenBSD: evp_test.c,v 1.10 2023/12/08 08:30:04 tb Exp $ */
 /*
  * Copyright (c) 2022 Joel Sing <jsing@openbsd.org>
  * Copyright (c) 2023 Theo Buehler <tb@openbsd.org>
@@ -600,7 +600,6 @@ obj_name_cb(const OBJ_NAME *obj_name, void *do_all_arg)
 		fprintf(stderr, "FAIL: %ss %s and %s out of order\n", descr,
 		    previous, obj_name->name);
 	}
-
 
 	arg->failure |= arg_copy.failure;
 }
