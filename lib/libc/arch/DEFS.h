@@ -1,4 +1,4 @@
-/*	$OpenBSD: DEFS.h,v 1.2 2017/11/29 05:13:57 guenther Exp $	*/
+/*	$OpenBSD: DEFS.h,v 1.1 2022/01/01 23:47:14 guenther Exp $	*/
 /*
  * Copyright (c) 2015,2018,2021 Philip Guenther <guenther@openbsd.org>
  *
@@ -67,3 +67,9 @@
 #endif
 
 #define _END(x)		.size x, . - x
+
+#define PINSYSCALL(sysno, label)					\
+	.pushsection .openbsd.syscalls,"",@progbits;			\
+	.long label;							\
+	.long sysno;							\
+	.popsection;

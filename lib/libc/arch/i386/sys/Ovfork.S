@@ -1,4 +1,4 @@
-/*	$OpenBSD: Ovfork.S,v 1.9 2015/09/05 06:22:47 guenther Exp $ */
+/*	$OpenBSD: Ovfork.S,v 1.10 2016/05/07 19:05:21 guenther Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -36,7 +36,8 @@
 SYSENTRY_HIDDEN(vfork)
 	popl	%ecx		/* my rta into ecx */
 	movl	$(SYS_vfork),%eax
-	int	$0x80
+99:	int	$0x80
+	PINSYSCALL(SYS_vfork, 99b)
 	HANDLE_ERRNO()
 	jmp	*%ecx
 SYSCALL_END_HIDDEN(vfork)

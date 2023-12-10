@@ -1,4 +1,4 @@
-/*	$OpenBSD: brk.S,v 1.14 2021/10/25 14:38:10 jca Exp $ */
+/*	$OpenBSD: brk.S,v 1.15 2022/12/04 08:22:13 tb Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -54,7 +54,8 @@ ENTRY_NB(brk)
 	movl	%ecx,4(%esp)
 1:
 	movl	$(SYS_break),%eax
-	int	$0x80
+99:	int	$0x80
+	PINSYSCALL(SYS_break, 99b)
 	jc	2f
 	PIC_PROLOGUE
 	movl	PIC_GOT(__curbrk),%edx	# set up GOT addressing
@@ -71,7 +72,8 @@ ENTRY_NB(brk)
 	movl	%ecx,4(%esp)
 1:
 	movl	$(SYS_break),%eax
-	int	$0x80
+98:	int	$0x80
+	PINSYSCALL(SYS_break, 98b)
 	jc	2f
 	xorl	%eax,%eax
 	movl	%ecx,__curbrk

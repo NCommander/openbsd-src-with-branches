@@ -1,4 +1,4 @@
-/* $OpenBSD: sigsuspend.S,v 1.2 2020/06/26 10:31:44 kettenis Exp $ */
+/* $OpenBSD: sigsuspend.S,v 1.3 2020/10/16 23:42:16 deraadt Exp $ */
 
 /*
  * Copyright (c) 1996 Dale Rahn <drahn@openbsd.org>
@@ -35,7 +35,8 @@ SYSENTRY(sigsuspend)
 	li	%r0, SYS_sigsuspend
 
 	lwz %r3, 0(%r3)		/* load the mask */
-	sc
+99:	sc
+	PINSYSCALL(SYS_sigsuspend, 99b)
 
 	cmpwi	%r0, 0
 	beq	.L_ret

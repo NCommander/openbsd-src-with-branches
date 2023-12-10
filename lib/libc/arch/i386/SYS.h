@@ -29,7 +29,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$OpenBSD: SYS.h,v 1.26 2017/06/01 12:14:48 naddy Exp $
+ *	$OpenBSD: SYS.h,v 1.27 2017/11/29 05:13:57 guenther Exp $
  */
 
 #include "DEFS.h"
@@ -59,7 +59,9 @@
 
 #define	__DO_SYSCALL(x)					\
 			movl $(SYS_ ## x),%eax;		\
-			int $0x80
+		97:	int $0x80;			\
+			PINSYSCALL(SYS_ ## x, 97b)
+
 
 #define SET_ERRNO()					\
 	movl	%eax,%gs:(TCB_OFFSET_ERRNO);		\

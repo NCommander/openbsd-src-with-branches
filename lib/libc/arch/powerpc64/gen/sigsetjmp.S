@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigsetjmp.S,v 1.2 2020/06/27 14:18:42 kettenis Exp $ */
+/*	$OpenBSD: sigsetjmp.S,v 1.3 2020/10/19 23:24:17 mortimer Exp $ */
 /*
  * Copyright (c) 2020 Dale Rahn. All rights reserved.
  *
@@ -67,7 +67,8 @@ ENTRY(sigsetjmp)
 	li	%r3, 1			/* how = SIG_BLOCK */
 	li	%r4, 0			/* oset = empty */
 	li	%r0, SYS_sigprocmask
-	sc
+99:	sc
+	PINSYSCALL(SYS_sigprocmask, 99b)
 	nop
 	std	%r3, JMP_sigmask(5)
 1:
@@ -126,7 +127,8 @@ ENTRY(siglongjmp)
 	li	%r3, 3			/* how = SIG_SETMASK */
 	ld	%r4, JMP_sigmask(%r5)	/* oset from the jmpbuf */
 	li	%r0, SYS_sigprocmask
-	sc
+98:	sc
+	PINSYSCALL(SYS_sigprocmask, 98b)
 1:
 	addis	%r9, %r2, __jmpxor@toc@ha
 	addi	%r9, %r9, __jmpxor@toc@l

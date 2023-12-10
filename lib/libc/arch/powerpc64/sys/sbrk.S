@@ -1,4 +1,4 @@
-/* $OpenBSD: sbrk.S,v 1.3 2020/07/27 05:08:57 gkoehler Exp $ */
+/* $OpenBSD: sbrk.S,v 1.4 2020/10/16 23:42:16 deraadt Exp $ */
 
 /*
  * Copyright (c) 1996 Dale Rahn
@@ -51,7 +51,8 @@ SYSENTRY(sbrk)
 	mr	%r7, %r3
 
 	li %r0, SYS_break
-	sc
+99:	sc
+	PINSYSCALL(SYS_break, 99b)
 
 	/* check for error */
 	cmpwi	%r0, 0

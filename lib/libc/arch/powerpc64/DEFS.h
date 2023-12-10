@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: DEFS.h,v 1.1 2020/06/25 01:59:27 drahn Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -67,3 +67,9 @@
 #else
 #define END_BUILTIN(x)	END_STRONG(x)
 #endif
+
+#define PINSYSCALL(sysno, label)					\
+	.pushsection .openbsd.syscalls,"",@progbits;			\
+	.long label;							\
+	.long sysno;							\
+	.popsection;

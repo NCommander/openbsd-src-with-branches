@@ -1,4 +1,4 @@
-/*	$OpenBSD: sigprocmask.S,v 1.5 2016/05/18 20:21:13 guenther Exp $	*/
+/*	$OpenBSD: sigprocmask.S,v 1.6 2022/09/02 06:19:04 miod Exp $	*/
 /*	$NetBSD: sigprocmask.S,v 1.6 2003/08/07 16:42:21 agc Exp $	*/
 
 /*-
@@ -52,7 +52,8 @@ SYSENTRY_HIDDEN(sigprocmask)
 #else
 	mov	#SYS_sigprocmask, r0
 #endif
-	trapa	#0x80
+99:	trapa	#0x80
+	PINSYSCALL(SYS_sigprocmask, 99b)
 	bf	4f
 	mov	r6, r2			/* fetch old mask requested */
 	tst	r2, r2			/* test if old mask requested */
