@@ -1,4 +1,4 @@
-/*	$OpenBSD: lcore_access.S,v 1.33 2022/12/08 01:25:45 guenther Exp $ */
+/*	$OpenBSD: lcore_access.S,v 1.34 2023/01/31 15:18:55 deraadt Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Opsycon AB  (www.opsycon.se / www.opsycon.com)
@@ -75,6 +75,8 @@ onfault_table:
 sigcode:
 	PTR_ADDU a0, sp, 4*REGSZ		# address of sigcontext
 	LI	v0, SYS_sigreturn	# sigreturn(scp)
+	.globl	sigcodecall
+sigcodecall:
 	syscall
 	.globl	sigcoderet
 sigcoderet:

@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.s,v 1.201 2023/04/16 05:40:25 guenther Exp $	*/
+/*	$OpenBSD: locore.s,v 1.202 2023/10/24 13:20:10 claudio Exp $	*/
 /*	$NetBSD: locore.s,v 1.145 1996/05/03 19:41:19 christos Exp $	*/
 
 /*-
@@ -341,6 +341,8 @@ sigcode:
 	pushl	%eax
 	pushl	%eax			# junk to fake return address
 	movl	$SYS_sigreturn,%eax
+	.globl	sigcodecall
+sigcodecall:
 	int	$0x80			# enter kernel with args on stack
 	.globl	sigcoderet
 sigcoderet:

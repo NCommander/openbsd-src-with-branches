@@ -1,4 +1,4 @@
-/* $OpenBSD: locore.S,v 1.42 2022/12/23 17:31:30 kettenis Exp $ */
+/* $OpenBSD: locore.S,v 1.43 2023/01/26 13:09:18 kettenis Exp $ */
 /*-
  * Copyright (c) 2012-2014 Andrew Turner
  * All rights reserved.
@@ -365,6 +365,8 @@ sigcode:
 	add	x0, x0, #SF_SC
 
 	mov	x8, #SYS_sigreturn
+	.globl sigcodecall
+sigcodecall:
 	svc	0
 	dsb	nsh
 	isb

@@ -1,4 +1,4 @@
-/*	$OpenBSD: locore.S,v 1.45 2023/08/21 01:35:43 guenther Exp $	*/
+/*	$OpenBSD: locore.S,v 1.46 2023/10/24 13:20:10 claudio Exp $	*/
 
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
@@ -31,14 +31,16 @@
 	.rodata
 
 	.globl sigcode
-	.globl sigcoderet
 sigcode:
 	addi	%r1, %r1, -32
 	mtctr	%r12
 	bctrl
 	addi	%r3, %r1, 32+SF_SC
 	li	%r0, SYS_sigreturn
+	.globl	sigcodecall
+sigcodecall:
 	sc
+	.globl sigcoderet
 sigcoderet:
 	li	%r0, SYS_exit
 	sc
