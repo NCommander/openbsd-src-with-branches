@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.194 2023/11/16 11:10:59 tb Exp $ */
+/*	$OpenBSD: extern.h,v 1.195 2023/11/24 14:05:47 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -210,6 +210,7 @@ struct mft {
 	char		*sia; /* SIA signedObject */
 	char		*ski; /* SKI */
 	char		*crl; /* CRL file name */
+	unsigned char	 mfthash[SHA256_DIGEST_LENGTH];
 	unsigned char	 crlhash[SHA256_DIGEST_LENGTH];
 	time_t		 signtime; /* CMS signing-time attribute */
 	time_t		 thisupdate; /* from the eContent */
