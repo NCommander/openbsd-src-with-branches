@@ -1,4 +1,4 @@
-/*	$OpenBSD: DEFS.h,v 1.1 2020/06/25 01:59:27 drahn Exp $	*/
+/*	$OpenBSD: DEFS.h,v 1.2 2023/12/10 16:45:52 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -70,6 +70,7 @@
 
 #define PINSYSCALL(sysno, label)					\
 	.pushsection .openbsd.syscalls,"",@progbits;			\
+	.p2align 2;							\
 	.long label;							\
 	.long sysno;							\
 	.popsection;
