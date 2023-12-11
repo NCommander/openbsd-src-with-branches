@@ -1,4 +1,4 @@
-/*	$OpenBSD: SYS.h,v 1.1 2017/08/27 21:59:52 deraadt Exp $ */
+/*	$OpenBSD: SYS.h,v 1.2 2023/12/10 16:45:50 deraadt Exp $ */
 
 /*
  * Copyright (c) 2002 Dale Rahn
@@ -32,6 +32,7 @@
 
 #define PINSYSCALL(sysno, label)				\
 	.pushsection .openbsd.syscalls,"",@progbits		;\
+	.p2align 2						;\
 	.long label						;\
 	.long sysno						;\
 	.popsection
