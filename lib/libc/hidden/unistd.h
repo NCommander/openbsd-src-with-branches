@@ -1,4 +1,4 @@
-/*	$OpenBSD: unistd.h,v 1.11 2018/07/13 09:25:22 beck Exp $	*/
+/*	$OpenBSD: unistd.h,v 1.12 2023/05/18 16:11:09 guenther Exp $	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -157,7 +157,6 @@ PROTO_NORMAL(swapctl);
 PROTO_NORMAL(symlink);
 PROTO_NORMAL(symlinkat);
 PROTO_NORMAL(sync);
-PROTO_NORMAL(syscall);
 PROTO_NORMAL(sysconf);
 PROTO_DEPRECATED(tcgetpgrp);
 PROTO_DEPRECATED(tcsetpgrp);
