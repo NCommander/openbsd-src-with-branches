@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.1 2010/06/29 21:22:03 halex Exp $
+# $OpenBSD: Makefile,v 1.2 2010/07/14 06:19:26 halex Exp $
 
 REGRESS_TARGETS= \
 		${DASHO_TARGETS:C/^/t-dasho-/} \
@@ -47,19 +47,7 @@ t-dasho-11:
 t-dasho-12:
 	${dasho} "-V -o./-   ${xfile}"	0	""	""	"[-] XXXX"
 
-t-dasho-13:
-	${dasho} "-V -oX -o '' ${xfile}" 0	""	""	"[X] XXXX"
-
-t-dasho-14:
-	${dasho} "-V -o- -o '' ${dfile}" 0	""	""	"[-] DASH"
-
-t-dasho-15:
-	${dasho} "-V -oX -o '' ${xfile}" 0	""	""	"[X] XXXX"
-
-t-dasho-16:
-	${dasho} "-V -o- -o '' ${dfile}" 0	""	""	"[-] DASH"
-
-DASHO_TARGETS=1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+DASHO_TARGETS=1 2 3 4 5 6 7 8 9 10 11 12
 
 
 rport1?=	9000
