@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.485 2021/11/11 09:38:14 claudio Exp $
+#	$OpenBSD: Makefile,v 1.486 2022/06/28 18:46:00 claudio Exp $
 
 .include <bsd.own.mk>
 
@@ -157,6 +157,8 @@ distribution-etc-root-var: distrib-dirs
 	cd rpki; \
 		${INSTALL} -c -o root -g wheel -m 644 \
 		    afrinic.tal apnic.tal lacnic.tal ripe.tal \
+		    arin.constraints afrinic.constraints apnic.constraints \
+		    lacnic.constraints ripe.constraints \
 		    ${DESTDIR}/etc/rpki
 	cd examples; \
 		${INSTALL} -c -o root -g wheel -m 644 ${EXAMPLES} \
