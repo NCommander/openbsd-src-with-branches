@@ -1,4 +1,4 @@
-/*	$OpenBSD: constraints.c,v 1.16 2023/09/29 15:53:59 beck Exp $	*/
+/*	$OpenBSD: constraints.c,v 1.17 2023/10/01 04:48:39 tb Exp $	*/
 /*
  * Copyright (c) 2020 Bob Beck <beck@openbsd.org>
  *
@@ -95,7 +95,7 @@ unsigned char *invalid_hostnames[] = {
 	"-p3nbsd.org",
 	"openbs-.org",
 	"openbsd\n.org",
-	"open\178bsd.org",
+	"open\177bsd.org",
 	"open\255bsd.org",
 	"*.openbsd.org",
 	NULL,
