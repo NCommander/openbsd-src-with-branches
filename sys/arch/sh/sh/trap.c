@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.54 2023/02/11 23:07:27 deraadt Exp $	*/
+/*	$OpenBSD: trap.c,v 1.55 2023/12/12 15:30:56 deraadt Exp $	*/
 /*	$NetBSD: exception.c,v 1.32 2006/09/04 23:57:52 uwe Exp $	*/
 /*	$NetBSD: syscall.c,v 1.6 2006/03/07 07:21:50 thorpej Exp $	*/
 
@@ -557,9 +557,10 @@ syscall(struct proc *p, struct trapframe *tf)
 		 * and stack, but rather r7 is skipped and
 		 * the entire off_t is on the stack.
 		 */
-		if (off_t_arg == 3)
-			break;
-		*ap++ = tf->tf_r7; argsize -= sizeof(int);
+		if (off_t_arg != 3) {
+			*ap++ = tf->tf_r7;
+			argsize -= sizeof(int);
+		}
 
 		if (argsize > 0) {
 			if ((error = copyin(params, ap, argsize)))
