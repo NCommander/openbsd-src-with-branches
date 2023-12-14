@@ -1,4 +1,4 @@
-/*	$OpenBSD: lde.c,v 1.75 2021/01/19 15:23:25 claudio Exp $ */
+/*	$OpenBSD: lde.c,v 1.76 2023/03/08 04:43:13 guenther Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -452,7 +452,7 @@ lde_dispatch_parent(int fd, short event, void *bula)
 				    "to ldpe", __func__);
 				break;
 			}
-			if ((fd = imsg.fd) == -1) {
+			if ((fd = imsg_get_fd(&imsg)) == -1) {
 				log_warnx("%s: expected to receive imsg fd to "
 				    "ldpe but didn't receive any", __func__);
 				break;
