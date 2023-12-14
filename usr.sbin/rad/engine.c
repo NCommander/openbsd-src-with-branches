@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.20 2022/03/23 15:26:08 florian Exp $	*/
+/*	$OpenBSD: engine.c,v 1.21 2022/10/15 13:26:15 florian Exp $	*/
 
 /*
  * Copyright (c) 2018 Florian Obser <florian@openbsd.org>
@@ -304,7 +304,7 @@ engine_dispatch_main(int fd, short event, void *bula)
 				fatalx("%s: received unexpected imsg fd "
 				    "to engine", __func__);
 
-			if ((fd = imsg.fd) == -1)
+			if ((fd = imsg_get_fd(&imsg)) == -1)
 				fatalx("%s: expected to receive imsg fd to "
 				   "engine but didn't receive any", __func__);
 
