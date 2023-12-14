@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde.c,v 1.24 2021/01/19 10:53:25 claudio Exp $ */
+/*	$OpenBSD: rde.c,v 1.25 2023/03/08 04:43:13 guenther Exp $ */
 
 /*
  * Copyright (c) 2015 Renato Westphal <renato@openbsd.org>
@@ -354,7 +354,7 @@ rde_dispatch_parent(int fd, short event, void *bula)
 				    "to eigrpe", __func__);
 				break;
 			}
-			if ((fd = imsg.fd) == -1) {
+			if ((fd = imsg_get_fd(&imsg)) == -1) {
 				log_warnx("%s: expected to receive imsg fd to "
 				    "eigrpe but didn't receive any", __func__);
 				break;
