@@ -1,4 +1,4 @@
-/*	$OpenBSD: subr.c,v 1.15 2021/09/01 15:54:40 deraadt Exp $	*/
+/*	$OpenBSD: subr.c,v 1.16 2022/02/22 17:35:01 deraadt Exp $	*/
 /*	$NetBSD: subr.c,v 1.6 1995/08/31 23:01:45 jtc Exp $	*/
 
 /*-
@@ -64,6 +64,9 @@ getpoints(const char *s, int defpoints)
 			break;
 		case 's':
 			facs |= KTRFAC_PSIG;
+			break;
+		case 'S':
+			facs |= KTRFAC_PINSYSCALL;
 			break;
 		case 't':
 			facs |= KTRFAC_STRUCT;
