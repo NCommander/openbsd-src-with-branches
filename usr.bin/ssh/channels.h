@@ -1,4 +1,4 @@
-/* $OpenBSD: channels.h,v 1.152 2023/09/04 00:01:46 djm Exp $ */
+/* $OpenBSD: channels.h,v 1.153 2023/11/15 22:51:49 djm Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -167,6 +167,7 @@ struct Channel {
 	u_int	remote_window;
 	u_int	remote_maxpacket;
 	u_int	local_window;
+	u_int	local_window_exceeded;
 	u_int	local_window_max;
 	u_int	local_consumed;
 	u_int	local_maxpacket;
