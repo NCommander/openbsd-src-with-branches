@@ -1,4 +1,4 @@
-/* $OpenBSD: kex.h,v 1.117 2022/01/06 21:55:23 djm Exp $ */
+/* $OpenBSD: kex.h,v 1.118 2023/03/06 12:14:48 dtucker Exp $ */
 
 /*
  * Copyright (c) 2000, 2001 Markus Friedl.  All rights reserved.
@@ -141,6 +141,7 @@ struct kex {
 	u_int	kex_type;
 	char	*server_sig_algs;
 	int	ext_info_c;
+	int	kex_strict;
 	struct sshbuf *my;
 	struct sshbuf *peer;
 	struct sshbuf *client_version;
