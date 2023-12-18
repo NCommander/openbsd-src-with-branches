@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.214 2023/08/15 06:26:34 guenther Exp $ */
+/*	$OpenBSD: loader.c,v 1.215 2023/12/12 15:44:00 deraadt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -476,13 +476,13 @@ _dl_self_relro(long loff)
 #define __STRINGIFY(x)  #x
 #define STRINGIFY(x)    __STRINGIFY(x)
 #ifdef __arm__
-__asm__(".pushsection openbsd.syscalls,\"\",%progbits;"
+__asm__(".pushsection .openbsd.syscalls,\"\",%progbits;"
     ".p2align 2;"
     ".long 0;"
     ".long " STRINGIFY(SYS_kbind) ";"
     ".popsection");
 #else
-__asm__(".pushsection openbsd.syscalls,\"\",@progbits;"
+__asm__(".pushsection .openbsd.syscalls,\"\",@progbits;"
     ".long 0;"
     ".p2align 2;"
     ".long " STRINGIFY(SYS_kbind) ";"
