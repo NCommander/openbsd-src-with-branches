@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.129 2023/10/26 18:52:45 anton Exp $
+#	$OpenBSD: Makefile,v 1.130 2023/12/18 14:49:39 djm Exp $
 
 OPENSSL?=	yes
 
@@ -101,7 +101,8 @@ LTESTS= 	connect \
 		channel-timeout \
 		connection-timeout \
 		match-subsystem \
-		agent-pkcs11-restrict
+		agent-pkcs11-restrict \
+		agent-pkcs11-cert
 
 INTEROP_TESTS=	putty-transfer putty-ciphers putty-kex conch-ciphers
 INTEROP_TESTS+=	dropbear-ciphers dropbear-kex
