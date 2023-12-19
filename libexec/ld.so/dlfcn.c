@@ -1,4 +1,4 @@
-/*	$OpenBSD: dlfcn.c,v 1.114 2023/07/08 14:09:43 jasper Exp $ */
+/*	$OpenBSD: dlfcn.c,v 1.115 2023/08/15 06:26:34 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -44,7 +44,7 @@ static int _dl_real_close(void *handle);
 static lock_cb *_dl_thread_fnc = NULL;
 static elf_object_t *obj_from_addr(const void *addr);
 
-#define OK_FLAGS 	(0 \
+#define OK_FLAGS	(0 \
 	| RTLD_TRACE	\
 	| RTLD_LAZY	\
 	| RTLD_NOW	\

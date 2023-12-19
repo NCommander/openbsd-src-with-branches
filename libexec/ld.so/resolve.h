@@ -1,4 +1,4 @@
-/*	$OpenBSD: resolve.h,v 1.104 2023/01/29 20:30:56 gnezdo Exp $ */
+/*	$OpenBSD: resolve.h,v 1.105 2023/08/15 06:26:34 guenther Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -73,7 +73,7 @@ typedef struct elf_object elf_object_t;
 struct object_vector {
 	int		len;
 	int		alloc;
-	elf_object_t 	**vec;
+	elf_object_t	**vec;
 };
 void	object_vec_grow(struct object_vector *_vec, int _more);
 
