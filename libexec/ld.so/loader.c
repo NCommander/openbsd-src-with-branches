@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.215 2023/12/12 15:44:00 deraadt Exp $ */
+/*	$OpenBSD: loader.c,v 1.216 2023/12/18 17:19:07 deraadt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -483,8 +483,8 @@ __asm__(".pushsection .openbsd.syscalls,\"\",%progbits;"
     ".popsection");
 #else
 __asm__(".pushsection .openbsd.syscalls,\"\",@progbits;"
-    ".long 0;"
     ".p2align 2;"
+    ".long 0;"
     ".long " STRINGIFY(SYS_kbind) ";"
     ".popsection");
 #endif
