@@ -1,4 +1,4 @@
-/* $OpenBSD: p_dec.c,v 1.16 2023/12/20 10:14:14 tb Exp $ */
+/*	$OpenBSD$ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -73,5 +73,18 @@ EVP_PKEY_decrypt_old(unsigned char *to, const unsigned char *from, int from_len,
 	}
 
 	return RSA_private_decrypt(from_len, from, to, pkey->pkey.rsa,
+	    RSA_PKCS1_PADDING);
+}
+
+int
+EVP_PKEY_encrypt_old(unsigned char *to, const unsigned char *from, int from_len,
+    EVP_PKEY *pkey)
+{
+	if (pkey->type != EVP_PKEY_RSA) {
+		EVPerror(EVP_R_PUBLIC_KEY_NOT_RSA);
+		return 0;
+	}
+
+	return RSA_public_encrypt(from_len, from, to, pkey->pkey.rsa,
 	    RSA_PKCS1_PADDING);
 }
