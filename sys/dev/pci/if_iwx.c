@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_iwx.c,v 1.176 2023/08/26 09:05:34 stsp Exp $	*/
+/*	$OpenBSD: if_iwx.c,v 1.177 2023/10/06 15:15:29 stsp Exp $	*/
 
 /*
  * Copyright (c) 2014, 2016 genua gmbh <info@genua.de>
@@ -6977,6 +6977,7 @@ iwx_fill_probe_req(struct iwx_softc *sc, struct iwx_scan_probe_req *preq)
 				return ENOBUFS;
 			frm = ieee80211_add_vhtcaps(frm, ic);
 			remain -= frm - pos;
+			preq->band_data[1].len = htole16(frm - pos);
 		}
 	}
 
