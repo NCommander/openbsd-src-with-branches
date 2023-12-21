@@ -1,4 +1,4 @@
-/*	$OpenBSD: application.c,v 1.5 2022/06/27 10:31:17 martijn Exp $	*/
+/*	$OpenBSD: application_blocklist.c,v 1.1 2022/06/30 11:28:36 martijn Exp $	*/
 
 /*
  * Copyright (c) 2022 Martijn van Duren <martijn@openbsd.org>
@@ -16,10 +16,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <event.h>
+#include <sys/types.h>
+
+#include <stddef.h>
+
+#include <ber.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "application.h"
+#include "log.h"
 #include "snmpd.h"
 
 struct appl_varbind *appl_blocklist_response(size_t);

@@ -1,4 +1,4 @@
-/*	$OpenBSD: application.c,v 1.39 2023/11/16 13:25:07 martijn Exp $	*/
+/*	$OpenBSD: application.c,v 1.40 2023/11/16 14:35:25 martijn Exp $	*/
 
 /*
  * Copyright (c) 2021 Martijn van Duren <martijn@openbsd.org>
@@ -17,7 +17,9 @@
  */
 
 #include <sys/queue.h>
+#include <sys/time.h>
 #include <sys/tree.h>
+#include <sys/types.h>
 
 #include <assert.h>
 #include <errno.h>

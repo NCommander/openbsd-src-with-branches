@@ -1,4 +1,4 @@
-/*	$OpenBSD: log.c,v 1.15 2017/01/09 14:49:22 reyk Exp $	*/
+/*	$OpenBSD: log.c,v 1.16 2017/03/21 12:06:56 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -15,6 +15,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#include <sys/types.h>
 
 #include <stdio.h>
 #include <stdlib.h>

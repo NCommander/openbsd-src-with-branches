@@ -1,4 +1,4 @@
-/*	$OpenBSD: ax.c,v 1.2 2023/10/24 08:48:41 martijn Exp $ */
+/*	$OpenBSD: ax.c,v 1.3 2023/10/24 08:54:52 martijn Exp $ */
 /*
  * Copyright (c) 2019 Martijn van Duren <martijn@openbsd.org>
  *
@@ -26,7 +26,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
 #include <unistd.h>
 
 #include "ax.h"
