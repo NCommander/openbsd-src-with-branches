@@ -1,4 +1,4 @@
-/* $OpenBSD: cu.c,v 1.28 2019/06/28 13:35:00 deraadt Exp $ */
+/* $OpenBSD: cu.c,v 1.29 2023/10/02 14:48:11 krw Exp $ */
 
 /*
  * Copyright (c) 2012 Nicholas Marriott <nicm@openbsd.org>
@@ -507,7 +507,7 @@ find_ucom(const char *usbid, char *names)
 	if (names == NULL)
 		return NULL;
 
-	/* names is a comma separated list of "ucom<unit#>-<usb id>". */
+	/* names is a comma separated list of "ucom<unit#>:<usb id>". */
 	cua = NULL;
 	for (ucom = strsep(&names, ","); ucom; ucom = strsep(&names, ",")) {
 		if (*ucom == '\0' || strncasecmp(ucom, "ucom", 4))
