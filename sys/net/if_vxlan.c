@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vxlan.c,v 1.96 2023/11/28 13:23:20 bluhm Exp $ */
+/*	$OpenBSD: if_vxlan.c,v 1.97 2023/11/29 18:46:37 denis Exp $ */
 
 /*
  * Copyright (c) 2021 David Gwynne <dlg@openbsd.org>
@@ -275,7 +275,6 @@ vxlan_clone_create(struct if_clone *ifc, int unit)
 	ifp->if_xflags = IFXF_CLONED | IFXF_MPSAFE;
 	ether_fakeaddr(ifp);
 
-	if_counters_alloc(ifp);
 	if_attach(ifp);
 	ether_ifattach(ifp);
 

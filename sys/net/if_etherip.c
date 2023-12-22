@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_etherip.c,v 1.51 2023/09/16 09:33:27 mpi Exp $	*/
+/*	$OpenBSD: if_etherip.c,v 1.52 2023/11/28 13:23:20 bluhm Exp $	*/
 /*
  * Copyright (c) 2015 Kazuya GODA <goda@openbsd.org>
  *
@@ -161,7 +161,6 @@ etherip_clone_create(struct if_clone *ifc, int unit)
 	ifmedia_add(&sc->sc_media, IFM_ETHER | IFM_AUTO, 0, NULL);
 	ifmedia_set(&sc->sc_media, IFM_ETHER | IFM_AUTO);
 
-	if_counters_alloc(ifp);
 	if_attach(ifp);
 	ether_ifattach(ifp);
 
