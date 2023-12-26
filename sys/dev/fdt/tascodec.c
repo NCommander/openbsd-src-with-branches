@@ -1,4 +1,4 @@
-/*	$OpenBSD: tascodec.c,v 1.6 2023/02/04 20:04:20 kettenis Exp $	*/
+/*	$OpenBSD: tascodec.c,v 1.7 2023/07/15 13:35:17 kettenis Exp $	*/
 /*
  * Copyright (c) 2022 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -26,6 +26,7 @@
 #include <dev/ofw/openfirm.h>
 #include <dev/ofw/ofw_gpio.h>
 #include <dev/ofw/ofw_misc.h>
+#include <dev/ofw/ofw_regulator.h>
 #include <dev/ofw/fdt.h>
 
 #include <dev/i2c/i2cvar.h>
@@ -126,6 +127,8 @@ tascodec_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_addr = ia->ia_addr;
 
 	printf("\n");
+
+	regulator_enable(OF_getpropint(node, "SDZ-supply", 0));
 
 	sdz_gpiolen = OF_getproplen(node, "shutdown-gpios");
 	if (sdz_gpiolen > 0) {
