@@ -1,4 +1,4 @@
-/*	$OpenBSD: rrdp_notification.c,v 1.17 2023/01/04 14:22:43 claudio Exp $ */
+/*	$OpenBSD: rrdp_notification.c,v 1.18 2023/06/23 11:36:24 claudio Exp $ */
 /*
  * Copyright (c) 2020 Nils Fisher <nils_fisher@hotmail.com>
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
@@ -608,6 +608,7 @@ notification_delta_done(struct notification_xml *nxml)
 	return TAILQ_EMPTY(&nxml->delta_q);
 }
 
+/* Used in regress. */
 void
 log_notification_xml(struct notification_xml *nxml)
 {

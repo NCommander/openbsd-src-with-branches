@@ -1,4 +1,4 @@
-/*	$OpenBSD: rrdp_delta.c,v 1.10 2023/12/24 10:48:58 job Exp $ */
+/*	$OpenBSD: rrdp_delta.c,v 1.11 2023/12/26 11:03:27 tb Exp $ */
 /*
  * Copyright (c) 2020 Nils Fisher <nils_fisher@hotmail.com>
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
@@ -267,6 +267,7 @@ free_delta_xml(struct delta_xml *dxml)
 	free(dxml);
 }
 
+/* Used in regress. */
 void
 log_delta_xml(struct delta_xml *dxml)
 {
