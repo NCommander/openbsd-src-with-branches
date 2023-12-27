@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.51 2023/04/23 13:47:35 tb Exp $
+#	$OpenBSD: Makefile,v 1.52 2023/04/25 15:18:59 tb Exp $
 
 SUBDIR += aead
 SUBDIR += aes
@@ -22,7 +22,6 @@ SUBDIR += dsa
 SUBDIR += ec
 SUBDIR += ecdh
 SUBDIR += ecdsa
-SUBDIR += engine
 SUBDIR += evp
 SUBDIR += free
 SUBDIR += gcm128
