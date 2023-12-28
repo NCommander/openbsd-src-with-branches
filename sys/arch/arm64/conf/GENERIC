@@ -1,4 +1,4 @@
-# $OpenBSD: GENERIC,v 1.277 2023/07/22 22:43:53 patrick Exp $
+# $OpenBSD: GENERIC,v 1.278 2023/12/11 11:15:44 claudio Exp $
 #
 # GENERIC machine description file
 #
@@ -391,6 +391,7 @@ vmx*		at pci?			# VMware VMXNET3 virtual interface
 athn*		at pci?			# Atheros AR9k (802.11a/g/n)
 bwfm*		at pci?			# Broadcom FullMAC
 iwx*		at pci?			# Intel WiFi Link 22xxx
+#qwx*		at pci?			# Qualcomm 802.11ax
 
 # PCI SCSI
 ahci*		at pci? flags 0x0000	# AHCI SATA controllers
