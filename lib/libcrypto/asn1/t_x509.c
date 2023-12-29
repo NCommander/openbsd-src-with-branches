@@ -1,4 +1,4 @@
-/* $OpenBSD: t_x509.c,v 1.42 2023/07/05 21:23:36 beck Exp $ */
+/* $OpenBSD: t_x509.c,v 1.43 2023/07/07 19:37:52 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -77,7 +77,7 @@
 #include <openssl/rsa.h>
 #endif
 
-#include "asn1_local.h"
+#include "evp_local.h"
 #include "x509_local.h"
 
 int
