@@ -1,4 +1,4 @@
-/*	$OpenBSD: e_sm4.c,v 1.9 2023/07/07 19:37:53 beck Exp $	*/
+/*	$OpenBSD: e_sm4.c,v 1.10 2023/12/02 19:07:10 tb Exp $	*/
 /*
  * Copyright (c) 2017, 2019 Ribose Inc
  *
@@ -220,9 +220,9 @@ static const EVP_CIPHER sm4_ecb = {
 	.do_cipher = sm4_ecb_cipher,
 	.cleanup = NULL,
 	.ctx_size = sizeof(EVP_SM4_KEY),
-	.set_asn1_parameters = 0,
-	.get_asn1_parameters = 0,
-	.ctrl = 0,
+	.set_asn1_parameters = NULL,
+	.get_asn1_parameters = NULL,
+	.ctrl = NULL,
 	.app_data = NULL,
 };
 
