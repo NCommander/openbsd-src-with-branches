@@ -1,4 +1,4 @@
-/*	$OpenBSD: vmm.c,v 1.114 2023/07/27 09:27:43 dv Exp $	*/
+/*	$OpenBSD: vmm.c,v 1.115 2023/09/26 01:53:54 dv Exp $	*/
 
 /*
  * Copyright (c) 2015 Mike Larkin <mlarkin@openbsd.org>
@@ -586,26 +586,41 @@ terminate_vm(struct vm_terminate_params *vtp)
  * Parameters
  *  ifname: a buffer of at least IF_NAMESIZE bytes.
  *
- * Returns a file descriptor to the tap node opened, or -1 if no tap
- * devices were available.
+ * Returns a file descriptor to the tap node opened or -1 if no tap devices were
+ * available, setting errno to the open(2) error.
  */
 int
 opentap(char *ifname)
 {
-	int i, fd;
+	int err = 0, i, fd;
 	char path[PATH_MAX];
 
 	for (i = 0; i < MAX_TAP; i++) {
 		snprintf(path, PATH_MAX, "/dev/tap%d", i);
+
+		errno = 0;
 		fd = open(path, O_RDWR | O_NONBLOCK);
-		if (fd != -1) {
-			snprintf(ifname, IF_NAMESIZE, "tap%d", i);
-			return (fd);
+		if (fd != -1)
+			break;
+		err = errno;
+		if (err == EBUSY) {
+			/* Busy...try next tap. */
+			continue;
+		} else if (err == ENOENT) {
+			/* Ran out of /dev/tap* special files. */
+			break;
+		} else {
+			log_warn("%s: unexpected error", __func__);
+			break;
 		}
 	}
-	strlcpy(ifname, "tap", IF_NAMESIZE);
 
-	return (-1);
+	/* Record the last opened tap device. */
+	snprintf(ifname, IF_NAMESIZE, "tap%d", i);
+
+	if (err)
+		errno = err;
+	return (fd);
 }
 
 /*
