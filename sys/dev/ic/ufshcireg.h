@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufshcireg.h,v 1.2 2023/02/17 08:01:03 jsg Exp $ */
+/*	$OpenBSD: ufshcireg.h,v 1.3 2023/08/15 08:27:30 miod Exp $ */
 
 /*
  * Copyright (c) 2022 Marcus Glocker <mglocker@openbsd.org>
@@ -21,7 +21,7 @@
  */
 #define UFSHCI_UCD_PRDT_MAX_SEGS	64
 #define UFSHCI_UCD_PRDT_MAX_XFER	(UFSHCI_UCD_PRDT_MAX_SEGS * PAGE_SIZE)
-#define UFSHCI_INTR_AGGR_COUNT		6
+#define UFSHCI_INTR_AGGR_COUNT		1 /* Max. allowed value = 31 */
 #define UFSHCI_INTR_AGGR_TIMEOUT	0x64 /* 4ms */
 #define UFSHCI_MAX_UNITS		32
 
