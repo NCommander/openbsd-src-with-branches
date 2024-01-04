@@ -1,4 +1,4 @@
-/* $OpenBSD: e_rc4.c,v 1.16 2023/07/07 13:54:45 beck Exp $ */
+/* $OpenBSD: e_rc4.c,v 1.17 2023/07/07 19:37:53 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -93,7 +93,6 @@ static const EVP_CIPHER r4_cipher = {
 	NULL,
 	NULL,
 	NULL,
-	NULL
 };
 
 static const EVP_CIPHER r4_40_cipher = {
@@ -107,7 +106,6 @@ static const EVP_CIPHER r4_40_cipher = {
 	NULL,
 	NULL,
 	NULL,
-	NULL
 };
 
 const EVP_CIPHER *
