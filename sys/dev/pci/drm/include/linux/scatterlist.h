@@ -1,4 +1,4 @@
-/*	$OpenBSD: scatterlist.h,v 1.5 2023/01/01 01:34:58 jsg Exp $	*/
+/*	$OpenBSD: scatterlist.h,v 1.6 2023/08/02 11:03:17 jsg Exp $	*/
 /*
  * Copyright (c) 2013, 2014, 2015 Mark Kettenis
  *
@@ -37,6 +37,7 @@ struct sg_table {
 	struct scatterlist *sgl;
 	unsigned int nents;
 	unsigned int orig_nents;
+	bus_dmamap_t dmamap;
 };
 
 struct sg_page_iter {
