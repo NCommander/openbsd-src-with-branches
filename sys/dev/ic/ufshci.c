@@ -1,4 +1,4 @@
-/*	$OpenBSD: ufshci.c,v 1.7 2024/01/06 13:04:03 mglocker Exp $ */
+/*	$OpenBSD: ufshci.c,v 1.8 2024/01/06 13:23:47 mglocker Exp $ */
 
 /*
  * Copyright (c) 2022 Marcus Glocker <mglocker@openbsd.org>
@@ -145,15 +145,6 @@ ufshci_intr(void *arg)
 	UFSHCI_WRITE_4(sc, UFSHCI_REG_IS, status);
 
 	return 1;
-}
-
-/* XXX: Only for testing */
-void
-ufshci_attach_hook(struct device *self)
-{
-	struct ufshci_softc *sc = (struct ufshci_softc *)self;
-
-	ufshci_attach(sc);
 }
 
 int
