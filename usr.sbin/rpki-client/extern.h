@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.196 2023/12/11 19:05:20 job Exp $ */
+/*	$OpenBSD: extern.h,v 1.197 2023/12/27 07:15:55 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -366,7 +366,7 @@ struct aspa {
 	uint32_t		*providers; /* the providers */
 	size_t			 providersz; /* number of providers */
 	time_t			 signtime; /* CMS signing-time attribute */
-	time_t		 	 notbefore; /* EE cert's Not Before */
+	time_t			 notbefore; /* EE cert's Not Before */
 	time_t			 notafter; /* notAfter of the ASPA EE cert */
 	time_t			 expires; /* when the signature path expires */
 };
