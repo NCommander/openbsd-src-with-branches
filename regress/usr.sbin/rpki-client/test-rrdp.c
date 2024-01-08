@@ -1,4 +1,4 @@
-/*	$OpenBSD: test-rrdp.c,v 1.7 2023/06/20 12:52:32 job Exp $ */
+/*	$OpenBSD: test-rrdp.c,v 1.8 2023/06/24 07:07:36 claudio Exp $ */
 /*
  * Copyright (c) 2020 Nils Fisher <nils_fisher@hotmail.com>
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
@@ -35,8 +35,9 @@
 #include "extern.h"
 #include "rrdp.h"
 
-int verbose;
 int filemode;
+int outformats;
+int verbose;
 
 #define REGRESS_NOTIFY_URI	"https://rpki.example.com/notify.xml"
 
