@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sysctl.c,v 1.419 2023/09/16 09:33:27 mpi Exp $	*/
+/*	$OpenBSD: kern_sysctl.c,v 1.420 2023/10/01 15:58:12 krw Exp $	*/
 /*	$NetBSD: kern_sysctl.c,v 1.17 1996/05/20 17:49:05 mrg Exp $	*/
 
 /*-
@@ -1493,6 +1493,12 @@ sysctl_file(int *name, u_int namelen, char *where, size_t *sizep,
 			TAILQ_FOREACH(inp, &udbtable.inpt_queue, inp_queue)
 				FILLSO(inp->inp_socket);
 			mtx_leave(&udbtable.inpt_mtx);
+#ifdef INET6
+			mtx_enter(&udb6table.inpt_mtx);
+			TAILQ_FOREACH(inp, &udb6table.inpt_queue, inp_queue)
+				FILLSO(inp->inp_socket);
+			mtx_leave(&udb6table.inpt_mtx);
+#endif
 			mtx_enter(&rawcbtable.inpt_mtx);
 			TAILQ_FOREACH(inp, &rawcbtable.inpt_queue, inp_queue)
 				FILLSO(inp->inp_socket);
