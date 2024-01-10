@@ -1,4 +1,4 @@
-/* $OpenBSD: err_prn.c,v 1.20 2023/07/07 13:54:45 beck Exp $ */
+/* $OpenBSD: err_prn.c,v 1.21 2024/01/10 14:22:53 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -109,7 +109,7 @@ LCRYPTO_ALIAS(ERR_print_errors_fp);
 static int
 print_bio(const char *str, size_t len, void *bp)
 {
-	return BIO_write((BIO *)bp, str, len);
+	return BIO_write(bp, str, len);
 }
 
 void
