@@ -1,4 +1,4 @@
-/* $OpenBSD: pfkeyv2.c,v 1.258 2023/09/29 18:40:08 tobhe Exp $ */
+/* $OpenBSD: pfkeyv2.c,v 1.259 2023/10/11 22:13:16 tobhe Exp $ */
 
 /*
  *	@(#)COPYRIGHT	1.1 (NRL) 17 January 1995
@@ -225,7 +225,7 @@ const struct protosw pfkeysw[] = {
 
 const struct domain pfkeydomain = {
   .dom_family = PF_KEY,
-  .dom_name = "PF_KEY",
+  .dom_name = "pfkey",
   .dom_init = pfkey_init,
   .dom_protosw = pfkeysw,
   .dom_protoswNPROTOSW = &pfkeysw[nitems(pfkeysw)],
