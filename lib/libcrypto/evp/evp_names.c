@@ -1,4 +1,4 @@
-/*	$OpenBSD: evp_names.c,v 1.4 2024/01/13 11:12:32 tb Exp $ */
+/*	$OpenBSD: evp_names.c,v 1.5 2024/01/13 12:13:17 tb Exp $ */
 /*
  * Copyright (c) 2023 Theo Buehler <tb@openbsd.org>
  *
@@ -1770,4 +1770,20 @@ EVP_get_digestbyname(const char *name)
 void
 EVP_cleanup(void)
 {
+}
+
+/*
+ * XXX - Remove all the garbage below in the next bump.
+ */
+
+int
+EVP_add_cipher(const EVP_CIPHER *c)
+{
+	return 1;
+}
+
+int
+EVP_add_digest(const EVP_MD *md)
+{
+	return 1;
 }
