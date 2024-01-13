@@ -1,4 +1,4 @@
-/*	$OpenBSD: crypto_init.c,v 1.14 2024/01/06 17:43:39 tb Exp $ */
+/*	$OpenBSD: crypto_init.c,v 1.15 2024/01/07 19:59:32 tb Exp $ */
 /*
  * Copyright (c) 2018 Bob Beck <beck@openbsd.org>
  *
@@ -91,3 +91,24 @@ OPENSSL_cleanup(void)
 	crypto_init_cleaned_up = 1;
 }
 LCRYPTO_ALIAS(OPENSSL_cleanup);
+
+void
+OpenSSL_add_all_ciphers(void)
+{
+}
+
+void
+OpenSSL_add_all_digests(void)
+{
+}
+
+void
+OPENSSL_add_all_algorithms_noconf(void)
+{
+}
+
+void
+OPENSSL_add_all_algorithms_conf(void)
+{
+	OPENSSL_config(NULL);
+}
