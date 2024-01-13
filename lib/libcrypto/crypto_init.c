@@ -1,4 +1,4 @@
-/*	$OpenBSD: crypto_init.c,v 1.15 2024/01/07 19:59:32 tb Exp $ */
+/*	$OpenBSD: crypto_init.c,v 1.16 2024/01/13 11:18:52 tb Exp $ */
 /*
  * Copyright (c) 2018 Bob Beck <beck@openbsd.org>
  *
@@ -44,8 +44,6 @@ OPENSSL_init_crypto_internal(void)
 
 	OPENSSL_cpuid_setup();
 	ERR_load_crypto_strings();
-	OpenSSL_add_all_ciphers();
-	OpenSSL_add_all_digests();
 }
 
 int
