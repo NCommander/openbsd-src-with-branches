@@ -1,4 +1,4 @@
-/* $OpenBSD: cms_pwri.c,v 1.29 2023/07/08 08:26:26 beck Exp $ */
+/* $OpenBSD: cms_pwri.c,v 1.30 2023/12/20 18:38:19 tb Exp $ */
 /*
  * Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project.
@@ -66,6 +66,7 @@
 
 #include "cms_local.h"
 #include "evp_local.h"
+#include "x509_local.h"
 
 int
 CMS_RecipientInfo_set0_password(CMS_RecipientInfo *ri, unsigned char *pass,
