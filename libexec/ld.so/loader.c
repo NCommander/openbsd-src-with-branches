@@ -1,4 +1,4 @@
-/*	$OpenBSD: loader.c,v 1.219 2024/01/14 09:39:03 kettenis Exp $ */
+/*	$OpenBSD: loader.c,v 1.220 2024/01/16 19:07:31 deraadt Exp $ */
 
 /*
  * Copyright (c) 1998 Per Fogelstrom, Opsycon AB
@@ -339,7 +339,7 @@ _dl_load_dep_libs(elf_object_t *object, int flags, int booting)
 			}
 		}
 
-		if ( libcount != 0) {
+		if (libcount != 0) {
 			struct listent {
 				Elf_Dyn *dynp;
 				elf_object_t *depobj;

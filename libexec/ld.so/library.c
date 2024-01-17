@@ -1,4 +1,4 @@
-/*	$OpenBSD: library.c,v 1.93 2023/12/19 16:13:22 deraadt Exp $ */
+/*	$OpenBSD: library.c,v 1.94 2024/01/16 19:07:31 deraadt Exp $ */
 
 /*
  * Copyright (c) 2002 Dale Rahn
@@ -123,7 +123,7 @@ _dl_tryload_shlib(const char *libname, int type, int flags, int nodelete)
 		return(0);
 	}
 
-	if ( _dl_fstat(libfile, &sb) < 0) {
+	if (_dl_fstat(libfile, &sb) < 0) {
 		_dl_errno = DL_CANT_OPEN;
 		return(0);
 	}
