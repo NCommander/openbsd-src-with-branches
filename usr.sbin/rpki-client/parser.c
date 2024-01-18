@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.106 2023/12/29 17:15:10 tb Exp $ */
+/*	$OpenBSD: parser.c,v 1.107 2024/01/08 19:46:19 tb Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -429,7 +429,7 @@ proc_parser_mft(struct entity *entp, struct mft **mp, char **crlfile,
 	}
 
 	if (*mp != NULL) {
-		*crlmtime = crl->lastupdate;
+		*crlmtime = crl->thisupdate;
 		if (!crl_insert(&crlt, crl)) {
 			warnx("%s: duplicate AKI %s", file, crl->aki);
 			crl_free(crl);
