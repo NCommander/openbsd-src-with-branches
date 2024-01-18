@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_output.c,v 1.391 2023/11/26 22:08:10 bluhm Exp $	*/
+/*	$OpenBSD: ip_output.c,v 1.392 2023/12/01 15:30:47 bluhm Exp $	*/
 /*	$NetBSD: ip_output.c,v 1.28 1996/02/13 23:43:07 christos Exp $	*/
 
 /*
@@ -1077,11 +1077,6 @@ ip_ctloutput(int op, struct socket *so, int level, int optname,
 			if (rtableid != rtid && rtableid != 0 &&
 			    (error = suser(p)) != 0)
 				break;
-			/* table must exist */
-			if (!rtable_exists(rtid)) {
-				error = EINVAL;
-				break;
-			}
 			error = in_pcbset_rtableid(inp, rtid);
 			break;
 		case IP_PIPEX:
