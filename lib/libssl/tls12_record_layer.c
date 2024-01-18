@@ -1,4 +1,4 @@
-/* $OpenBSD: tls12_record_layer.c,v 1.39 2023/07/08 16:40:13 beck Exp $ */
+/* $OpenBSD: tls12_record_layer.c,v 1.40 2023/07/08 20:38:23 beck Exp $ */
 /*
  * Copyright (c) 2020 Joel Sing <jsing@openbsd.org>
  *
@@ -525,7 +525,7 @@ tls12_record_layer_ccs_cipher(struct tls12_record_layer *rl,
 		goto err;
 
 	/* More special handling for GOST... */
-	if (EVP_CIPHER_type(rl->cipher) == NID_gost89_cnt) {
+	if (EVP_CIPHER_nid(rl->cipher) == NID_gost89_cnt) {
 		gost_param_nid = NID_id_tc26_gost_28147_param_Z;
 		if (EVP_MD_type(rl->handshake_hash) == NID_id_GostR3411_94)
 			gost_param_nid = NID_id_Gost28147_89_CryptoPro_A_ParamSet;
