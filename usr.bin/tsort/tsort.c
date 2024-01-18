@@ -1,4 +1,4 @@
-/* $OpenBSD: tsort.c,v 1.36 2017/05/20 09:31:19 espie Exp $ */
+/* $OpenBSD: tsort.c,v 1.37 2019/07/11 17:28:32 mestre Exp $ */
 /* ex:ts=8 sw=4:
  *
  * Copyright (c) 1999-2004 Marc Espie <espie@openbsd.org>
@@ -448,7 +448,7 @@ dequeue(struct array *h)
 		enqueue((h), (n));		\
 	else					\
 		(h)->t[(h)->entries++] = (n);	\
-	} while(0);
+	} while(0)
 
 static void
 enqueue(struct array *h, struct node *n)
