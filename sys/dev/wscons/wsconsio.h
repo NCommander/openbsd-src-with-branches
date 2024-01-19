@@ -1,4 +1,4 @@
-/* $OpenBSD: wsconsio.h,v 1.99 2023/04/20 19:28:31 jcs Exp $ */
+/* $OpenBSD: wsconsio.h,v 1.100 2023/07/02 21:44:04 bru Exp $ */
 /* $NetBSD: wsconsio.h,v 1.74 2005/04/28 07:15:44 martin Exp $ */
 
 /*
@@ -461,7 +461,7 @@ struct wsmouse_parameters {
 #define		WSDISPLAY_TYPE_INTELDRM	69	/* Intel KMS framebuffer */
 #define		WSDISPLAY_TYPE_RADEONDRM 70	/* ATI Radeon KMS framebuffer */
 #define		WSDISPLAY_TYPE_EFIFB	71	/* EFI framebuffer */
-#define		WSDISPLAY_TYPE_RKDRM	72	/* Rockchip KMS framebuffer */
+#define		WSDISPLAY_TYPE_KMS	72	/* Generic KMS framebuffer */
 #define		WSDISPLAY_TYPE_ASTFB	73	/* AST framebuffer */
 #define		WSDISPLAY_TYPE_VIOGPU	74	/* VirtIO GPU */
 
