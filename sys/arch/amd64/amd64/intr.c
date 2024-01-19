@@ -1,4 +1,4 @@
-/*	$OpenBSD: intr.c,v 1.54 2020/06/17 06:14:52 dlg Exp $	*/
+/*	$OpenBSD: intr.c,v 1.55 2020/12/28 14:23:30 mpi Exp $	*/
 /*	$NetBSD: intr.c,v 1.3 2003/03/03 22:16:20 fvdl Exp $	*/
 
 /*
@@ -310,9 +310,16 @@ other:
 		}
 		return EBUSY;
 found:
-		idtvec = idt_vec_alloc(APIC_LEVEL(level), IDT_INTR_HIGH);
+		if (pic->pic_allocidtvec) {
+			idtvec = pic->pic_allocidtvec(pic, pin,
+			    APIC_LEVEL(level), IDT_INTR_HIGH);
+		} else {
+			idtvec = idt_vec_alloc(APIC_LEVEL(level),
+			    IDT_INTR_HIGH);
+		}
 		if (idtvec == 0) {
-			free(ci->ci_isources[slot], M_DEVBUF, sizeof (struct intrsource));
+			free(ci->ci_isources[slot], M_DEVBUF,
+			    sizeof (struct intrsource));
 			ci->ci_isources[slot] = NULL;
 			return EBUSY;
 		}
