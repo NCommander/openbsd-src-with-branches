@@ -4199,6 +4199,9 @@ uvm_map_inherit(struct vm_map *map, vaddr_t start, vaddr_t end,
 	while (entry1 != NULL && entry1->start < end) {
 		if (entry1->etype & UVM_ET_IMMUTABLE)
 			goto out;
+		if (new_inheritance == MAP_INHERIT_ZERO &&
+		    (entry1->protection & PROT_WRITE) == 0)
+			goto out;
 		entry1 = RBT_NEXT(uvm_map_addr, entry1);
 	}
 
