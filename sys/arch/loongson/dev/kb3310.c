@@ -1,4 +1,4 @@
-/*	$OpenBSD: kb3310.c,v 1.22 2016/12/05 15:04:15 fcambus Exp $	*/
+/*	$OpenBSD: kb3310.c,v 1.23 2017/01/23 10:54:51 fcambus Exp $	*/
 /*
  * Copyright (c) 2010 Otto Moerbeek <otto@drijf.net>
  *
@@ -176,7 +176,7 @@ ykbec_attach(struct device *parent, struct device *self, void *aux)
 		return;
 	}
 
-#ifdef DEBUG
+#ifdef KB3310_DEBUG
 	ykbec_print_bat_info(sc);
 #endif
 	printf("\n");
@@ -318,7 +318,7 @@ ykbec_read16(struct ykbec_softc *mcsc, u_int reg)
 
 #define YKBEC_SCI_IRQ			0xa
 
-#ifdef DEBUG
+#ifdef KB3310_DEBUG
 void
 ykbec_print_bat_info(struct ykbec_softc *sc)
 {
