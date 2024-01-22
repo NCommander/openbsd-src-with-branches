@@ -1,4 +1,4 @@
-/*	$OpenBSD: dl_printf.c,v 1.21 2017/08/29 15:25:51 deraadt Exp $	*/
+/*	$OpenBSD: dl_printf.c,v 1.22 2022/01/08 06:49:41 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1993
@@ -69,7 +69,7 @@ static void kprintn(int, u_long, int);
 static void kdoprnt(int, const char *, va_list);
 static void _dl_flushbuf(void);
 
-static void putcharfd(int, int );
+static void putcharfd(int, int);
 
 static void
 putcharfd(int c, int fd)
