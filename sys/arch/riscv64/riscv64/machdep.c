@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.32 2023/08/14 13:49:42 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.33 2023/12/04 15:00:09 claudio Exp $	*/
 
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
@@ -912,7 +912,8 @@ pmap_bootstrap_bs_map(bus_space_tag_t t, bus_addr_t bpa, bus_size_t size,
 	*bshp = (bus_space_handle_t)(va + (bpa - startpa));
 
 	for (pa = startpa; pa < endpa; pa += PAGE_SIZE, va += PAGE_SIZE)
-		pmap_kenter_pa(va, pa, PROT_READ | PROT_WRITE);
+		pmap_kenter_cache(va, pa, PROT_READ | PROT_WRITE,
+		    PMAP_CACHE_DEV);
 
 	virtual_avail = va;
 
