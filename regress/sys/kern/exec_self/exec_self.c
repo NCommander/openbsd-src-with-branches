@@ -1,4 +1,4 @@
-/*	$OpenBSD: exec_self.c,v 1.1 2002/08/17 22:58:59 art Exp $	*/
+/*	$OpenBSD: exec_self.c,v 1.2 2016/03/17 19:40:43 krw Exp $	*/
 /*
  *	Written by Artur Grabowski <art@openbsd.org> 2002 Public Domain.
  */
@@ -13,7 +13,7 @@ struct {
 	const char pad1[256*1024];	/* avoid read-ahead. */
 	const char string[256*1024];	/* at least one page */
 	const char pad2[256*1024];	/* avoid read-behind. */
-} const blob = {
+} const blob __attribute__((section(".openbsd.mutable"))) = {
 	"padding1",
 	"the_test",
 	"padding2"
