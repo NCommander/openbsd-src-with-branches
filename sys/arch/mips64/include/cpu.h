@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.h,v 1.143 2023/08/05 05:46:36 guenther Exp $	*/
+/*	$OpenBSD: cpu.h,v 1.144 2023/08/23 01:55:47 cheloha Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993
@@ -200,7 +200,7 @@ struct cpu_info {
 #endif
 #ifdef GPROF
 	struct gmonparam *ci_gmon;
-	struct clockintr *ci_gmonclock;
+	struct clockintr ci_gmonclock;
 #endif
 	char		ci_panicbuf[512];
 };
