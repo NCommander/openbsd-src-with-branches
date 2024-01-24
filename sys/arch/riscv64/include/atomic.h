@@ -1,4 +1,4 @@
-/*	$OpenBSD: atomic.h,v 1.3 2021/06/25 13:25:53 jsg Exp $	*/
+/*	$OpenBSD: atomic.h,v 1.4 2022/08/29 02:01:18 jsg Exp $	*/
 
 /* Public Domain */
 
@@ -28,15 +28,6 @@ static inline void
 atomic_setbits_int(volatile unsigned int *p, unsigned int v)
 {
 	__asm volatile("amoor.w zero, %1, %0"
-			: "+A" (*p)
-			: "r" (v)
-			: "memory");
-}
-
-static inline void
-atomic_store_64(volatile uint64_t *p, uint64_t v)
-{
-	__asm volatile("amoor.d zero, %1, %0"
 			: "+A" (*p)
 			: "r" (v)
 			: "memory");
