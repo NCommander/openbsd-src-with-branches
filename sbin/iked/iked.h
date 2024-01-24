@@ -1,4 +1,4 @@
-/*	$OpenBSD: iked.h,v 1.224 2023/08/11 11:24:55 tobhe Exp $	*/
+/*	$OpenBSD: iked.h,v 1.225 2024/01/15 15:29:00 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2019 Tobias Heider <tobias.heider@stusta.de>
@@ -99,6 +99,7 @@ struct ctl_conn {
 	uint8_t			 flags;
 #define CTL_CONN_NOTIFY		 0x01
 	struct imsgev		 iev;
+	uint32_t		 peerid;
 };
 TAILQ_HEAD(ctl_connlist, ctl_conn);
 
