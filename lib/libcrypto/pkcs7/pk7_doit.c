@@ -1,4 +1,4 @@
-/* $OpenBSD: pk7_doit.c,v 1.53 2023/11/15 00:52:44 tb Exp $ */
+/* $OpenBSD: pk7_doit.c,v 1.54 2023/11/15 00:55:43 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -92,7 +92,7 @@ PKCS7_type_is_other(PKCS7* p7)
 
 }
 
-static ASN1_OCTET_STRING *
+ASN1_OCTET_STRING *
 PKCS7_get_octet_string(PKCS7 *p7)
 {
 	if (PKCS7_type_is_data(p7))
