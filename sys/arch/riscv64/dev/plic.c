@@ -1,4 +1,4 @@
-/*	$OpenBSD: plic.c,v 1.10 2022/04/06 18:59:27 naddy Exp $	*/
+/*	$OpenBSD: plic.c,v 1.11 2022/08/09 04:49:08 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2020, Mars Li <mengshi.li.mars@gmail.com>
@@ -153,7 +153,8 @@ plic_match(struct device *parent, void *cfdata, void *aux)
 		return 0; // Only expect one instance of PLIC
 
 	return (OF_is_compatible(faa->fa_node, "riscv,plic0") ||
-		OF_is_compatible(faa->fa_node, "sifive,plic-1.0.0"));
+	    OF_is_compatible(faa->fa_node, "sifive,plic-1.0.0") ||
+	    OF_is_compatible(faa->fa_node, "thead,c900-plic"));
 }
 
 void
