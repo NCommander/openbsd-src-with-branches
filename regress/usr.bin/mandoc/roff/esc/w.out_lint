@@ -1,5 +1,0 @@
-mandoc: w.in:25:15: WARNING: undefined escape, printing literally: \G
-mandoc: w.in:31:20: UNSUPP: unsupported escape sequence: \r
-mandoc: w.in:31:23: UNSUPP: unsupported escape sequence: \r
-mandoc: w.in:37:16: WARNING: undefined escape, printing literally: \G
-mandoc: w.in:65:15: ERROR: incomplete escape sequence: \w'foo
