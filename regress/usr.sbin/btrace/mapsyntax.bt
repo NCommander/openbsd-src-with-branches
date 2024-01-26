@@ -1,7 +1,0 @@
-BEGIN {
-	zero(42);
-}
-
-END {
-	clear(0);
-}

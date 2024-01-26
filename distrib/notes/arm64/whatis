@@ -1,6 +1,0 @@
-dnl	$OpenBSD: whatis,v 1.2 2017/01/25 03:10:06 patrick Exp $
-
-OpenBSD/MACHINE runs on a wide variety of hardware that integrates
-64-bit ARMv8 processors.  OpenBSD/MACHINE requires a minimal UEFI
-firmware (including U-Boot) and supports both ACPI and device-tree
-based hardware enumeration.
