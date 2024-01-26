@@ -1,3 +1,0 @@
-mandoc: args.in:28:11: ERROR: skipping excess arguments: UR ... second
-mandoc: args.in:33:11: ERROR: skipping excess arguments: UR ... second
-mandoc: args.in:23:2: WARNING: missing resource identifier, using "": UR

@@ -1,5 +1,0 @@
-dnl	$OpenBSD: whatis,v 1.2 2010/02/12 20:58:34 miod Exp $
-
-OpenBSD/MACHINE runs on various Loonson processor-based systems, such
-as the popular Lemote Yeeloong and Gdium Liberty netbooks, as well as
-the Lemote Fuloong 2F mini PC and the Lemote Lynloong all-in-one PC.

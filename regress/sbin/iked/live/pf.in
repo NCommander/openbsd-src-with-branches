@@ -1,4 +1,0 @@
-block inet proto icmp all icmp-type echoreq
-pass on enc0 inet proto icmp all icmp-type echoreq
-block inet6 proto icmp6 all icmp6-type echoreq
-pass on enc0 inet6 proto icmp6 all icmp6-type echoreq
