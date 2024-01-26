@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile.sparc64,v 1.105 2022/12/30 06:44:36 jca Exp $
+#	$OpenBSD: Makefile.sparc64,v 1.106 2023/09/06 01:47:38 jsg Exp $
 
 # For instructions on building kernels consult the config(8) and options(4)
 # manual pages.
@@ -153,7 +153,7 @@ hardlink-obsd:
 	[[ ! -f /bsd ]] || cmp -s bsd /bsd || ln -f /bsd /obsd
 
 newinstall:
-	install -m 700 -F bsd /bsd && sha256 -h /var/db/kernel.SHA256 /bsd
+	install -F -m 700 bsd /bsd && sha256 -h /var/db/kernel.SHA256 /bsd
 
 install: update-link hardlink-obsd newinstall
 
