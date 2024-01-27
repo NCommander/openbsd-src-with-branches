@@ -226,6 +226,26 @@ static const struct pbe_config pbe_prf[] = {
 		.cipher_nid = -1,
 		.md_nid = NID_sha512_256,
 	},
+	{
+		.pbe_nid = NID_hmac_sha3_224,
+		.cipher_nid = -1,
+		.md_nid = NID_sha3_224,
+	},
+	{
+		.pbe_nid = NID_hmac_sha3_256,
+		.cipher_nid = -1,
+		.md_nid = NID_sha3_256,
+	},
+	{
+		.pbe_nid = NID_hmac_sha3_384,
+		.cipher_nid = -1,
+		.md_nid = NID_sha3_384,
+	},
+	{
+		.pbe_nid = NID_hmac_sha3_512,
+		.cipher_nid = -1,
+		.md_nid = NID_sha3_512,
+	},
 };
 
 #define N_PBE_PRF (sizeof(pbe_prf) / sizeof(pbe_prf[0]))
