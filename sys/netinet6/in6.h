@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6.h,v 1.110 2023/11/10 20:05:23 bluhm Exp $	*/
+/*	$OpenBSD: in6.h,v 1.111 2023/11/28 13:23:20 bluhm Exp $	*/
 /*	$KAME: in6.h,v 1.83 2001/03/29 02:55:07 jinmei Exp $	*/
 
 /*
@@ -457,6 +457,12 @@ static inline struct sockaddr *
 sin6tosa(struct sockaddr_in6 *sin6)
 {
 	return ((struct sockaddr *)(sin6));
+}
+
+static inline const struct sockaddr *
+sin6tosa_const(const struct sockaddr_in6 *sin6)
+{
+	return ((const struct sockaddr *)(sin6));
 }
 
 static inline struct in6_ifaddr *
