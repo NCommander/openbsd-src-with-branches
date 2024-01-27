@@ -1,4 +1,4 @@
-/*	$OpenBSD: tls13_legacy.c,v 1.40 2022/11/26 16:08:56 tb Exp $ */
+/*	$OpenBSD: tls13_legacy.c,v 1.41 2023/11/28 13:19:04 tb Exp $ */
 /*
  * Copyright (c) 2018, 2019 Joel Sing <jsing@openbsd.org>
  *
@@ -159,7 +159,7 @@ tls13_legacy_error(SSL *ssl)
 	    ctx->error.line);
 }
 
-int
+static int
 tls13_legacy_return_code(SSL *ssl, ssize_t ret)
 {
 	if (ret > INT_MAX) {
