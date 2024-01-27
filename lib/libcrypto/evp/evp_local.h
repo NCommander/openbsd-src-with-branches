@@ -1,4 +1,4 @@
-/* $OpenBSD: evp_local.h,v 1.12 2024/01/04 17:01:26 tb Exp $ */
+/* $OpenBSD: evp_local.h,v 1.13 2024/01/04 17:38:36 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2000.
  */
@@ -277,8 +277,6 @@ struct evp_pkey_ctx_st {
 	int *keygen_info;
 	int keygen_info_count;
 } /* EVP_PKEY_CTX */;
-
-#define EVP_PKEY_FLAG_DYNAMIC	1
 
 struct evp_pkey_method_st {
 	int pkey_id;
