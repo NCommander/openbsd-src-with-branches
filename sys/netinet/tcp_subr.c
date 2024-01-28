@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.195 2024/01/11 13:49:49 bluhm Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.196 2024/01/27 21:13:46 bluhm Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -833,7 +833,7 @@ tcp_ctlinput(int cmd, struct sockaddr *sa, u_int rdomain, void *v)
 		}
 		in_pcbunref(inp);
 	} else
-		in_pcbnotifyall(&tcbtable, sa, rdomain, errno, notify);
+		in_pcbnotifyall(&tcbtable, satosin(sa), rdomain, errno, notify);
 }
 
 
