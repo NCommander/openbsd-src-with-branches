@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.8 2012/08/30 19:29:14 pascal Exp $
+#	$OpenBSD: Makefile,v 1.9 2022/10/06 23:32:17 kn Exp $
 
 S=${.CURDIR}/../../../..
 ZDST=${.OBJDIR}
@@ -6,5 +6,5 @@ ZDST=${.OBJDIR}
 .PATH: ${S}/lib/libz
 
 .include "${S}/lib/libz/Makefile"
-CFLAGS+=${CEXTRAFLAGS} ${AFLAGS} -I${S} -fno-pie
+CFLAGS+=${CEXTRAFLAGS} ${AFLAGS} -I${S} -fno-pie -fno-stack-protector
 CPPFLAGS+=-DDYNAMIC_CRC_TABLE -DBUILDFIXED

@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.14 2020/03/15 17:44:20 otto Exp $
+#	$OpenBSD: Makefile,v 1.15 2020/05/25 16:27:07 deraadt Exp $
 
 LIB=	sa
 
@@ -7,7 +7,7 @@ LIB=	sa
 CLEANFILES += machine
 
 CFLAGS= ${CEXTRAFLAGS} ${AFLAGS} -O2 -D__INTERNAL_LIBSA_CREAD -nostdinc \
-	-fno-pie \
+	-fno-pie -fno-stack-protector \
 	-I${.CURDIR} -I${.CURDIR}/../include -I${.CURDIR}/../.. \
 	-I${.CURDIR}/../../.. -I${.CURDIR}/../../../.. \
 	-I${.CURDIR}/../../../../lib/libsa \

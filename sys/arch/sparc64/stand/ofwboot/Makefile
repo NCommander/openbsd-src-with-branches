@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.26 2018/12/31 11:44:57 claudio Exp $
+#	$OpenBSD: Makefile,v 1.27 2019/10/29 02:55:52 deraadt Exp $
 #	$NetBSD: Makefile,v 1.2 2001/03/04 14:50:05 mrg Exp $
 
 CURDIR=	${.CURDIR}
@@ -37,8 +37,8 @@ SRCS+=		aes_xts.c bcrypt_pbkdf.c blowfish.c explicit_bzero.c \
 
 CWARNFLAGS+=	-Wno-main
 AFLAGS+=	-Wa,-Av9a
-AFLAGS+=	-x assembler-with-cpp -D_LOCORE -D__ELF__ -fno-pie
-CFLAGS+=	${COPTS} -fno-pie
+AFLAGS+=	-x assembler-with-cpp -D_LOCORE -D__ELF__ -fno-pie 
+CFLAGS+=	${COPTS} -fno-pie -fno-stack-protector
 CPPFLAGS+=	-D_STANDALONE -DSUN4U -nostdinc
 #CPPFLAGS+=	-DNETIF_DEBUG 
 
