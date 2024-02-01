@@ -1,4 +1,4 @@
-/* $OpenBSD: nchan.c,v 1.73 2021/05/19 01:24:05 djm Exp $ */
+/* $OpenBSD: nchan.c,v 1.74 2022/02/01 23:32:51 djm Exp $ */
 /*
  * Copyright (c) 1999, 2000, 2001, 2002 Markus Friedl.  All rights reserved.
  *
@@ -347,7 +347,7 @@ chan_is_dead(struct ssh *ssh, Channel *c, int do_send)
 	if (c->flags & CHAN_LOCAL) {
 		debug2("channel %d: is dead (local)", c->self);
 		return 1;
-	}		
+	}
 	if (!(c->flags & CHAN_CLOSE_SENT)) {
 		if (do_send) {
 			chan_send_close2(ssh, c);
