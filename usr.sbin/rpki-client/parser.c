@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.112 2024/01/31 06:54:43 tb Exp $ */
+/*	$OpenBSD: parser.c,v 1.113 2024/01/31 06:57:21 tb Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -327,7 +327,7 @@ proc_parser_mft_pre(struct entity *entp, enum location loc, char **file,
 		goto err;
 	}
 	if (issued_cmp > 0 && seqnum_cmp == 0) {
-		warnx("%s#%s: reissued manifest at %lld and %lld with same "
+		warnx("%s#%s: manifest issued at %lld and %lld with same "
 		    "sequence number", *file, cached_mft->seqnum,
 		    (long long)mft->thisupdate,
 		    (long long)cached_mft->thisupdate);
