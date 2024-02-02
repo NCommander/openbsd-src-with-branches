@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.120 2024/02/02 16:41:41 tb Exp $ */
+/*	$OpenBSD: parser.c,v 1.121 2024/02/02 18:11:12 job Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -436,6 +436,7 @@ proc_parser_mft(struct entity *entp, struct mft **mp, char **crlfile,
 					    "with #%s from cache", file2,
 					    mft2->seqnum);
 			}
+			*mp = mft1;
 		} else {
 			/* XXX - preserve behavior; this is probably wrong. */
 			*mp = mft1;
