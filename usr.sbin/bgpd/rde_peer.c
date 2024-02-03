@@ -1,4 +1,4 @@
-/*	$OpenBSD: rde_peer.c,v 1.33 2023/10/16 10:25:46 claudio Exp $ */
+/*	$OpenBSD: rde_peer.c,v 1.34 2023/11/07 11:17:35 claudio Exp $ */
 
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
@@ -47,7 +47,7 @@ peer_has_as4byte(struct rde_peer *peer)
 int
 peer_has_add_path(struct rde_peer *peer, uint8_t aid, int mode)
 {
-	if (aid > AID_MAX)
+	if (aid >= AID_MAX)
 		return 0;
 	if (aid == AID_UNSPEC) {
 		/* check if at capability is set for at least one AID */
