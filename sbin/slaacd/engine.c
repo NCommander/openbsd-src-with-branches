@@ -1,4 +1,4 @@
-/*	$OpenBSD: engine.c,v 1.85 2023/04/30 13:08:40 phessler Exp $	*/
+/*	$OpenBSD: engine.c,v 1.86 2023/12/14 09:58:59 claudio Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>
@@ -1272,7 +1272,7 @@ request_solicitation(struct slaacd_iface *iface)
 	clock_gettime(CLOCK_MONOTONIC, &now);
 	timespecsub(&now, &iface->last_sol, &diff);
 	if (timespeccmp(&diff, &sol_delay, <)) {
-		log_warnx("last solicitation less then %d seconds ago",
+		log_debug("last solicitation less than %d seconds ago",
 		    RTR_SOLICITATION_INTERVAL);
 		return;
 	}
