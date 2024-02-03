@@ -1,4 +1,4 @@
-/*	$OpenBSD: bcm2711_pcie.c,v 1.10 2021/12/06 18:02:58 kettenis Exp $	*/
+/*	$OpenBSD: bcm2711_pcie.c,v 1.11 2022/04/06 18:59:28 naddy Exp $	*/
 /*
  * Copyright (c) 2020 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -299,6 +299,7 @@ bcmpcie_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_pc.pc_intr_v = sc;
 	sc->sc_pc.pc_intr_map = bcmpcie_intr_map;
 	sc->sc_pc.pc_intr_map_msi = _pci_intr_map_msi;
+	sc->sc_pc.pc_intr_map_msivec = _pci_intr_map_msivec;
 	sc->sc_pc.pc_intr_map_msix = _pci_intr_map_msix;
 	sc->sc_pc.pc_intr_string = bcmpcie_intr_string;
 	sc->sc_pc.pc_intr_establish = bcmpcie_intr_establish;
