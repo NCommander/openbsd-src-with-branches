@@ -1,4 +1,4 @@
-/*      $OpenBSD: ip_divert.c,v 1.91 2023/05/13 13:35:17 bluhm Exp $ */
+/*      $OpenBSD: ip_divert.c,v 1.92 2023/09/16 09:33:27 mpi Exp $ */
 
 /*
  * Copyright (c) 2009 Michele Marchetto <michele@openbsd.org>
@@ -67,6 +67,7 @@ const struct pr_usrreqs divert_usrreqs = {
 	.pru_detach	= divert_detach,
 	.pru_lock	= divert_lock,
 	.pru_unlock	= divert_unlock,
+	.pru_locked	= divert_locked,
 	.pru_bind	= divert_bind,
 	.pru_shutdown	= divert_shutdown,
 	.pru_send	= divert_send,
@@ -311,6 +312,14 @@ divert_unlock(struct socket *so)
 
 	NET_ASSERT_LOCKED();
 	mtx_leave(&inp->inp_mtx);
+}
+
+int
+divert_locked(struct socket *so)
+{
+	struct inpcb *inp = sotoinpcb(so);
+
+	return mtx_owned(&inp->inp_mtx);
 }
 
 int
