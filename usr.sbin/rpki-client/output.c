@@ -1,4 +1,4 @@
-/*	$OpenBSD: output.c,v 1.30 2023/04/19 12:58:16 jsg Exp $ */
+/*	$OpenBSD: output.c,v 1.31 2023/04/26 16:32:41 claudio Exp $ */
 /*
  * Copyright (c) 2019 Theo de Raadt <deraadt@openbsd.org>
  *
@@ -233,13 +233,12 @@ outputheader(FILE *out, struct stats *st)
 
 	if (fprintf(out,
 	    " ]\n"
-	    "# Manifests: %u (%u failed parse, %u stale)\n"
+	    "# Manifests: %u (%u failed parse)\n"
 	    "# Certificate revocation lists: %u\n"
 	    "# Ghostbuster records: %u\n"
 	    "# Repositories: %u\n"
 	    "# VRP Entries: %u (%u unique)\n",
 	    st->repo_tal_stats.mfts, st->repo_tal_stats.mfts_fail,
-	    st->repo_tal_stats.mfts_stale,
 	    st->repo_tal_stats.crls,
 	    st->repo_tal_stats.gbrs,
 	    st->repos,
