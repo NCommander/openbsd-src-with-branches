@@ -1,4 +1,4 @@
-/*	$OpenBSD: inode.h,v 1.52 2020/05/28 15:48:29 otto Exp $	*/
+/*	$OpenBSD: inode.h,v 1.53 2020/06/24 22:03:45 cheloha Exp $	*/
 /*	$NetBSD: inode.h,v 1.8 1995/06/15 23:22:50 cgd Exp $	*/
 
 /*
@@ -332,11 +332,6 @@ struct indir {
 } while (0)
 
 /* Determine if soft dependencies are being done */
-#ifdef FFS_SOFTUPDATES
-#define DOINGSOFTDEP(vp)      ((vp)->v_mount->mnt_flag & MNT_SOFTDEP)
-#else
-#define DOINGSOFTDEP(vp)      (0)
-#endif
 #define DOINGASYNC(vp)        ((vp)->v_mount->mnt_flag & MNT_ASYNC)
 
 /* This overlays the fid structure (see mount.h). */

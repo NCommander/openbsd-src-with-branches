@@ -1,4 +1,4 @@
-/*	$OpenBSD: dumpfs.c,v 1.36 2020/06/20 07:49:04 otto Exp $	*/
+/*	$OpenBSD: dumpfs.c,v 1.37 2022/12/04 23:50:46 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2002 Networks Associates Technology, Inc.
@@ -273,12 +273,10 @@ dumpfs(int fd, const char *name)
 		printf("none");
 	if (fsflags & FS_UNCLEAN)
 		printf("unclean ");
-	if (fsflags & FS_DOSOFTDEP)
-		printf("soft-updates ");
 	if (fsflags & FS_FLAGS_UPDATED)
 		printf("updated ");
 #if 0
-	fsflags &= ~(FS_UNCLEAN | FS_DOSOFTDEP | FS_FLAGS_UPDATED);
+	fsflags &= ~(FS_UNCLEAN | FS_FLAGS_UPDATED);
 	if (fsflags != 0)
 		printf("unknown flags (%#x)", fsflags);
 #endif
