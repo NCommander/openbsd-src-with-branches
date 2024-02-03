@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_qwx_pci.c,v 1.3 2024/01/25 09:44:56 stsp Exp $	*/
+/*	$OpenBSD: if_qwx_pci.c,v 1.4 2024/01/25 17:00:21 stsp Exp $	*/
 
 /*
  * Copyright 2023 Stefan Sperling <stsp@openbsd.org>
@@ -769,6 +769,10 @@ qwx_pci_attach(struct device *parent, struct device *self, void *aux)
 	sc->sc_dmat = pa->pa_dmat;
 	psc->sc_pc = pa->pa_pc;
 	psc->sc_tag = pa->pa_tag;
+
+#ifdef __HAVE_FDT
+	sc->sc_node = PCITAG_NODE(pa->pa_tag);
+#endif
 
 	rw_init(&sc->ioctl_rwl, "qwxioctl");
 
