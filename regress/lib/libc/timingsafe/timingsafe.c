@@ -1,4 +1,4 @@
-/*	$OpenBSD: timingsafe.c,v 1.2 2014/06/13 02:12:17 matthew Exp $	*/
+/*	$OpenBSD: timingsafe.c,v 1.3 2014/06/21 22:57:15 tedu Exp $	*/
 /*
  * Copyright (c) 2014 Google Inc.
  *
@@ -28,7 +28,7 @@ enum {
 static unsigned char bufone[N], buftwo[N];
 
 void
-check()
+check(void)
 {
 	int cmp = memcmp(bufone, buftwo, N);
 
@@ -49,7 +49,7 @@ check()
 }
 
 int
-main()
+main(void)
 {
 	int i, j;
 
