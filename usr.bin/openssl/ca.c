@@ -1,4 +1,4 @@
-/* $OpenBSD: ca.c,v 1.56 2023/07/02 07:08:57 tb Exp $ */
+/* $OpenBSD: ca.c,v 1.57 2023/11/13 12:43:08 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -2576,7 +2576,6 @@ get_certificate_status(const char *serial, CA_DB *db)
 		goto err;
 	}
 	if (strlen(serial) % 2) {
-		/* Set the first char to 0 */ ;
 		row[DB_serial][0] = '0';
 
 		/* Copy String from serial to row[DB_serial] */
