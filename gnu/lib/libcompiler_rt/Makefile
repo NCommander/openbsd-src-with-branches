@@ -320,6 +320,8 @@ SRCS+=	comparetf2.c \
 	floatunsitf.c \
 	floatuntitf.c \
 	multc3.c \
+	restore.S \
+	save.S \
 	trunctfdf2.c \
 	trunctfsf2.c
 .endif
