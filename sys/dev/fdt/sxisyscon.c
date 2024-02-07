@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxisyscon.c,v 1.1 2019/08/11 11:19:41 kettenis Exp $	*/
+/*	$OpenBSD: sxisyscon.c,v 1.2 2021/10/24 17:52:27 mpi Exp $	*/
 /*
  * Copyright (c) 2019 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -52,7 +52,8 @@ sxisyscon_match(struct device *parent, void *match, void *aux)
 	if (OF_is_compatible(node, "allwinner,sun8i-h3-system-control") ||
 	    OF_is_compatible(node, "allwinner,sun50i-a64-system-control") ||
 	    OF_is_compatible(node, "allwinner,sun50i-h5-system-control") ||
-	    OF_is_compatible(node, "allwinner,sun50i-h6-system-control"))
+	    OF_is_compatible(node, "allwinner,sun50i-h6-system-control") ||
+	    OF_is_compatible(node, "allwinner,sun50i-h616-system-control"))
 		return 10;	/* Must beat syscon(4). */
 
 	return 0;
