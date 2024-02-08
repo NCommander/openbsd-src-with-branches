@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.7 2021/12/17 14:55:45 patrick Exp $
+# $OpenBSD: Makefile,v 1.8 2023/11/11 18:35:37 robert Exp $
 
 LIB=	LLVMExecutionEngine
 NOPROFILE=
@@ -143,6 +143,7 @@ ExecutionEngineELF.cpp:
 .PATH:	${.CURDIR}/../../../llvm/llvm/lib/ExecutionEngine/RuntimeDyld
 .PATH:	${.CURDIR}/../../../llvm/llvm/lib/ExecutionEngine/RuntimeDyld/Targets
 
-CLEANFILES+= ExecutionEngineCore.cpp \
+CLEANFILES+= ExecutionEngineCOFF.cpp \
+	ExecutionEngineCore.cpp \
 	ExecutionEngineMachO.cpp \
 	ExecutionEngineELF.cpp

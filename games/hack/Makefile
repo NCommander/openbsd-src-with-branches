@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.16 2017/07/10 21:30:37 espie Exp $
+#	$OpenBSD: Makefile,v 1.17 2019/04/05 09:02:27 bentley Exp $
 
 PROG=	hack
 CFLAGS+=-I.
@@ -16,7 +16,7 @@ SRCS+=	alloc.c hack.Decl.c hack.apply.c hack.bones.c hack.c hack.cmd.c \
 MAN=	hack.6
 DPADD+=	${LIBCURSES}
 LDADD+=	-lcurses
-CLEANFILES+=hack.onames.h makedefs
+CLEANFILES+=hack.onames.h makedefs makedefs.d
 
 BUILDFIRST = hack.onames.h
 
