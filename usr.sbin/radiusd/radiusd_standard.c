@@ -1,4 +1,4 @@
-/*	$OpenBSD: radiusd_standard.c,v 1.2 2024/01/08 04:16:48 yasuoka Exp $	*/
+/*	$OpenBSD: radiusd_standard.c,v 1.3 2024/02/06 10:53:20 yasuoka Exp $	*/
 
 /*
  * Copyright (c) 2013, 2023 Internet Initiative Japan Inc.
@@ -74,7 +74,7 @@ main(int argc, char *argv[])
 	    STDIN_FILENO, &module_standard, &handlers)) == NULL)
 		err(1, "Could not create a module instance");
 
-	module_drop_privilege(module_standard.base);
+	module_drop_privilege(module_standard.base, 0);
 	if (pledge("stdio", NULL) == -1)
 		err(1, "pledge");
 
