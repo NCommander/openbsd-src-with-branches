@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.206 2023/01/21 19:39:28 miod Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.207 2023/03/08 04:43:07 guenther Exp $	*/
 /*	$NetBSD: machdep.c,v 1.108 2001/07/24 19:30:14 eeh Exp $ */
 
 /*-
@@ -862,7 +862,7 @@ stackdump(void)
 	printf("Frame pointer is at %p\n", fp64);
 	printf("Call traceback:\n");
 	while (fp64 && ((u_long)fp64 >> PGSHIFT) == ((u_long)sfp >> PGSHIFT)) {
-		printf("%llx(%llx, %llx, %llx, %llx, %llx, %llx, %llx) "
+		printf("%llx(%llx, %llx, %llx, %llx, %llx, %llx) "
 		    "fp = %llx\n",
 		       (unsigned long long)fp64->fr_pc,
 		       (unsigned long long)fp64->fr_arg[0],
@@ -871,7 +871,6 @@ stackdump(void)
 		       (unsigned long long)fp64->fr_arg[3],
 		       (unsigned long long)fp64->fr_arg[4],
 		       (unsigned long long)fp64->fr_arg[5],	
-		       (unsigned long long)fp64->fr_arg[6],
 		       (unsigned long long)fp64->fr_fp);
 		fp64 = v9next_frame(fp64);
 	}
