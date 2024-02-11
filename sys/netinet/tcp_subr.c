@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_subr.c,v 1.196 2024/01/27 21:13:46 bluhm Exp $	*/
+/*	$OpenBSD: tcp_subr.c,v 1.197 2024/01/28 20:34:25 bluhm Exp $	*/
 /*	$NetBSD: tcp_subr.c,v 1.22 1996/02/13 23:44:00 christos Exp $	*/
 
 /*
@@ -85,6 +85,7 @@
 #include <netinet/ip.h>
 #include <netinet/in_pcb.h>
 #include <netinet/ip_var.h>
+#include <netinet6/ip6_var.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/tcp.h>
 #include <netinet/tcp_fsm.h>

@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcp_output.c,v 1.140 2023/07/06 09:15:24 bluhm Exp $	*/
+/*	$OpenBSD: tcp_output.c,v 1.141 2023/11/26 22:08:10 bluhm Exp $	*/
 /*	$NetBSD: tcp_output.c,v 1.16 1997/06/03 16:17:09 kml Exp $	*/
 
 /*
@@ -90,6 +90,7 @@
 #include <netinet/ip.h>
 #include <netinet/in_pcb.h>
 #include <netinet/ip_var.h>
+#include <netinet6/ip6_var.h>
 #include <netinet/tcp.h>
 #define	TCPOUTFLAGS
 #include <netinet/tcp_fsm.h>
