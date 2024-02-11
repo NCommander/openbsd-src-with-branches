@@ -1,4 +1,4 @@
-/*	$OpenBSD: frontend.c,v 1.64 2022/07/12 16:54:59 florian Exp $	*/
+/*	$OpenBSD: frontend.c,v 1.65 2023/12/14 09:58:59 claudio Exp $	*/
 
 /*
  * Copyright (c) 2017 Florian Obser <florian@openbsd.org>
@@ -37,7 +37,6 @@
 #include <netinet6/nd6.h>
 #include <netinet6/in6_var.h>
 #include <netinet/ip6.h>
-#include <netinet6/ip6_var.h>
 #include <netinet/icmp6.h>
 
 #include <errno.h>
