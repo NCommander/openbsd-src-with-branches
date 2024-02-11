@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip_mroute.c,v 1.139 2023/06/14 14:30:08 mvs Exp $	*/
+/*	$OpenBSD: ip_mroute.c,v 1.140 2023/12/06 09:27:17 bluhm Exp $	*/
 /*	$NetBSD: ip_mroute.c,v 1.85 2004/04/26 01:31:57 matt Exp $	*/
 
 /*
@@ -1051,12 +1051,11 @@ int
 socket_send(struct socket *so, struct mbuf *mm, struct sockaddr_in *src)
 {
 	if (so != NULL) {
-		struct inpcb *inp = sotoinpcb(so);
 		int ret;
 
-		mtx_enter(&inp->inp_mtx);
+		mtx_enter(&so->so_rcv.sb_mtx);
 		ret = sbappendaddr(so, &so->so_rcv, sintosa(src), mm, NULL);
-		mtx_leave(&inp->inp_mtx);
+		mtx_leave(&so->so_rcv.sb_mtx);
 
 		if (ret != 0) {
 			sorwakeup(so);
