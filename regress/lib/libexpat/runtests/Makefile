@@ -1,6 +1,15 @@
-# $OpenBSD: Makefile,v 1.3 2017/11/03 18:30:34 bluhm Exp $
+# $OpenBSD: Makefile,v 1.4 2019/06/29 00:35:06 bluhm Exp $
 
-SRCS=		runtests.c chardata.c memcheck.c minicheck.c structdata.c
+SRCS=		runtests.c
+SRCS+=		acc_tests.c alloc_tests.c
+SRCS+=		basic_tests.c
+SRCS+=		chardata.c common.c
+SRCS+=		dummy.c
+SRCS+=		handlers.c
+SRCS+=		memcheck.c minicheck.c misc_tests.c
+SRCS+=		ns_tests.c nsalloc_tests.c
+SRCS+=		structdata.c 
+
 # _INTERNAL_trim_to_complete_utf8_characters is not exported in dynamic library
 LDFLAGS=	-static
 
