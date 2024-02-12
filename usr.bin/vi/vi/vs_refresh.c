@@ -1,4 +1,4 @@
-/*	$OpenBSD: vs_refresh.c,v 1.21 2016/01/06 22:29:38 millert Exp $	*/
+/*	$OpenBSD: vs_refresh.c,v 1.22 2016/01/30 21:31:08 martijn Exp $	*/
 
 /*-
  * Copyright (c) 1992, 1993, 1994
@@ -810,7 +810,7 @@ vs_modeline(SCR *sp)
 
 	/* If more than one screen in the display, show the file name. */
 	curlen = 0;
-	if (IS_SPLIT(sp)) {
+	if (IS_SPLIT(sp) || O_ISSET(sp, O_SHOWFILENAME)) {
 		for (p = sp->frp->name; *p != '\0'; ++p);
 		for (ellipsis = 0, cols = sp->cols / 2; --p > sp->frp->name;) {
 			if (*p == '/') {
