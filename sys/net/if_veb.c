@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_veb.c,v 1.33 2023/12/22 23:01:50 mvs Exp $ */
+/*	$OpenBSD: if_veb.c,v 1.34 2023/12/23 10:52:54 bluhm Exp $ */
 
 /*
  * Copyright (c) 2021 David Gwynne <dlg@openbsd.org>
@@ -46,7 +46,6 @@
 #ifdef INET6
 #include <netinet6/in6_var.h>
 #include <netinet/ip6.h>
-#include <netinet6/ip6_var.h>
 #endif
 
 #if 0 && defined(IPSEC)
