@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-pipe-pane.c,v 1.59 2021/10/24 21:24:17 deraadt Exp $ */
+/* $OpenBSD: cmd-pipe-pane.c,v 1.60 2022/05/30 13:03:46 nicm Exp $ */
 
 /*
  * Copyright (c) 2009 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -69,7 +69,7 @@ cmd_pipe_pane_exec(struct cmd *self, struct cmdq_item *item)
 	sigset_t			 set, oldset;
 
 	/* Do nothing if pane is dead. */
-	if (wp->fd == -1 || (wp->flags & PANE_EXITED)) {
+	if (window_pane_exited(wp)) {
 		cmdq_error(item, "target pane has exited");
 		return (CMD_RETURN_ERROR);
 	}
