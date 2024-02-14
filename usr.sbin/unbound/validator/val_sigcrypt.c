@@ -78,6 +78,9 @@
 #include <openssl/engine.h>
 #endif
 
+/** Maximum number of RRSIG validations for an RRset. */
+#define MAX_VALIDATE_RRSIGS 8
+
 /** return number of rrs in an rrset */
 static size_t
 rrset_get_count(struct ub_packed_rrset_key* rrset)
@@ -541,6 +544,8 @@ int algo_needs_missing(struct algo_needs* n)
  * @param reason_bogus: EDE (RFC8914) code paired with the reason of failure.
  * @param section: section of packet where this rrset comes from.
  * @param qstate: qstate with region.
+ * @param numverified: incremented when the number of RRSIG validations
+ * 	increases.
  * @return secure if any key signs *this* signature. bogus if no key signs it,
  *	unchecked on error, or indeterminate if all keys are not supported by
  *	the crypto library (openssl3+ only).
@@ -551,7 +556,8 @@ dnskeyset_verify_rrset_sig(struct module_env* env, struct val_env* ve,
 	struct ub_packed_rrset_key* dnskey, size_t sig_idx,
 	struct rbtree_type** sortree,
 	char** reason, sldns_ede_code *reason_bogus,
-	sldns_pkt_section section, struct module_qstate* qstate)
+	sldns_pkt_section section, struct module_qstate* qstate,
+	int* numverified)
 {
 	/* find matching keys and check them */
 	enum sec_status sec = sec_status_bogus;
@@ -575,6 +581,7 @@ dnskeyset_verify_rrset_sig(struct module_env* env, struct val_env* ve,
 			tag != dnskey_calc_keytag(dnskey, i))
 			continue;
 		numchecked ++;
+		(*numverified)++;
 
 		/* see if key verifies */
 		sec = dnskey_verify_rrset_sig(env->scratch,
@@ -585,6 +592,13 @@ dnskeyset_verify_rrset_sig(struct module_env* env, struct val_env* ve,
 			return sec;
 		else if(sec == sec_status_indeterminate)
 			numindeterminate ++;
+		if(*numverified > MAX_VALIDATE_RRSIGS) {
+			*reason = "too many RRSIG validations";
+			if(reason_bogus)
+				*reason_bogus = LDNS_EDE_DNSSEC_BOGUS;
+			verbose(VERB_ALGO, "verify sig: too many RRSIG validations");
+			return sec_status_bogus;
+		}
 	}
 	if(numchecked == 0) {
 		*reason = "signatures from unknown keys";
@@ -608,7 +622,7 @@ enum sec_status
 dnskeyset_verify_rrset(struct module_env* env, struct val_env* ve,
 	struct ub_packed_rrset_key* rrset, struct ub_packed_rrset_key* dnskey,
 	uint8_t* sigalg, char** reason, sldns_ede_code *reason_bogus,
-	sldns_pkt_section section, struct module_qstate* qstate)
+	sldns_pkt_section section, struct module_qstate* qstate, int* verified)
 {
 	enum sec_status sec;
 	size_t i, num;
@@ -616,6 +630,7 @@ dnskeyset_verify_rrset(struct module_env* env, struct val_env* ve,
 	/* make sure that for all DNSKEY algorithms there are valid sigs */
 	struct algo_needs needs;
 	int alg;
+	*verified = 0;
 
 	num = rrset_get_sigcount(rrset);
 	if(num == 0) {
@@ -640,7 +655,7 @@ dnskeyset_verify_rrset(struct module_env* env, struct val_env* ve,
 	for(i=0; i<num; i++) {
 		sec = dnskeyset_verify_rrset_sig(env, ve, *env->now, rrset, 
 			dnskey, i, &sortree, reason, reason_bogus,
-			section, qstate);
+			section, qstate, verified);
 		/* see which algorithm has been fixed up */
 		if(sec == sec_status_secure) {
 			if(!sigalg)
@@ -651,6 +666,13 @@ dnskeyset_verify_rrset(struct module_env* env, struct val_env* ve,
 		} else if(sigalg && sec == sec_status_bogus) {
 			algo_needs_set_bogus(&needs,
 				(uint8_t)rrset_get_sig_algo(rrset, i));
+		}
+		if(*verified > MAX_VALIDATE_RRSIGS) {
+			verbose(VERB_QUERY, "rrset failed to verify, too many RRSIG validations");
+			*reason = "too many RRSIG validations";
+			if(reason_bogus)
+				*reason_bogus = LDNS_EDE_DNSSEC_BOGUS;
+			return sec_status_bogus;
 		}
 	}
 	if(sigalg && (alg=algo_needs_missing(&needs)) != 0) {
@@ -690,6 +712,7 @@ dnskey_verify_rrset(struct module_env* env, struct val_env* ve,
 	int buf_canon = 0;
 	uint16_t tag = dnskey_calc_keytag(dnskey, dnskey_idx);
 	int algo = dnskey_get_algo(dnskey, dnskey_idx);
+	int numverified = 0;
 
 	num = rrset_get_sigcount(rrset);
 	if(num == 0) {
@@ -713,8 +736,16 @@ dnskey_verify_rrset(struct module_env* env, struct val_env* ve,
 		if(sec == sec_status_secure)
 			return sec;
 		numchecked ++;
+		numverified ++;
 		if(sec == sec_status_indeterminate)
 			numindeterminate ++;
+		if(numverified > MAX_VALIDATE_RRSIGS) {
+			verbose(VERB_QUERY, "rrset failed to verify, too many RRSIG validations");
+			*reason = "too many RRSIG validations";
+			if(reason_bogus)
+				*reason_bogus = LDNS_EDE_DNSSEC_BOGUS;
+			return sec_status_bogus;
+		}
 	}
 	verbose(VERB_ALGO, "rrset failed to verify: all signatures are bogus");
 	if(!numchecked) {
