@@ -1,4 +1,4 @@
-/* $OpenBSD: doas.h,v 1.18 2021/09/07 13:46:07 jcs Exp $ */
+/* $OpenBSD: doas.h,v 1.19 2021/11/30 20:08:15 tobias Exp $ */
 /*
  * Copyright (c) 2015 Ted Unangst <tedu@openbsd.org>
  *
@@ -36,7 +36,7 @@ struct passwd;
 char **prepenv(const struct rule *, const struct passwd *,
     const struct passwd *);
 
-#define PERMIT	1
+#define PERMIT	-1
 #define DENY	2
 
 #define NOPASS		0x1
