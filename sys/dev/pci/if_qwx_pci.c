@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_qwx_pci.c,v 1.7 2024/02/09 11:24:52 stsp Exp $	*/
+/*	$OpenBSD: if_qwx_pci.c,v 1.8 2024/02/09 14:57:36 bluhm Exp $	*/
 
 /*
  * Copyright 2023 Stefan Sperling <stsp@openbsd.org>
@@ -1568,7 +1568,7 @@ qwx_pcic_ext_irq_disable(struct qwx_softc *sc)
 	if (!test_bit(ATH11K_FLAG_MULTI_MSI_VECTORS, sc->sc_flags))
 		return;
 
-	printf("%s not implemented\n", __func__);
+	DPRINTF("%s not implemented\n", __func__);
 }
 
 void
@@ -1582,7 +1582,7 @@ qwx_pcic_ext_irq_enable(struct qwx_softc *sc)
 	if (!test_bit(ATH11K_FLAG_MULTI_MSI_VECTORS, sc->sc_flags))
 		return;
 
-	printf("%s not implemented\n", __func__);
+	DPRINTF("%s not implemented\n", __func__);
 }
 
 void
