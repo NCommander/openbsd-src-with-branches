@@ -1,4 +1,4 @@
-/*	$OpenBSD: cert.c,v 1.124 2024/02/03 14:43:15 tb Exp $ */
+/*	$OpenBSD: cert.c,v 1.125 2024/02/04 07:43:27 tb Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  * Copyright (c) 2021 Job Snijders <job@openbsd.org>
@@ -409,7 +409,7 @@ sbgp_parse_ipaddrblk(const char *fn, const IPAddrBlocks *addrblk,
 			goto out;
 		}
 
-		switch(afi) {
+		switch (afi) {
 		case AFI_IPV4:
 			if (ipv4_seen++ > 0) {
 				warnx("%s: RFC 6487 section 4.8.10: "
