@@ -1,4 +1,4 @@
-/*	$OpenBSD: rrdp.c,v 1.31 2023/06/20 15:15:14 claudio Exp $ */
+/*	$OpenBSD: rrdp.c,v 1.32 2023/06/23 11:36:24 claudio Exp $ */
 /*
  * Copyright (c) 2020 Nils Fisher <nils_fisher@hotmail.com>
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
@@ -463,7 +463,7 @@ rrdp_input_handler(int fd)
 	case RRDP_FILE:
 		s = rrdp_get(id);
 		if (s == NULL)
-			errx(1, "file, rrdp session %u does not exist", id);;
+			errx(1, "file, rrdp session %u does not exist", id);
 		if (ibuf_fd_avail(b))
 			errx(1, "received unexpected fd");
 		io_read_buf(b, &ok, sizeof(ok));
