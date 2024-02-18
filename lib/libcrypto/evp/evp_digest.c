@@ -1,4 +1,4 @@
-/* $OpenBSD: evp_digest.c,v 1.7 2023/12/29 07:22:47 tb Exp $ */
+/* $OpenBSD: evp_digest.c,v 1.8 2024/01/30 17:41:01 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -248,6 +248,12 @@ EVP_MD_CTX_destroy(EVP_MD_CTX *ctx)
 
 void
 EVP_MD_CTX_init(EVP_MD_CTX *ctx)
+{
+	memset(ctx, 0, sizeof(*ctx));
+}
+
+void
+EVP_MD_CTX_legacy_clear(EVP_MD_CTX *ctx)
 {
 	memset(ctx, 0, sizeof(*ctx));
 }
