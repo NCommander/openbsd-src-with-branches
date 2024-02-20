@@ -1,4 +1,4 @@
-/*	$OpenBSD: fnmatch.c,v 1.15 2011/02/10 21:31:59 stsp Exp $	*/
+/*	$OpenBSD: rmatch_test.c,v 1.1 2024/02/20 09:40:58 claudio Exp $	*/
 
 /*
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
@@ -215,10 +215,8 @@ struct tv {
 	{ "**/*a*b*g*n*t", "abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txt", 0 },
 	{ "**/*a*b*g*n*t", "abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txtz", 1 },
 
-#ifdef NOTYET
 	/* infinte loop test from Kyle Evans */
 	{ "dir/*.o", "dir1/a.o", 1 },
-#endif
 
 	{ NULL },
 };
