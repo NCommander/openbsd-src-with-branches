@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mib.y,v 1.1 2024/01/27 09:53:59 martijn Exp $	*/
 
 /*
  * Copyright (c) 2023 Martijn van Duren <martijn@openbsd.org>
@@ -496,7 +496,7 @@ moduleidentity		: descriptor MODULEIDENTITY lastupdated
 
 lastupdated		: LASTUPDATED TEXT {
 				char timebuf[14] = "";
-				struct tm tm;
+				struct tm tm = {};
 				size_t len;
 
 				if ((len = strlen($2)) == 11)
@@ -505,11 +505,11 @@ lastupdated		: LASTUPDATED TEXT {
 				else if (len == 13)
 					strlcpy(timebuf, $2, sizeof(timebuf));
 				else {
-					yyerror("Invalid LAST-UPDATED");
+					yyerror("Invalid LAST-UPDATED: %s", $2);
 					YYERROR;
 				}
 
-				if (strptime(timebuf, "%Y%M%d%H%MZ", &tm) == NULL) {
+				if (strptime(timebuf, "%Y%m%d%H%MZ", &tm) == NULL) {
 					yyerror("Invalid LAST-UPDATED: %s", $2);
 					YYERROR;
 				}
