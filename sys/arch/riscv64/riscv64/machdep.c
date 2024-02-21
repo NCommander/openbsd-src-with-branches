@@ -1,4 +1,4 @@
-/*	$OpenBSD: machdep.c,v 1.33 2023/12/04 15:00:09 claudio Exp $	*/
+/*	$OpenBSD: machdep.c,v 1.34 2024/01/23 19:51:10 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
@@ -792,6 +792,9 @@ initriscv(struct riscv_bootparams *rbp)
 	if (node) {
 		for (node = fdt_child_node(node); node;
 		    node = fdt_next_node(node)) {
+			char *no_map;
+			if (fdt_node_property(node, "no-map", &no_map) < 0)
+				continue;
 			if (fdt_get_reg(node, 0, &reg))
 				continue;
 			if (reg.size == 0)

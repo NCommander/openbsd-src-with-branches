@@ -1,4 +1,4 @@
-/* $OpenBSD: machdep.c,v 1.84 2023/08/10 21:01:50 kettenis Exp $ */
+/* $OpenBSD: machdep.c,v 1.85 2023/12/04 15:00:09 claudio Exp $ */
 /*
  * Copyright (c) 2014 Patrick Wildt <patrick@blueri.se>
  * Copyright (c) 2021 Mark Kettenis <kettenis@openbsd.org>
@@ -1050,6 +1050,22 @@ initarm(struct arm64_bootparams *abp)
 			if (reg.size == 0)
 				continue;
 			memreg_add(&reg);
+		}
+	}
+
+	/* Remove reserved memory. */
+	node = fdt_find_node("/reserved-memory");
+	if (node) {
+		for (node = fdt_child_node(node); node;
+		    node = fdt_next_node(node)) {
+			char *no_map;
+			if (fdt_node_property(node, "no-map", &no_map) < 0)
+				continue;
+			if (fdt_get_reg(node, 0, &reg))
+				continue;
+			if (reg.size == 0)
+				continue;
+			memreg_remove(&reg);
 		}
 	}
 
