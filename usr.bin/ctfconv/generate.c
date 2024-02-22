@@ -1,4 +1,4 @@
-/*	$OpenBSD: generate.c,v 1.4 2017/09/26 08:16:18 mpi Exp $ */
+/*	$OpenBSD: generate.c,v 1.5 2022/08/14 14:54:13 millert Exp $ */
 
 /*
  * Copyright (c) 2017 Martin Pieuchot
@@ -196,7 +196,20 @@ imcs_add_type(struct imcs *imcs, struct itype *it)
 		ctt.ctt_type = it->it_refp->it_idx;
 		ctsz = sizeof(struct ctf_stype);
 	} else if (size <= CTF_MAX_SIZE) {
-		ctt.ctt_size = size;
+		if (kind == CTF_K_INTEGER || kind == CTF_K_FLOAT) {
+			assert(size <= 64);
+			if (size == 0)
+				ctt.ctt_size = 0;
+			else if (size <= 8)
+				ctt.ctt_size = 1;
+			else if (size <= 16)
+				ctt.ctt_size = 2;
+			else if (size <= 32)
+				ctt.ctt_size = 4;
+			else
+				ctt.ctt_size = 8;
+		} else
+			ctt.ctt_size = size;
 		ctsz = sizeof(struct ctf_stype);
 	} else {
 		ctt.ctt_lsizehi = CTF_SIZE_TO_LSIZE_HI(size);
