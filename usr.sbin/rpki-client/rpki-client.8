@@ -1,4 +1,4 @@
-.\"	$OpenBSD: rpki-client.8,v 1.100 2024/01/31 17:19:02 job Exp $
+.\"	$OpenBSD: rpki-client.8,v 1.101 2024/02/22 12:49:42 job Exp $
 .\"
 .\" Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: January 31 2024 $
+.Dd $Mdocdate: February 22 2024 $
 .Dt RPKI-CLIENT 8
 .Os
 .Sh NAME
@@ -269,7 +269,8 @@ file imposes constraints on the Trust Anchor reachable via the same-named
 .Em .tal
 file.
 One entry per line.
-Entries can be IP prefixes, IP address ranges, AS identifiers, or AS identifier ranges.
+Entries can be IP prefixes, IP address ranges,
+AS identifiers, or AS identifier ranges.
 Ranges are a minimum and maximum separated by a hyphen
 .Pq Sq - .
 Comments can be put anywhere in the file using a hash mark
