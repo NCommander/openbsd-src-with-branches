@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_access.h,v 1.10 2019/11/07 13:16:25 mpi Exp $	*/
+/*	$OpenBSD: db_access.h,v 1.11 2020/01/20 15:58:23 visa Exp $	*/
 /*	$NetBSD: db_access.h,v 1.6 1994/10/09 08:29:57 mycroft Exp $	*/
 
 /*
@@ -36,5 +36,5 @@
 db_expr_t db_get_value(vaddr_t, size_t, int);
 void db_put_value(vaddr_t, size_t, db_expr_t);
 
-void db_read_bytes(vaddr_t, size_t, char *);
-void db_write_bytes(vaddr_t, size_t, char *);
+void db_read_bytes(vaddr_t, size_t, void *);
+void db_write_bytes(vaddr_t, size_t, void *);

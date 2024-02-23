@@ -1,4 +1,4 @@
-/*	$OpenBSD: db_interface.c,v 1.7 2022/04/12 19:44:32 naddy Exp $	*/
+/*	$OpenBSD: db_interface.c,v 1.8 2022/04/14 19:47:11 naddy Exp $	*/
 
 /*
  * Copyright (c) 1996 Scott K. Stevens
@@ -179,9 +179,9 @@ db_validate_address(vaddr_t addr)
  * Read bytes from kernel address space for debugger.
  */
 void
-db_read_bytes(vaddr_t addr, size_t size, char *data)
+db_read_bytes(vaddr_t addr, size_t size, void *datap)
 {
-	char	*src = (char *)addr;
+	char *data = datap, *src = (char *)addr;
 
 	if (db_validate_address((vaddr_t)src)) {
 		db_printf("address %p is invalid\n", src);
@@ -217,7 +217,7 @@ db_read_bytes(vaddr_t addr, size_t size, char *data)
  * Write bytes to kernel address space for debugger.
  */
 void
-db_write_bytes(vaddr_t addr, size_t size, char *data)
+db_write_bytes(vaddr_t addr, size_t size, void *datap)
 {
 	// XXX
 }
