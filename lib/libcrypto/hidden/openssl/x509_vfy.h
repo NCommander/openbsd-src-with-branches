@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_vfy.h,v 1.5 2023/07/03 11:43:15 tobhe Exp $ */
+/* $OpenBSD: x509_vfy.h,v 1.6 2023/07/05 21:14:54 bcook Exp $ */
 /*
  * Copyright (c) 2022 Bob Beck <beck@openbsd.org>
  *
@@ -40,6 +40,7 @@ LCRYPTO_USED(X509_STORE_new);
 LCRYPTO_USED(X509_STORE_free);
 LCRYPTO_USED(X509_STORE_up_ref);
 LCRYPTO_USED(X509_STORE_get0_objects);
+LCRYPTO_USED(X509_STORE_get1_objects);
 LCRYPTO_USED(X509_STORE_get_ex_data);
 LCRYPTO_USED(X509_STORE_set_ex_data);
 LCRYPTO_USED(X509_STORE_set_flags);
