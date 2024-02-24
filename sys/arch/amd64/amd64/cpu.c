@@ -1,4 +1,4 @@
-/*	$OpenBSD: cpu.c,v 1.180 2024/02/12 02:57:14 jsg Exp $	*/
+/*	$OpenBSD: cpu.c,v 1.181 2024/02/18 05:42:50 guenther Exp $	*/
 /* $NetBSD: cpu.c,v 1.1 2003/04/26 18:39:26 fvdl Exp $ */
 
 /*-
@@ -1260,7 +1260,7 @@ cpu_fix_msrs(struct cpu_info *ci)
 #ifndef SMALL_KERNEL
 	if (ci->ci_feature_sefflags_edx & SEFF0EDX_IBT) {
 		msr = rdmsr(MSR_S_CET);
-		wrmsr(MSR_S_CET, msr | MSR_CET_ENDBR_EN);
+		wrmsr(MSR_S_CET, (msr & ~MSR_CET_NO_TRACK_EN) | MSR_CET_ENDBR_EN);
 		lcr4(rcr4() | CR4_CET);
 	}
 #endif
