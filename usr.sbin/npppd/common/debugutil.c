@@ -1,4 +1,4 @@
-/*	$OpenBSD: debugutil.c,v 1.5 2015/12/17 08:01:55 tb Exp $ */
+/*	$OpenBSD: debugutil.c,v 1.6 2017/05/30 17:22:00 yasuoka Exp $ */
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
  * All rights reserved.
@@ -90,15 +90,13 @@ set_prio_idx_init()
 }
 
 void
-debug_set_debugfp(fp)
-	FILE *fp;
+debug_set_debugfp(FILE *fp)
 {
 	debugfp = fp;
 }
 
 void
-debug_use_syslog(b)
-	int b;
+debug_use_syslog(int b)
 {
 	if (b)
 		use_syslog = 1;
