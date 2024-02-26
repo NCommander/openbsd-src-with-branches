@@ -1,4 +1,4 @@
-/*	$OpenBSD: dwqevar.h,v 1.9 2023/10/11 12:52:00 stsp Exp $	*/
+/*	$OpenBSD: dwqevar.h,v 1.10 2023/11/11 16:50:25 stsp Exp $	*/
 /*
  * Copyright (c) 2008, 2019 Mark Kettenis <kettenis@openbsd.org>
  * Copyright (c) 2017, 2022 Patrick Wildt <patrick@blueri.se>
@@ -18,6 +18,7 @@
 
 enum dwqe_phy_mode {
 	DWQE_PHY_MODE_UNKNOWN,
+	DWQE_PHY_MODE_RMII,
 	DWQE_PHY_MODE_RGMII,
 	DWQE_PHY_MODE_RGMII_ID,
 	DWQE_PHY_MODE_RGMII_TXID,
