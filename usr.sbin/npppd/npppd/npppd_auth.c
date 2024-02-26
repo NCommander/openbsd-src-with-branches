@@ -1,4 +1,4 @@
-/*	$OpenBSD: npppd_auth.c,v 1.21 2019/02/27 04:52:19 denis Exp $ */
+/*	$OpenBSD: npppd_auth.c,v 1.22 2021/03/29 03:54:39 yasuoka Exp $ */
 
 /*-
  * Copyright (c) 2009 Internet Initiative Japan Inc.
@@ -26,7 +26,7 @@
  * SUCH DAMAGE.
  */
 /**@file authentication realm */
-/* $Id: npppd_auth.c,v 1.21 2019/02/27 04:52:19 denis Exp $ */
+/* $Id: npppd_auth.c,v 1.22 2021/03/29 03:54:39 yasuoka Exp $ */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -49,6 +49,7 @@
 #include "net_utils.h"
 
 #include "npppd_auth_local.h"
+#include "npppd_radius.h"
 
 /**
  * Create a npppd_auth_base object.
@@ -596,6 +597,11 @@ npppd_auth_radius_reload(npppd_auth_base *base, struct authconf *auth)
 	    "Loaded configuration.  %d authentication server%s, %d accounting "
 	    "server%s.",
 	    nauth, (nauth > 1)? "s" : "", nacct, (nacct > 1)? "s" : "");
+
+	if (nacct > 0 && _this->rad_acct_on == 0) {
+		radius_acct_on(base->npppd, _this->rad_acct_setting);
+		_this->rad_acct_on = 1;
+	}
 
 	return 0;
 }
