@@ -465,11 +465,7 @@ struct bfd_config;
 void	 route_init(void);
 int	 route_cache(struct route *, const struct in_addr *,
 	    const struct in_addr *, u_int);
-struct rtentry *route_mpath(struct route *, const struct in_addr *,
-	    const struct in_addr *, u_int);
 int	 route6_cache(struct route *, const struct in6_addr *,
-	    const struct in6_addr *, u_int);
-struct rtentry *route6_mpath(struct route *, const struct in6_addr *,
 	    const struct in6_addr *, u_int);
 void	 rtm_ifchg(struct ifnet *);
 void	 rtm_ifannounce(struct ifnet *, int);
