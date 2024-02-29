@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_vmx.c,v 1.80 2024/02/09 15:22:41 jan Exp $	*/
+/*	$OpenBSD: if_vmx.c,v 1.81 2024/02/15 13:24:45 jan Exp $	*/
 
 /*
  * Copyright (c) 2013 Tsubai Masanari
@@ -18,6 +18,7 @@
 
 #include "bpfilter.h"
 #include "kstat.h"
+#include "vlan.h"
 
 #include <sys/param.h>
 #include <sys/device.h>
