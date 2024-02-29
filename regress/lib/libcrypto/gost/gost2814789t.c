@@ -1,4 +1,4 @@
-/*	$OpenBSD: gost2814789t.c,v 1.9 2023/06/19 18:51:47 tb Exp $	*/
+/*	$OpenBSD: gost2814789t.c,v 1.10 2023/11/19 13:11:06 tb Exp $	*/
 /* vim: set fileencoding=ascii : Charset: ASCII */
 /* test/gostr2814789t.c */
 /* ====================================================================
@@ -9,6 +9,7 @@
  * ====================================================================
  */
 #include <stdio.h>
+#include <openssl/opensslfeatures.h>
 
 #if defined(OPENSSL_NO_GOST)
 int main(int argc, char *argv[])
