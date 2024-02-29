@@ -1,4 +1,4 @@
-/*	$OpenBSD: qwx.c,v 1.51 2024/02/22 21:21:35 stsp Exp $	*/
+/*	$OpenBSD: qwx.c,v 1.52 2024/02/24 15:21:39 cheloha Exp $	*/
 
 /*
  * Copyright 2023 Stefan Sperling <stsp@openbsd.org>
@@ -12793,6 +12793,7 @@ qwx_mgmt_rx_event(struct qwx_softc *sc, struct mbuf *m)
 	}
 #endif
 	ieee80211_input(ifp, m, ni, &rxi);
+	ieee80211_release_node(ic, ni);
 exit:
 #ifdef notyet
 	rcu_read_unlock();
