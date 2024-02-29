@@ -1,4 +1,4 @@
-/* $OpenBSD: vmm_machdep.c,v 1.8 2023/09/06 03:35:57 dv Exp $ */
+/* $OpenBSD: vmm_machdep.c,v 1.8.2.1 2023/12/10 00:30:01 mlarkin Exp $ */
 /*
  * Copyright (c) 2014 Mike Larkin <mlarkin@openbsd.org>
  *
@@ -3954,9 +3954,8 @@ vcpu_run_vmx(struct vcpu *vcpu, struct vm_run_params *vrp)
 	struct schedstate_percpu *spc;
 	struct vmx_invvpid_descriptor vid;
 	uint64_t eii, procbased, int_st;
-	uint16_t irq, ldt_sel;
+	uint16_t irq;
 	u_long s;
-	struct region_descriptor idtr;
 
 	rw_assert_wrlock(&vcpu->vc_lock);
 
@@ -4169,9 +4168,6 @@ vcpu_run_vmx(struct vcpu *vcpu, struct vm_run_params *vrp)
 			break;
 		}
 
-		sidt(&idtr);
-		sldt(&ldt_sel);
-
 		TRACEPOINT(vmm, guest_enter, vcpu, vrp);
 
 		/* Restore any guest PKRU state. */
@@ -4189,8 +4185,14 @@ vcpu_run_vmx(struct vcpu *vcpu, struct vm_run_params *vrp)
 			wrpkru(PGK_VALUE);
 		}
 
-		lidt(&idtr);
-		lldt(ldt_sel);
+		/*
+		 * VM exit restores the GDT and IDT bases, but gives
+		 * them high limits.  Reload with the correct limits here.
+		 * 'gdt' is set above first time through and reset there
+		 * whenever this thread switches CPU.
+		 */
+		bare_lgdt(&gdt);
+		cpu_init_idt();
 
 		/*
 		 * On exit, interrupts are disabled, and we are running with
