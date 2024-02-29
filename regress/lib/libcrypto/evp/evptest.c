@@ -1,4 +1,4 @@
-/*	$OpenBSD: evptest.c,v 1.12 2023/03/02 20:24:51 tb Exp $	*/
+/*	$OpenBSD: evptest.c,v 1.13 2023/11/19 13:11:06 tb Exp $	*/
 /* Written by Ben Laurie, 2001 */
 /*
  * Copyright (c) 2001 The OpenSSL Project.  All rights reserved.
@@ -441,7 +441,6 @@ main(int argc, char **argv)
 	CRYPTO_cleanup_all_ex_data();
 	ERR_remove_thread_state(NULL);
 	ERR_free_strings();
-	CRYPTO_mem_leaks_fp(stderr);
 
 	return 0;
 }
