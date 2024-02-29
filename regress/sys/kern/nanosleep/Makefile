@@ -1,7 +1,8 @@
-#	$OpenBSD: Makefile,v 1.3 2002/09/02 20:01:44 avsm Exp $
+#	$OpenBSD: Makefile,v 1.4 2018/05/22 18:33:41 cheloha Exp $
 
 PROG=	nanosleep
 SRCS=	nanosleep.c
+WARNINGS=	yes
 
 trivial: nanosleep
 	./nanosleep -t
