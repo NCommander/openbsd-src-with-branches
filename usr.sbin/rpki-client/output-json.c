@@ -23,6 +23,8 @@
 #include "extern.h"
 #include "json.h"
 
+extern int experimental;
+
 static void
 outputheader_json(struct stats *st)
 {
@@ -178,7 +180,8 @@ output_json(FILE *out, struct vrp_tree *vrps, struct brk_tree *brks,
 	if (!excludeaspa)
 		output_aspa(vaps);
 
-	output_spl(vsps);
+	if (experimental)
+		output_spl(vsps);
 
 	return json_do_finish();
 }
