@@ -1,4 +1,4 @@
-/*	$OpenBSD: ssltest.c,v 1.43 2023/08/15 11:20:57 tb Exp $ */
+/*	$OpenBSD: ssltest.c,v 1.44 2023/11/19 13:12:06 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -763,7 +763,6 @@ end:
 	ERR_free_strings();
 	ERR_remove_thread_state(NULL);
 	EVP_cleanup();
-	CRYPTO_mem_leaks(bio_err);
 	BIO_free(bio_err);
 
 	exit(ret);
