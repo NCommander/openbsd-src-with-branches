@@ -1,4 +1,4 @@
-/*	$OpenBSD: mktemp.c,v 1.39 2017/11/28 06:55:49 tb Exp $ */
+/*	$OpenBSD: mkdtemp.c,v 1.1 2024/01/19 19:45:02 millert Exp $ */
 /*
  * Copyright (c) 2024 Todd C. Miller
  *
@@ -28,6 +28,14 @@ char *
 mkdtemp(char *path)
 {
 	if (__mktemp4(path, 0, 0, mkdtemp_cb) == 0)
+		return path;
+	return NULL;
+}
+
+char *
+mkdtemps(char *path, int slen)
+{
+	if (__mktemp4(path, slen, 0, mkdtemp_cb) == 0)
 		return path;
 	return NULL;
 }
