@@ -399,7 +399,8 @@ attach	rkpinctrl at fdt
 file	dev/fdt/rkpinctrl.c		rkpinctrl
 
 device	rkpmic
-attach	rkpmic at i2c
+attach	rkpmic at spi with rkpmic_spi
+attach	rkpmic at i2c with rkpmic_i2c
 file	dev/fdt/rkpmic.c		rkpmic
 
 device	rkpwm
