@@ -1,4 +1,4 @@
-/* $OpenBSD: s3_lib.c,v 1.248 2023/11/29 13:39:34 tb Exp $ */
+/* $OpenBSD: s3_lib.c,v 1.249 2024/02/03 15:58:33 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1970,6 +1970,7 @@ SSL_get_signature_type_nid(const SSL *s, int *nid)
 
 	return 1;
 }
+LSSL_ALIAS(SSL_get_signature_type_nid);
 
 int
 SSL_get_peer_signature_type_nid(const SSL *s, int *nid)
@@ -1986,6 +1987,7 @@ SSL_get_peer_signature_type_nid(const SSL *s, int *nid)
 
 	return 1;
 }
+LSSL_ALIAS(SSL_get_peer_signature_type_nid);
 
 long
 ssl3_ctrl(SSL *s, int cmd, long larg, void *parg)

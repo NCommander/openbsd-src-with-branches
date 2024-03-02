@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl.h,v 1.232 2023/11/22 15:43:42 tb Exp $ */
+/* $OpenBSD: ssl.h,v 1.233 2024/02/03 15:58:33 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1058,10 +1058,6 @@ const SSL_METHOD *SSL_CTX_get_ssl_method(const SSL_CTX *ctx);
 	SSL_ctrl(s, SSL_CTRL_GET_PEER_SIGNATURE_NID, 0, pn)
 #define SSL_get_peer_tmp_key(s, pk) \
 	SSL_ctrl(s, SSL_CTRL_GET_PEER_TMP_KEY, 0, pk)
-
-int SSL_get_signature_type_nid(const SSL *ssl, int *nid);
-int SSL_get_peer_signature_type_nid(const SSL *ssl, int *nid);
-
 #endif /* LIBRESSL_HAS_TLS1_3 || LIBRESSL_INTERNAL */
 
 #ifndef LIBRESSL_INTERNAL
