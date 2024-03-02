@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_ciph.c,v 1.138 2024/01/04 20:02:10 tb Exp $ */
+/* $OpenBSD: ssl_ciph.c,v 1.139 2024/02/03 15:58:33 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -1340,20 +1340,6 @@ ssl_create_cipher_list(const SSL_METHOD *ssl_method,
 
 	return ret;
 }
-
-const SSL_CIPHER *
-SSL_CIPHER_get_by_id(unsigned int id)
-{
-	return ssl3_get_cipher_by_id(id);
-}
-LSSL_ALIAS(SSL_CIPHER_get_by_id);
-
-const SSL_CIPHER *
-SSL_CIPHER_get_by_value(uint16_t value)
-{
-	return ssl3_get_cipher_by_value(value);
-}
-LSSL_ALIAS(SSL_CIPHER_get_by_value);
 
 char *
 SSL_CIPHER_description(const SSL_CIPHER *cipher, char *buf, int len)
