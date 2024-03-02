@@ -1,4 +1,4 @@
-/* $OpenBSD: ocsp_cl.c,v 1.22 2022/12/26 07:18:52 jmc Exp $ */
+/* $OpenBSD: ocsp_cl.c,v 1.23 2023/07/08 10:44:00 beck Exp $ */
 /* Written by Tom Titchener <Tom_Titchener@groove.net> for the OpenSSL
  * project. */
 
@@ -71,6 +71,7 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
+#include "asn1_local.h"
 #include "ocsp_local.h"
 
 /* Utility functions related to sending OCSP requests and extracting
