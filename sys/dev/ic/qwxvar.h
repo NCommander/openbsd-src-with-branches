@@ -1,4 +1,4 @@
-/*	$OpenBSD: qwxvar.h,v 1.22 2024/02/22 09:08:08 stsp Exp $	*/
+/*	$OpenBSD: qwxvar.h,v 1.23 2024/02/24 15:21:39 cheloha Exp $	*/
 
 /*
  * Copyright (c) 2018-2019 The Linux Foundation.
@@ -1868,6 +1868,9 @@ struct qwx_softc {
 	int				 ctl_resp;
 
 	struct qwx_dmamem		*m3_mem;
+
+	struct timeout			 mon_reap_timer;
+#define ATH11K_MON_TIMER_INTERVAL	10
 
 	/* Provided by attachment driver: */
 	struct qwx_ops			ops;
