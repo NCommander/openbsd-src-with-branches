@@ -1,4 +1,4 @@
-# $OpenBSD: GENERIC,v 1.282 2024/01/24 07:36:52 kevlo Exp $
+# $OpenBSD: GENERIC,v 1.283 2024/02/15 16:33:54 deraadt Exp $
 #
 # GENERIC machine description file
 #
@@ -316,6 +316,8 @@ rkpcie*		at fdt?
 pci*		at rkpcie?
 rkpwm*		at fdt?
 rkrng*		at fdt?
+rkspi*		at fdt?
+rkpmic*		at spi?
 rktemp*		at fdt?
 rkvop*		at fdt?
 rkdwusb*	at fdt?
