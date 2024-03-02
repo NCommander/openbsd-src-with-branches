@@ -1,4 +1,4 @@
-/* $OpenBSD: stack.c,v 1.24 2024/01/13 16:32:53 tb Exp $ */
+/* $OpenBSD: stack.c,v 1.25 2024/02/26 15:00:30 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -65,6 +65,9 @@
 
 #undef MIN_NODES
 #define MIN_NODES	4
+
+#define OBJ_BSEARCH_VALUE_ON_NOMATCH		0x01
+#define OBJ_BSEARCH_FIRST_VALUE_ON_MATCH	0x02
 
 int
 (*sk_set_cmp_func(_STACK *sk, int (*c)(const void *, const void *)))(
