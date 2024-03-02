@@ -1,4 +1,4 @@
-/* $OpenBSD: x509_purp.c,v 1.36 2024/02/28 16:26:08 tb Exp $ */
+/* $OpenBSD: x509_purp.c,v 1.37 2024/03/02 10:40:05 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2001.
  */
@@ -67,6 +67,16 @@
 
 #include "x509_internal.h"
 #include "x509_local.h"
+
+struct x509_purpose_st {
+	int purpose;
+	int trust;		/* Default trust ID */
+	int flags;
+	int (*check_purpose)(const struct x509_purpose_st *, const X509 *, int);
+	char *name;
+	char *sname;
+	void *usr_data;
+} /* X509_PURPOSE */;
 
 #define V1_ROOT (EXFLAG_V1|EXFLAG_SS)
 #define ku_reject(x, usage) \
