@@ -1,4 +1,4 @@
-/*	$OpenBSD: trap.c,v 1.133 2024/01/23 13:02:15 aoyama Exp $	*/
+/*	$OpenBSD: trap.c,v 1.134 2024/02/18 21:27:38 miod Exp $	*/
 /*
  * Copyright (c) 2004, Miodrag Vallat.
  * Copyright (c) 1998 Steve Murphree, Jr.
@@ -511,6 +511,15 @@ user_fault:
 	case T_FPEPFLT+T_USER:
 		m88100_fpu_precise_exception(frame);
 		goto userexit;
+	case T_FPEIFLT:
+		/*
+		 * Although the kernel does not use FPU instructions,
+		 * userland-triggered FPU imprecise exceptions may be
+		 * raised during exception processing, when the FPU gets
+		 * reenabled (i.e. immediately when returning to
+		 * m88100_fpu_enable).
+		 */
+		/* FALLTHROUGH */
 	case T_FPEIFLT+T_USER:
 		m88100_fpu_imprecise_exception(frame);
 		goto userexit;
