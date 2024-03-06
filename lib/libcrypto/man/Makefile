@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.284 2024/03/05 17:21:40 tb Exp $
+# $OpenBSD: Makefile,v 1.285 2024/03/05 18:30:40 tb Exp $
 
 .include <bsd.own.mk>
 
@@ -312,7 +312,6 @@ MAN=	\
 	X509_ATTRIBUTE_new.3 \
 	X509_ATTRIBUTE_set1_object.3 \
 	X509_CINF_new.3 \
-	X509_CRL_METHOD_new.3 \
 	X509_CRL_get0_by_serial.3 \
 	X509_CRL_new.3 \
 	X509_CRL_print.3 \
