@@ -1,4 +1,4 @@
-/* $OpenBSD: sshsig.c,v 1.33 2023/09/06 23:18:15 djm Exp $ */
+/* $OpenBSD: sshsig.c,v 1.34 2023/12/08 09:18:39 markus Exp $ */
 /*
  * Copyright (c) 2019 Google LLC
  *
@@ -744,7 +744,7 @@ parse_principals_key_and_options(const char *path, u_long linenum, char *line,
 		*keyp = NULL;
 
 	cp = line;
-	cp = cp + strspn(cp, " \t"); /* skip leading whitespace */
+	cp = cp + strspn(cp, " \t\n\r"); /* skip leading whitespace */
 	if (*cp == '#' || *cp == '\0')
 		return SSH_ERR_KEY_NOT_FOUND; /* blank or all-comment line */
 
