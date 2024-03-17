@@ -1,4 +1,4 @@
-/*	$OpenBSD: identcpu.c,v 1.137 2023/08/16 04:07:37 jsg Exp $	*/
+/*	$OpenBSD: identcpu.c,v 1.138 2023/09/03 09:30:43 mlarkin Exp $	*/
 /*	$NetBSD: identcpu.c,v 1.1 2003/04/26 18:39:28 fvdl Exp $	*/
 
 /*
@@ -274,6 +274,8 @@ const struct {
 	{ ARCH_CAP_PBRSB_NO,		"PBRSB_NO" },
 	{ ARCH_CAP_GDS_CTRL,		"GDS_CTRL" },
 	{ ARCH_CAP_GDS_NO,		"GDS_NO" },
+	{ ARCH_CAP_RFDS_NO,		"RFDS_NO" },
+	{ ARCH_CAP_RFDS_CLEAR,		"RFDS_CLEAR" },
 };
 
 int
