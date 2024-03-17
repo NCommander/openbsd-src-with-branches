@@ -1,4 +1,4 @@
-/*	$OpenBSD: extern.h,v 1.209 2024/02/22 21:00:26 tb Exp $ */
+/*	$OpenBSD: extern.h,v 1.210 2024/02/26 15:40:33 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -23,14 +23,6 @@
 
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
-
-/*
- * Enumeration for ASN.1 explicit tags in RSC eContent
- */
-enum rsc_resourceblock_tag {
-	RSRCBLK_TYPE_ASID,
-	RSRCBLK_TYPE_IPADDRBLK,
-};
 
 enum cert_as_type {
 	CERT_AS_ID, /* single identifier */
