@@ -1,4 +1,4 @@
-/*	$OpenBSD: x509.c,v 1.80 2024/02/16 05:18:29 tb Exp $ */
+/*	$OpenBSD: x509.c,v 1.81 2024/02/22 12:49:42 job Exp $ */
 /*
  * Copyright (c) 2022 Theo Buehler <tb@openbsd.org>
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
@@ -1046,7 +1046,7 @@ x509_find_expires(time_t notafter, struct auth *a, struct crl_tree *crlt)
 
 	expires = notafter;
 
-	for (; a != NULL; a = a->parent) {
+	for (; a != NULL; a = a->issuer) {
 		if (expires > a->cert->notafter)
 			expires = a->cert->notafter;
 		crl = crl_get(crlt, a);
