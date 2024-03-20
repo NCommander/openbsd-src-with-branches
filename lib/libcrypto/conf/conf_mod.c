@@ -1,4 +1,4 @@
-/* $OpenBSD: conf_mod.c,v 1.27 2017/01/29 17:49:22 beck Exp $ */
+/* $OpenBSD: conf_mod.c,v 1.28 2023/07/20 15:05:30 tb Exp $ */
 /* Written by Stephen Henson (steve@openssl.org) for the OpenSSL
  * project 2001.
  */
@@ -364,6 +364,9 @@ CONF_modules_unload(int all)
 static void
 module_free(CONF_MODULE *md)
 {
+	if (md == NULL)
+		return;
+
 	free(md->name);
 	free(md);
 }
