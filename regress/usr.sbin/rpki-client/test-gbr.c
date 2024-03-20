@@ -1,4 +1,4 @@
-/*	$Id: test-gbr.c,v 1.15 2023/05/30 12:14:48 claudio Exp $ */
+/*	$Id: test-gbr.c,v 1.16 2023/09/25 11:09:30 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -32,7 +32,7 @@
 
 int outformats;
 int verbose;
-int filemode;
+int filemode = 1;
 
 int
 main(int argc, char *argv[])
