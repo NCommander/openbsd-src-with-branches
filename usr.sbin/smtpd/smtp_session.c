@@ -1,4 +1,4 @@
-/*	$OpenBSD: smtp_session.c,v 1.440 2024/01/20 09:01:03 claudio Exp $	*/
+/*	$OpenBSD: smtp_session.c,v 1.441 2024/01/28 17:23:17 op Exp $	*/
 
 /*
  * Copyright (c) 2008 Gilles Chehade <gilles@poolp.org>
@@ -2481,7 +2481,7 @@ smtp_tx_rcpt_to(struct smtp_tx *tx, const char *line)
 
 			if ((p = strchr(opt, ';')) == NULL ||
 			    !valid_xtext(p + 1) ||
-			    strlcpy(opt, tx->evp.dsn_orcpt, len) >= len) {
+			    strlcpy(tx->evp.dsn_orcpt, opt, len) >= len) {
 				smtp_reply(tx->session,
 				    "553 ORCPT address syntax error");
 				return;
