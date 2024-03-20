@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.29 2023/09/08 21:15:02 bluhm Exp $
+#	$OpenBSD: Makefile,v 1.28 2020/12/30 21:40:33 kn Exp $
 
 # The following ports must be installed:
 #
@@ -88,11 +88,7 @@ stamp-pf: addr.py pf.conf
 FRAG6_SCRIPTS !!=	cd ${.CURDIR} && ls -1 frag6*.py
 
 run-stack-frag6_queuelimit.py:
-	# stack does not limit the amount of fragments during reassembly
-	@echo DISABLED
-
-run-pf-frag6_oversize.py run-pf-frag6_unfragsize.py:
-	# pf does not send icmp parameter problem, so test does not work
+	# the stack does not limit the amount of fragments during reassembly
 	@echo DISABLED
 
 run-stack-frag6_doubleatomic.py: addr.py stamp-stack

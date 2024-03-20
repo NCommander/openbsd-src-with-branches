@@ -1,4 +1,4 @@
-/* $OpenBSD: exception.S,v 1.16 2023/12/26 09:19:15 kettenis Exp $ */
+/* $OpenBSD: exception.S,v 1.15 2022/12/10 10:13:58 patrick Exp $ */
 /*-
  * Copyright (c) 2014 Andrew Turner
  * All rights reserved.
@@ -38,6 +38,7 @@
 	sub	sp, sp, #128
 .endif
 	sub	sp, sp, #(TF_SIZE + 16)
+	stp	x29, x30, [sp, #(TF_SIZE)]
 	stp	x28, x29, [sp, #(TF_X + 28 * 8)]
 	stp	x26, x27, [sp, #(TF_X + 26 * 8)]
 	stp	x24, x25, [sp, #(TF_X + 24 * 8)]
@@ -58,11 +59,11 @@
 .if \el == 0
 	mrs	x18, sp_el0
 .endif
+	mov	fp, x18
 	stp	x10, x11, [sp, #(TF_ELR)]
 	stp	x18, lr, [sp, #(TF_SP)]
-	stp	fp, x10, [sp, #(TF_SIZE)]
 	mrs	x18, tpidr_el1
-	add	fp, sp, #(TF_SIZE)
+	add	x29, sp, #(TF_SIZE)
 .endm
 
 .macro	restore_registers el

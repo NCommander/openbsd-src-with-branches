@@ -1,4 +1,4 @@
-/*	$OpenBSD: mda_unpriv.c,v 1.8 2021/06/14 17:58:15 eric Exp $	*/
+/*	$OpenBSD: mda_unpriv.c,v 1.7 2020/06/01 05:21:30 chrisz Exp $	*/
 
 /*
  * Copyright (c) 2018 Gilles Chehade <gilles@poolp.org>
@@ -28,7 +28,7 @@ mda_unpriv(struct dispatcher *dsp, struct deliver *deliver,
     const char *pw_name, const char *pw_dir)
 {
 	int		idx;
-	char	       *mda_environ[12];
+	char	       *mda_environ[11];
 	char		mda_exec[LINE_MAX];
 	char		mda_wrapper[LINE_MAX];
 	const char     *mda_command;
@@ -54,7 +54,6 @@ mda_unpriv(struct dispatcher *dsp, struct deliver *deliver,
 	xasprintf(&mda_environ[idx++], "PATH=%s", _PATH_DEFPATH);
 	xasprintf(&mda_environ[idx++], "DOMAIN=%s", deliver->rcpt.domain);
 	xasprintf(&mda_environ[idx++], "HOME=%s", pw_dir);
-	xasprintf(&mda_environ[idx++], "ORIGINAL_RECIPIENT=%s@%s", deliver->rcpt.user, deliver->rcpt.domain);
 	xasprintf(&mda_environ[idx++], "RECIPIENT=%s@%s", deliver->dest.user, deliver->dest.domain);
 	xasprintf(&mda_environ[idx++], "SHELL=/bin/sh");
 	xasprintf(&mda_environ[idx++], "LOCAL=%s", deliver->rcpt.user);

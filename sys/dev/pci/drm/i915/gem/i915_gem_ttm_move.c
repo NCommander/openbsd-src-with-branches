@@ -272,7 +272,6 @@ struct i915_ttm_memcpy_arg {
 	bool clear;
 	struct i915_refct_sgt *src_rsgt;
 	struct i915_refct_sgt *dst_rsgt;
-	bus_space_tag_t memt;
 };
 
 /**
@@ -305,8 +304,11 @@ struct i915_ttm_memcpy_work {
 
 static void i915_ttm_move_memcpy(struct i915_ttm_memcpy_arg *arg)
 {
+	STUB();
+#ifdef notyet
 	ttm_move_memcpy(arg->clear, arg->num_pages,
-			arg->dst_iter, arg->src_iter, arg->memt);
+			arg->dst_iter, arg->src_iter);
+#endif
 }
 
 static void i915_ttm_memcpy_init(struct i915_ttm_memcpy_arg *arg,
@@ -315,6 +317,8 @@ static void i915_ttm_memcpy_init(struct i915_ttm_memcpy_arg *arg,
 				 struct ttm_tt *dst_ttm,
 				 struct i915_refct_sgt *dst_rsgt)
 {
+	STUB();
+#ifdef notyet
 	struct drm_i915_gem_object *obj = i915_ttm_to_gem(bo);
 	struct intel_memory_region *dst_reg, *src_reg;
 
@@ -338,8 +342,7 @@ static void i915_ttm_memcpy_init(struct i915_ttm_memcpy_arg *arg,
 	arg->dst_rsgt = i915_refct_sgt_get(dst_rsgt);
 	arg->src_rsgt = clear ? NULL :
 		i915_ttm_resource_get_st(obj, bo->resource);
-
-	arg->memt = bo->bdev->memt;
+#endif
 }
 
 static void i915_ttm_memcpy_release(struct i915_ttm_memcpy_arg *arg)

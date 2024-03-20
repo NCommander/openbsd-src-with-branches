@@ -1,4 +1,4 @@
-/* $OpenBSD: keypairtest.c,v 1.6 2022/02/08 18:05:57 tb Exp $ */
+/* $OpenBSD: keypairtest.c,v 1.5 2021/12/04 09:04:36 tb Exp $ */
 /*
  * Copyright (c) 2018 Joel Sing <jsing@openbsd.org>
  *
@@ -29,7 +29,7 @@
 #include <tls_internal.h>
 
 #define PUBKEY_HASH \
-    "SHA256:f03c535d374614e7356c0a4e6fd37fe94297b60ed86212adcba40e8e0b07bc9f"
+    "SHA256:858d0f94beb0a08eb4f13871ba57bf0a2e081287d0efbaeb3bbac59dd8f1a8e5"
 
 char *cert_file, *key_file, *ocsp_staple_file;
 

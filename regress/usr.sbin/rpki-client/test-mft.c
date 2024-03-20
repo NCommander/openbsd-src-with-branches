@@ -1,4 +1,4 @@
-/*	$Id: test-mft.c,v 1.27 2023/09/25 11:09:30 tb Exp $ */
+/*	$Id: test-mft.c,v 1.26 2023/06/20 12:52:32 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -35,7 +35,7 @@
 
 int outformats;
 int verbose;
-int filemode = 1;
+int filemode;
 
 int
 main(int argc, char *argv[])

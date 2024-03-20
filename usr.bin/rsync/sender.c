@@ -1,4 +1,4 @@
-/*	$OpenBSD: sender.c,v 1.32 2024/02/27 11:28:30 claudio Exp $ */
+/*	$OpenBSD: sender.c,v 1.31 2024/02/19 16:39:18 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -588,8 +588,7 @@ rsync_sender(struct sess *sess, int fdin,
 			    &up, &wbuf, &wbufsz, &wbufmax, fl)) {
 				ERRX1("send_up_fsm");
 				goto out;
-			}
-			if (phase > 1)
+			} else if (phase > 1)
 				break;
 		}
 
@@ -665,8 +664,7 @@ rsync_sender(struct sess *sess, int fdin,
 	if (!io_read_int(sess, fdin, &idx)) {
 		ERRX1("io_read_int");
 		goto out;
-	}
-	if (idx != -1) {
+	} else if (idx != -1) {
 		ERRX("read incorrect update complete ack");
 		goto out;
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: gadget.S,v 1.1 2023/01/09 11:50:01 anton Exp $	*/
+/*	$OpenBSD$	*/
 
 #include <sys/syscall.h>
 #include <machine/asm.h>
@@ -12,13 +12,11 @@
         .type	gadget_getpid,_ASM_TYPE_FUNCTION
 gadget_getpid:
 #if defined(__amd64__)
-	endbr64
 	mov	$SYS_getpid, %eax
 	syscall
 	ret
 #elif defined(__aarch64__)
-	bti	c
-	mov	x8, #SYS_getpid
+	ldr	x8, #SYS_getpid
 	svc	0
 	dsb	nsh
 	isb

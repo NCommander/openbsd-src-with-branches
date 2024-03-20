@@ -1,4 +1,4 @@
-/*	$OpenBSD: dsp.c,v 1.18 2022/12/26 19:16:00 jmc Exp $	*/
+/*	$OpenBSD: dsp.c,v 1.17 2021/07/05 08:29:59 ratchov Exp $	*/
 /*
  * Copyright (c) 2008-2012 Alexandre Ratchov <alex@caoua.org>
  *
@@ -992,35 +992,33 @@ cmap_init(struct cmap *p,
     int imin, int imax, int isubmin, int isubmax,
     int omin, int omax, int osubmin, int osubmax)
 {
-	int inch, onch, nch;
+	int cmin, cmax;
 
-	/*
-	 * Ignore channels outside of the available sets
-	 */
-	if (isubmin < imin)
-		isubmin = imin;
-	if (isubmax > imax)
-		isubmax = imax;
-	if (osubmin < omin)
-		osubmin = omin;
-	if (osubmax > omax)
-		osubmax = omax;
+	cmin = -NCHAN_MAX;
+	if (osubmin > cmin)
+		cmin = osubmin;
+	if (omin > cmin)
+		cmin = omin;
+	if (isubmin > cmin)
+		cmin = isubmin;
+	if (imin > cmin)
+		cmin = imin;
 
-	/*
-	 * Shrink the input or the output subset to make both subsets of
-	 * the same size
-	 */
-	inch = isubmax - isubmin + 1;
-	onch = osubmax - osubmin + 1;
-	nch = (inch < onch) ? inch : onch;
-	isubmax = isubmin + nch - 1;
-	osubmax = osubmin + nch - 1;
+	cmax = NCHAN_MAX;
+	if (osubmax < cmax)
+		cmax = osubmax;
+	if (omax < cmax)
+		cmax = omax;
+	if (isubmax < cmax)
+		cmax = isubmax;
+	if (imax < cmax)
+		cmax = imax;
 
-	p->ostart = osubmin - omin;
-	p->onext = omax - osubmax;
-	p->istart = isubmin - imin;
-	p->inext = imax - isubmax;
-	p->nch = nch;
+	p->ostart = cmin - omin;
+	p->onext = omax - cmax;
+	p->istart = cmin - imin;
+	p->inext = imax - cmax;
+	p->nch = cmax - cmin + 1;
 #ifdef DEBUG
 	if (log_level >= 3) {
 		log_puts("cmap: nch = ");

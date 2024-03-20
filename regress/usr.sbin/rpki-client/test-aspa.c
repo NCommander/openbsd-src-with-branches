@@ -1,4 +1,4 @@
-/*	$Id: test-aspa.c,v 1.6 2023/09/25 11:09:30 tb Exp $ */
+/*	$Id: test-aspa.c,v 1.5 2023/05/30 12:14:48 claudio Exp $ */
 /*
  * Copyright (c) 2022 Job Snijders <job@fastly.com>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -33,7 +33,7 @@
 
 int outformats;
 int verbose;
-int filemode = 1;
+int filemode;
 
 int
 main(int argc, char *argv[])

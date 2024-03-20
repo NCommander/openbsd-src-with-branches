@@ -1,4 +1,4 @@
-/*	$Id: test-roa.c,v 1.24 2023/09/25 11:09:30 tb Exp $ */
+/*	$Id: test-roa.c,v 1.23 2023/05/30 12:14:48 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -32,7 +32,7 @@
 
 int outformats;
 int verbose;
-int filemode = 1;
+int filemode;
 
 int
 main(int argc, char *argv[])

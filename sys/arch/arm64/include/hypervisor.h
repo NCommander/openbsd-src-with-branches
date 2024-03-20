@@ -1,4 +1,4 @@
-/* $OpenBSD: hypervisor.h,v 1.3 2021/02/21 13:14:47 kettenis Exp $ */
+/* $OpenBSD: hypervisor.h,v 1.2 2016/12/18 14:40:25 patrick Exp $ */
 /*-
  * Copyright (c) 2013, 2014 Andrew Turner
  * All rights reserved.
@@ -82,8 +82,6 @@
 #define	HCR_CD		0x0000000100000000
 #define	HCR_ID		0x0000000200000000
 #define	HCR_E2H		0x0000000400000000
-#define	HCR_APK		0x0000010000000000
-#define	HCR_API		0x0000020000000000
 
 #endif
 

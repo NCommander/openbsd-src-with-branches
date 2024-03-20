@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile,v 1.10 2023/06/13 11:41:36 claudio Exp $
+# $OpenBSD: Makefile,v 1.9 2023/04/18 19:41:50 bluhm Exp $
 
 PROGS +=	test-http
 
@@ -17,7 +17,6 @@ run-regress-test-http: test-http
 	./test-http https://${SERVER}/HTTP/TE/foo.txt foo.txt
 	./test-http https://${SERVER}/HTTP/ChunkedScript chunk.out
 	./test-http https://${SERVER}/HTTP/300/307.html redir.out
-	-./test-http https://tinyurl.com/bd27n56t /dev/zero
 	sha256 -c ${.CURDIR}/test-http.sum
 .else
 	# server ${SERVER} not reachable

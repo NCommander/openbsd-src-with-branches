@@ -842,13 +842,13 @@ uLong ZEXPORT deflateBound(z_streamp strm, uLong sourceLen) {
     storelen = sourceLen + (sourceLen >> 5) + (sourceLen >> 7) +
                (sourceLen >> 11) + 7;
 
-    /* if can't get parameters, return larger bound plus a wrapper */
+    /* if can't get parameters, return larger bound plus a zlib wrapper */
     if (deflateStateCheck(strm))
-        return (fixedlen > storelen ? fixedlen : storelen) + 18;
+        return (fixedlen > storelen ? fixedlen : storelen) + 6;
 
     /* compute wrapper length */
     s = strm->state;
-    switch (s->wrap < 0 ? -s->wrap : s->wrap) {
+    switch (s->wrap) {
     case 0:                                 /* raw deflate */
         wraplen = 0;
         break;
@@ -878,7 +878,7 @@ uLong ZEXPORT deflateBound(z_streamp strm, uLong sourceLen) {
         break;
 #endif
     default:                                /* for compiler happiness */
-        wraplen = 18;
+        wraplen = 6;
     }
 
     /* if not default parameters, return one of the conservative bounds */

@@ -1,4 +1,4 @@
-/*	$OpenBSD: parse.y,v 1.456 2024/03/18 14:54:52 claudio Exp $ */
+/*	$OpenBSD: parse.y,v 1.454 2023/04/28 13:23:52 claudio Exp $ */
 
 /*
  * Copyright (c) 2002, 2003, 2004 Henning Brauer <henning@openbsd.org>
@@ -1894,7 +1894,7 @@ peeropts	: REMOTEAS as4number	{
 			uint16_t	afi;
 
 			if ($3 == SAFI_NONE) {
-				for (aid = AID_MIN; aid < AID_MAX; aid++) {
+				for (aid = 0; aid < AID_MAX; aid++) {
 					if (aid2afi(aid, &afi, &safi) == -1 ||
 					    afi != $2)
 						continue;
@@ -1927,11 +1927,11 @@ peeropts	: REMOTEAS as4number	{
 			int8_t *ap = curpeer->conf.capabilities.add_path;
 			uint8_t i;
 
-			for (i = AID_MIN; i < AID_MAX; i++)
+			for (i = 0; i < AID_MAX; i++)
 				if ($4)
-					ap[i] |= CAPA_AP_RECV;
+					*ap++ |= CAPA_AP_RECV;
 				else
-					ap[i] &= ~CAPA_AP_RECV;
+					*ap++ &= ~CAPA_AP_RECV;
 		}
 		| ANNOUNCE ADDPATH SEND STRING addpathextra addpathmax {
 			int8_t *ap = curpeer->conf.capabilities.add_path;
@@ -1945,7 +1945,9 @@ peeropts	: REMOTEAS as4number	{
 					    "for 'add-path send no'");
 					YYERROR;
 				}
-				mode = ADDPATH_EVAL_NONE;
+				for (i = 0; i < AID_MAX; i++)
+					*ap++ &= ~CAPA_AP_SEND;
+				break;
 			} else if (!strcmp($4, "all")) {
 				free($4);
 				if ($5 != 0 || $6 != 0) {
@@ -1969,12 +1971,8 @@ peeropts	: REMOTEAS as4number	{
 				free($4);
 				YYERROR;
 			}
-			for (i = AID_MIN; i < AID_MAX; i++) {
-				if (mode != ADDPATH_EVAL_NONE)
-					ap[i] |= CAPA_AP_SEND;
-				else
-					ap[i] &= ~CAPA_AP_SEND;
-			}
+			for (i = 0; i < AID_MAX; i++)
+				*ap++ |= CAPA_AP_SEND;
 			curpeer->conf.eval.mode = mode;
 			curpeer->conf.eval.extrapaths = $5;
 			curpeer->conf.eval.maxpaths = $6;
@@ -4613,6 +4611,7 @@ struct peer *
 alloc_peer(void)
 {
 	struct peer	*p;
+	uint8_t		 i;
 
 	if ((p = calloc(1, sizeof(struct peer))) == NULL)
 		fatal("new_peer");
@@ -4623,6 +4622,8 @@ alloc_peer(void)
 	p->conf.distance = 1;
 	p->conf.export_type = EXPORT_UNSET;
 	p->conf.announce_capa = 1;
+	for (i = 0; i < AID_MAX; i++)
+		p->conf.capabilities.mp[i] = 0;
 	p->conf.capabilities.refresh = 1;
 	p->conf.capabilities.grestart.restart = 1;
 	p->conf.capabilities.as4byte = 1;
@@ -4988,7 +4989,7 @@ expand_rule(struct filter_rule *rule, struct filter_rib_l *rib,
 int
 str2key(char *s, char *dest, size_t max_len)
 {
-	unsigned int	i;
+	unsigned	i;
 	char		t[3];
 
 	if (strlen(s) / 2 > max_len) {
@@ -5005,8 +5006,7 @@ str2key(char *s, char *dest, size_t max_len)
 		t[0] = s[2*i];
 		t[1] = s[2*i + 1];
 		t[2] = 0;
-		if (!isxdigit((unsigned char)t[0]) ||
-		    !isxdigit((unsigned char)t[1])) {
+		if (!isxdigit(t[0]) || !isxdigit(t[1])) {
 			yyerror("key must be specified in hex");
 			return (-1);
 		}

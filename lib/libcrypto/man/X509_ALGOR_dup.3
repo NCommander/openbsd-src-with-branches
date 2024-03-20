@@ -1,4 +1,4 @@
-.\"	$OpenBSD: X509_ALGOR_dup.3,v 1.22 2023/10/13 05:49:34 tb Exp $
+.\"	$OpenBSD: X509_ALGOR_dup.3,v 1.21 2023/10/13 05:47:35 tb Exp $
 .\"	OpenSSL 4692340e Jun 7 15:49:08 2016 -0400
 .\"
 .\" This file is a derived work.
@@ -75,6 +75,7 @@
 .Nm X509_ALGOR_dup ,
 .Nm X509_ALGOR_set0 ,
 .Nm X509_ALGOR_get0 ,
+.Nm X509_ALGOR_set_md ,
 .Nm X509_ALGOR_cmp
 .Nd create, change, and inspect algorithm identifiers
 .Sh SYNOPSIS
@@ -100,6 +101,11 @@
 .Fa "int *pptype"
 .Fa "const void **ppval"
 .Fa "const X509_ALGOR *alg"
+.Fc
+.Ft void
+.Fo X509_ALGOR_set_md
+.Fa "X509_ALGOR *alg"
+.Fa "const EVP_MD *md"
 .Fc
 .Ft int
 .Fo X509_ALGOR_cmp
@@ -234,6 +240,22 @@ then
 .Pf * Fa ppval Ns 's
 value is undefined.
 .Pp
+.Fn X509_ALGOR_set_md
+sets
+.Fa alg
+to appropriate values for the message digest
+.Fa md .
+If the
+.Dv EVP_MD_FLAG_DIGALGID_ABSENT
+flag is not set on
+.Fa md ,
+.Fn X509_ALGOR_set_md
+can leave
+.Fa alg
+in a corrupted state due to memory allocation failure.
+This problem can be avoided by preallocating with an error-checked call to
+.Fn X509_ALGOR_set0 alg NULL 0 NULL .
+.Pp
 .Fn X509_ALGOR_cmp
 compares
 .Fa a
@@ -295,3 +317,10 @@ first appeared in OpenSSL 0.9.8h and have been available since
 first appeared in OpenSSL 0.9.8zd, 1.0.0p, and 1.0.1k
 and has been available since
 .Ox 4.9 .
+.Pp
+.Fn X509_ALGOR_set_md
+first appeared in OpenSSL 1.0.1 and has been available since
+.Ox 5.3 .
+.Sh BUGS
+.Fn X509_ALGOR_set_md
+can fail but cannot communicate failure to the caller.

@@ -1,4 +1,4 @@
-/*	$OpenBSD: trampoline.S,v 1.4 2022/12/10 10:13:58 patrick Exp $	*/
+/*	$OpenBSD: trampoline.S,v 1.3 2021/02/17 12:11:44 kettenis Exp $	*/
 
 /*
  * Copyright (c) 2018 Mark Kettenis <kettenis@openbsd.org>
@@ -43,12 +43,6 @@
 	spectre_bhb_loop 8
 .endm
 .macro	spectre_bhb_loop_8_late
-.endm
-
-.macro	spectre_bhb_loop_11_early
-	spectre_bhb_loop 11
-.endm
-.macro	spectre_bhb_loop_11_late
 .endm
 
 .macro	spectre_bhb_loop_24_early
@@ -98,7 +92,7 @@
 #endif
 
 .macro	spectre_bhb_clrbhb_early
-	clrbhb
+	hint	#22 /* clrbhb */
 	isb
 .endm
 .macro	spectre_bhb_clrbhb_late
@@ -153,7 +147,6 @@ trampoline_vectors_\bhb:
 trampoline_vectors:
 	tramp_vector none
 	tramp_vector loop_8
-	tramp_vector loop_11
 	tramp_vector loop_24
 	tramp_vector loop_32
 #if NPSCI > 0

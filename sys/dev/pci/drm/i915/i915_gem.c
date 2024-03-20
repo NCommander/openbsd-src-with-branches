@@ -39,6 +39,8 @@
 #include <drm/drm_cache.h>
 #include <drm/drm_vma_manager.h>
 
+#include <dev/pci/agpvar.h>
+
 #include "display/intel_display.h"
 #include "display/intel_frontbuffer.h"
 
@@ -277,6 +279,7 @@ err_unlock:
 	return ret;
 }
 
+#ifdef __linux__
 static inline bool
 gtt_user_read(struct io_mapping *mapping,
 	      loff_t base, int offset,
@@ -300,6 +303,34 @@ gtt_user_read(struct io_mapping *mapping,
 	}
 	return unwritten;
 }
+#else
+static inline bool
+gtt_user_read(struct drm_i915_private *dev_priv,
+	      loff_t base, int offset,
+	      char __user *user_data, int length)
+{
+	bus_space_handle_t bsh;
+	void __iomem *vaddr;
+	unsigned long unwritten;
+
+	/* We can use the cpu mem copy function because this is X86. */
+	agp_map_atomic(dev_priv->agph, base, &bsh);
+	vaddr = bus_space_vaddr(dev_priv->bst, bsh);
+	unwritten = __copy_to_user_inatomic(user_data,
+					    (void __force *)vaddr + offset,
+					    length);
+	agp_unmap_atomic(dev_priv->agph, bsh);
+	if (unwritten) {
+		agp_map_subregion(dev_priv->agph, base, PAGE_SIZE, &bsh);
+		vaddr = bus_space_vaddr(dev_priv->bst, bsh);
+		unwritten = copy_to_user(user_data,
+					 (void __force *)vaddr + offset,
+					 length);
+		agp_unmap_subregion(dev_priv->agph, bsh, PAGE_SIZE);
+	}
+	return unwritten;
+}
+#endif
 
 static struct i915_vma *i915_gem_gtt_prepare(struct drm_i915_gem_object *obj,
 					     struct drm_mm_node *node,
@@ -429,7 +460,7 @@ i915_gem_gtt_pread(struct drm_i915_gem_object *obj,
 			page_base += offset & LINUX_PAGE_MASK;
 		}
 
-		if (gtt_user_read(&ggtt->iomap, page_base, page_offset,
+		if (gtt_user_read(i915, page_base, page_offset,
 				  user_data, page_length)) {
 			ret = -EFAULT;
 			break;
@@ -511,7 +542,7 @@ out:
 /* This is the fast write path which cannot handle
  * page faults in the source data
  */
-
+#ifdef __linux__
 static inline bool
 ggtt_write(struct io_mapping *mapping,
 	   loff_t base, int offset,
@@ -534,6 +565,33 @@ ggtt_write(struct io_mapping *mapping,
 
 	return unwritten;
 }
+#else
+static inline bool
+ggtt_write(struct drm_i915_private *dev_priv,
+	   loff_t base, int offset,
+	   char __user *user_data, int length)
+{
+	bus_space_handle_t bsh;
+	void __iomem *vaddr;
+	unsigned long unwritten;
+
+	/* We can use the cpu mem copy function because this is X86. */
+	agp_map_atomic(dev_priv->agph, base, &bsh);
+	vaddr = bus_space_vaddr(dev_priv->bst, bsh);
+	unwritten = __copy_from_user_inatomic_nocache((void __force *)vaddr + offset,
+						      user_data, length);
+	agp_unmap_atomic(dev_priv->agph, bsh);
+	if (unwritten) {
+		agp_map_subregion(dev_priv->agph, base, PAGE_SIZE, &bsh);
+		vaddr = bus_space_vaddr(dev_priv->bst, bsh);
+		unwritten = copy_from_user((void __force *)vaddr + offset,
+					   user_data, length);
+		agp_unmap_subregion(dev_priv->agph, bsh, PAGE_SIZE);
+	}
+
+	return unwritten;
+}
+#endif
 
 /**
  * i915_gem_gtt_pwrite_fast - This is the fast pwrite path, where we copy the data directly from the
@@ -616,7 +674,7 @@ i915_gem_gtt_pwrite_fast(struct drm_i915_gem_object *obj,
 		 * If the object is non-shmem backed, we retry again with the
 		 * path that handles page fault.
 		 */
-		if (ggtt_write(&ggtt->iomap, page_base, page_offset,
+		if (ggtt_write(i915, page_base, page_offset,
 			       user_data, page_length)) {
 			ret = -EFAULT;
 			break;
