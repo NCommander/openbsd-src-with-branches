@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_mvneta.c,v 1.30 2023/04/13 02:19:05 jsg Exp $	*/
+/*	$OpenBSD: if_mvneta.c,v 1.31 2023/11/10 15:51:19 bluhm Exp $	*/
 /*	$NetBSD: if_mvneta.c,v 1.41 2015/04/15 10:15:40 hsuenaga Exp $	*/
 /*
  * Copyright (c) 2007, 2008, 2013 KIYOHARA Takashi
@@ -502,7 +502,9 @@ mvneta_attach(struct device *parent, struct device *self, void *aux)
 	}
 
 	if (!sc->sc_fixed_link) {
-		sc->sc_phy = OF_getpropint(faa->fa_node, "phy", 0);
+		sc->sc_phy = OF_getpropint(faa->fa_node, "phy-handle", 0);
+		if (!sc->sc_phy)
+			sc->sc_phy = OF_getpropint(faa->fa_node, "phy", 0);
 		node = OF_getnodebyphandle(sc->sc_phy);
 		if (!node) {
 			printf(": cannot find phy in fdt\n");
