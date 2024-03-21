@@ -1,4 +1,4 @@
-/*	$OpenBSD: tcpbench.c,v 1.68 2023/05/22 12:37:00 bluhm Exp $	*/
+/*	$OpenBSD: tcpbench.c,v 1.69 2023/05/22 12:53:04 tobhe Exp $	*/
 
 /*
  * Copyright (c) 2008 Damien Miller <djm@mindrot.org>
@@ -132,7 +132,7 @@ static void	wrapup(int);
  */
 static struct {
 	struct timeval t_first;		/* first connect / packet */
- 	unsigned long long total_bytes; /* bytes since t_first */
+	unsigned long long total_bytes; /* bytes since t_first */
 	unsigned long long n_slices;	/* slices since start */
 	unsigned long long slice_bytes; /* bytes since slice reset */
 	long double peak_mbps;		/* peak mbps so far */
