@@ -59,7 +59,6 @@ cmd_detach_client_exec(struct cmd *self, struct cmdq_item *item)
 {
 	struct args		*args = cmd_get_args(self);
 	struct cmd_find_state	*source = cmdq_get_source(item);
-	struct client		*c = cmdq_get_client(item);
 	struct client		*tc = cmdq_get_target_client(item), *loop;
 	struct session		*s;
 	enum msgtype		 msgtype;
@@ -102,13 +101,9 @@ cmd_detach_client_exec(struct cmd *self, struct cmdq_item *item)
 		return (CMD_RETURN_NORMAL);
 	}
 
-	if (cmd != NULL) {
-		if (c == NULL || c->session == NULL) {
-			cmdq_error(item, "must be attached for -E");
-			return (CMD_RETURN_ERROR);
-		}
+	if (cmd != NULL)
 		server_client_exec(tc, cmd);
-	} else
+	else
 		server_client_detach(tc, msgtype);
 	return (CMD_RETURN_STOP);
 }
