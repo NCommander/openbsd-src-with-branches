@@ -1,4 +1,4 @@
-/*	$OpenBSD: rtr_proto.c,v 1.32 2024/01/15 11:55:26 claudio Exp $ */
+/*	$OpenBSD: rtr_proto.c,v 1.33 2024/01/23 15:59:56 claudio Exp $ */
 
 /*
  * Copyright (c) 2020 Claudio Jeker <claudio@openbsd.org>
@@ -913,22 +913,6 @@ rtr_parse_cache_reset(struct rtr_session *rs, struct ibuf *pdu)
 	rtr_send_error(rs, pdu, CORRUPT_DATA, "%s: bad length",
 	    log_rtr_type(CACHE_RESET));
 	return -1;
-}
-
-static char *
-ibuf_get_string(struct ibuf *buf, size_t len)
-{
-	char *str;
-
-	if (ibuf_size(buf) < len) {
-		errno = EBADMSG;
-		return (NULL);
-	}
-	str = strndup(ibuf_data(buf), len);
-	if (str == NULL)
-		return (NULL);
-	ibuf_skip(buf, len);
-	return (str);
 }
 
 /*
