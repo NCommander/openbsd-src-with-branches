@@ -1,4 +1,4 @@
-# $OpenBSD: RAMDISK,v 1.214 2024/03/02 19:53:17 kettenis Exp $
+# $OpenBSD: RAMDISK,v 1.215 2024/03/24 22:34:48 patrick Exp $
 
 machine		arm64
 maxusers	4
@@ -180,6 +180,7 @@ bse*		at fdt?
 bse*		at acpi?
 dwctwo*		at fdt?
 usb*		at dwctwo?
+rpigpio*	at fdt? early 1
 
 # Amlogic SoCs
 amlclock*	at fdt? early 1
