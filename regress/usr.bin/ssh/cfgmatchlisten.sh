@@ -1,4 +1,4 @@
-#	$OpenBSD: cfgmatchlisten.sh,v 1.2 2018/06/19 03:02:17 djm Exp $
+#	$OpenBSD: cfgmatchlisten.sh,v 1.3 2018/07/02 14:13:30 dtucker Exp $
 #	Placed in the Public Domain.
 
 tid="sshd_config matchlisten"
@@ -28,7 +28,7 @@ start_client()
 	while test ! -f $pidfile ; do
 		sleep 1
 		n=`expr $n + 1`
-		if test $n -gt 5; then
+		if test $n -gt 60; then
 			kill $client_pid
 			fatal "timeout waiting for background ssh"
 		fi
