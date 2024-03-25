@@ -1,4 +1,4 @@
-/*	$OpenBSD: tmpfs_vnops.c,v 1.52 2022/06/26 05:20:42 visa Exp $	*/
+/*	$OpenBSD: tmpfs_vnops.c,v 1.53 2023/09/08 20:00:28 mvs Exp $	*/
 /*	$NetBSD: tmpfs_vnops.c,v 1.100 2012/11/05 17:27:39 dholland Exp $	*/
 
 /*
@@ -771,20 +771,7 @@ tmpfs_link(void *v)
 	int error;
 
 	KASSERT(VOP_ISLOCKED(dvp));
-
-	if (vp->v_type == VDIR) {
-		VOP_ABORTOP(dvp, cnp);
-		vput(dvp);
-		return EPERM;
-	}
-
 	KASSERT(dvp != vp);
-
-	if (dvp->v_mount != vp->v_mount) {
-		VOP_ABORTOP(dvp, cnp);
-		vput(dvp);
-		return EXDEV;
-	}
 
 	dnode = VP_TO_TMPFS_DIR(dvp);
 	node = VP_TO_TMPFS_NODE(vp);
