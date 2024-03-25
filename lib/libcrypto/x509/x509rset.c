@@ -68,7 +68,7 @@
 int
 X509_REQ_set_version(X509_REQ *x, long version)
 {
-	if (x == NULL || version != 0)
+	if (x == NULL)
 		return (0);
 	x->req_info->enc.modified = 1;
 	return (ASN1_INTEGER_set(x->req_info->version, version));
