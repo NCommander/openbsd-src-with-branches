@@ -1,4 +1,4 @@
-/* $OpenBSD: x509rset.c,v 1.11 2022/11/26 16:08:55 tb Exp $ */
+/* $OpenBSD: x509rset.c,v 1.12 2023/02/16 08:38:17 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -68,7 +68,7 @@
 int
 X509_REQ_set_version(X509_REQ *x, long version)
 {
-	if (x == NULL)
+	if (x == NULL || version != 0)
 		return (0);
 	x->req_info->enc.modified = 1;
 	return (ASN1_INTEGER_set(x->req_info->version, version));
