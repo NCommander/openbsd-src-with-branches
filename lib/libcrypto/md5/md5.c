@@ -1,4 +1,4 @@
-/* $OpenBSD: md5.c,v 1.18 2023/08/15 08:39:27 jsing Exp $ */
+/* $OpenBSD: md5.c,v 1.19 2024/03/26 05:21:35 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -57,6 +57,7 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
