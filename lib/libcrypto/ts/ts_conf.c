@@ -1,4 +1,4 @@
-/* $OpenBSD: ts_conf.c,v 1.12 2023/07/07 07:25:21 beck Exp $ */
+/* $OpenBSD: ts_conf.c,v 1.13 2023/11/19 15:46:10 tb Exp $ */
 /* Written by Zoltan Glozik (zglozik@stones.com) for the OpenSSL
  * project 2002.
  */
@@ -437,7 +437,8 @@ TS_CONF_set_clock_precision_digits(CONF *conf, const char *section,
 	if (!NCONF_get_number_e(conf, section, ENV_CLOCK_PRECISION_DIGITS,
 	    &digits))
 		digits = 0;
-	if (digits < 0 || digits > TS_MAX_CLOCK_PRECISION_DIGITS) {
+	/* We only support second precision, so reject everything else */
+	if (digits != 0) {
 		TS_CONF_invalid(section, ENV_CLOCK_PRECISION_DIGITS);
 		goto err;
 	}
