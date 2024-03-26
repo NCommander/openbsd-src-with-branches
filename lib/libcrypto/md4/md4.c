@@ -332,7 +332,6 @@ MD4_Final(unsigned char *md, MD4_CTX *c)
 	c->num = 0;
 	memset(p, 0, MD4_CBLOCK);
 
-	do {
 	ll = c->A;
 	HOST_l2c(ll, md);
 	ll = c->B;
@@ -341,7 +340,6 @@ MD4_Final(unsigned char *md, MD4_CTX *c)
 	HOST_l2c(ll, md);
 	ll = c->D;
 	HOST_l2c(ll, md);
-	} while (0);
 
 	return 1;
 }
