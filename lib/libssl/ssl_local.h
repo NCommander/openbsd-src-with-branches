@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_local.h,v 1.12 2023/12/29 12:24:33 tb Exp $ */
+/* $OpenBSD: ssl_local.h,v 1.13 2024/02/03 15:58:34 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -598,6 +598,9 @@ typedef struct ssl_handshake_st {
 
 	/* Extensions seen in this handshake. */
 	uint32_t extensions_seen;
+
+	/* Extensions processed in this handshake. */
+	uint32_t extensions_processed;
 
 	/* Signature algorithms selected for use (static pointers). */
 	const struct ssl_sigalg *our_sigalg;
