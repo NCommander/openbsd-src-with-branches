@@ -1,4 +1,4 @@
-/*	$OpenBSD: efiboot.h,v 1.5 2020/05/10 11:55:42 kettenis Exp $	*/
+/*	$OpenBSD: efiboot.h,v 1.1 2021/04/28 19:01:00 drahn Exp $	*/
 
 /*
  * Copyright (c) 2015 YASUOKA Masahiko <yasuoka@yasuoka.net>
@@ -28,3 +28,5 @@ void	efi_fb_probe(struct consdev *);
 void	efi_fb_init(struct consdev *);
 int	efi_fb_getc(dev_t);
 void	efi_fb_putc(dev_t, int);
+
+int32_t	efi_get_boot_hart_id(void);
