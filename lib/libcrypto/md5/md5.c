@@ -75,22 +75,6 @@ void md5_block_asm_data_order(MD5_CTX *c, const void *p, size_t num);
 #define md5_block_data_order md5_block_asm_data_order
 #endif
 
-#define DATA_ORDER_IS_LITTLE_ENDIAN
-
-#define HASH_LONG		MD5_LONG
-#define HASH_CTX		MD5_CTX
-#define HASH_CBLOCK		MD5_CBLOCK
-#define HASH_UPDATE		MD5_Update
-#define HASH_TRANSFORM		MD5_Transform
-#define HASH_FINAL		MD5_Final
-#define	HASH_BLOCK_DATA_ORDER	md5_block_data_order
-
-#define HASH_NO_UPDATE
-#define HASH_NO_TRANSFORM
-#define HASH_NO_FINAL
-
-#include "md32_common.h"
-
 #ifndef MD5_ASM
 static inline uint32_t
 md5_F(uint32_t x, uint32_t y, uint32_t z)
