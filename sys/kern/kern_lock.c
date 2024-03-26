@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_lock.c,v 1.71 2020/03/05 09:28:31 claudio Exp $	*/
+/*	$OpenBSD: kern_lock.c,v 1.72 2022/04/26 15:31:14 dv Exp $	*/
 
 /*
  * Copyright (c) 2017 Visa Hankala
@@ -264,15 +264,17 @@ mtx_enter(struct mutex *mtx)
 
 	spc->spc_spinning++;
 	while (mtx_enter_try(mtx) == 0) {
-		CPU_BUSY_CYCLE();
-
+		do {
+			CPU_BUSY_CYCLE();
 #ifdef MP_LOCKDEBUG
-		if (--nticks == 0) {
-			db_printf("%s: %p lock spun out\n", __func__, mtx);
-			db_enter();
-			nticks = __mp_lock_spinout;
-		}
+			if (--nticks == 0) {
+				db_printf("%s: %p lock spun out\n",
+				    __func__, mtx);
+				db_enter();
+				nticks = __mp_lock_spinout;
+			}
 #endif
+		} while (mtx->mtx_owner != NULL);
 	}
 	spc->spc_spinning--;
 }
