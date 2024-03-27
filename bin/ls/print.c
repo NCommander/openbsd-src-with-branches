@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.39 2020/10/07 21:03:09 millert Exp $	*/
+/*	$OpenBSD: print.c,v 1.40 2023/10/07 11:51:08 schwarze Exp $	*/
 /*	$NetBSD: print.c,v 1.15 1996/12/11 03:25:39 thorpej Exp $	*/
 
 /*
@@ -241,6 +241,7 @@ static void
 printtime(time_t ftime)
 {
 	char f_date[DATELEN];
+	struct tm *tm;
 	static time_t now;
 	static int now_set = 0;
 
@@ -252,9 +253,14 @@ printtime(time_t ftime)
 	/*
 	 * convert time to string, and print
 	 */
+	if ((tm = localtime(&ftime)) == NULL) {
+		/* Invalid time stamp, just display the epoch. */
+		ftime = 0;
+		tm = localtime(&ftime);
+	}
 	if (strftime(f_date, sizeof(f_date), f_sectime ? "%b %e %H:%M:%S %Y" :
 	    (ftime <= now - SIXMONTHS || ftime > now) ? "%b %e  %Y" :
-	    "%b %e %H:%M", localtime(&ftime)) == 0)
+	    "%b %e %H:%M", tm) == 0)
 		f_date[0] = '\0';
 
 	printf("%s ", f_date);
