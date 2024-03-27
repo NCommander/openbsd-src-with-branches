@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.2 2023/08/25 02:17:41 tb Exp $
+# $OpenBSD: Makefile.inc,v 1.3 2024/03/27 11:12:08 jsing Exp $
 
 # riscv64 libcrypto build rules
 
@@ -16,8 +16,7 @@ SRCS+= des_enc.c
 SRCS+= fcrypt_b.c
 
 # rc4
-SRCS+= rc4_enc.c
-SRCS+= rc4_skey.c
+SRCS+= rc4.c
 
 # whrlpool
 SRCS+= wp_block.c
