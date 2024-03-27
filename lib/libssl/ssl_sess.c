@@ -1,4 +1,4 @@
-/* $OpenBSD: ssl_sess.c,v 1.123 2023/11/19 15:51:49 tb Exp $ */
+/* $OpenBSD: ssl_sess.c,v 1.124 2024/01/24 14:05:10 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -897,8 +897,7 @@ LSSL_ALIAS(SSL_SESSION_free);
 int
 SSL_SESSION_up_ref(SSL_SESSION *ss)
 {
-	int refs = CRYPTO_add(&ss->references, 1, CRYPTO_LOCK_SSL_SESSION);
-	return (refs > 1) ? 1 : 0;
+	return CRYPTO_add(&ss->references, 1, CRYPTO_LOCK_SSL_SESSION) > 1;
 }
 LSSL_ALIAS(SSL_SESSION_up_ref);
 
