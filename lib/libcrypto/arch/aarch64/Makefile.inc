@@ -1,11 +1,9 @@
-# $OpenBSD: Makefile.inc,v 1.4 2023/01/31 06:17:10 jsing Exp $
+# $OpenBSD: Makefile.inc,v 1.5 2023/04/05 11:07:40 kettenis Exp $
 
 # aarch64-specific libcrypto build rules
 
 # aes
 SRCS+= aes_core.c aes_cbc.c
-# bf
-SRCS+= bf_enc.c
 # bn
 # camellia
 SRCS+= camellia.c cmll_cbc.c cmll_misc.c
