@@ -1,9 +1,9 @@
-# $OpenBSD: Makefile.inc,v 1.18 2024/03/28 01:41:16 jsing Exp $
+# $OpenBSD: Makefile.inc,v 1.19 2024/03/28 01:57:00 jsing Exp $
 
 # hppa-specific libcrypto build rules
 
 # aes
-SRCS+= aes_core.c aes_cbc.c 
+SRCS+= aes_core.c
 CFLAGS+= -DAES_ASM
 SSLASM+= aes aes-parisc aes-parisc
 # bn
