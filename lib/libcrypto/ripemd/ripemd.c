@@ -106,12 +106,6 @@
 #define F5(x,y,z)	(((~(z)) | (y)) ^ (x))
 #endif
 
-#define RIPEMD160_A	0x67452301L
-#define RIPEMD160_B	0xEFCDAB89L
-#define RIPEMD160_C	0x98BADCFEL
-#define RIPEMD160_D	0x10325476L
-#define RIPEMD160_E	0xC3D2E1F0L
-
 #define KL0 0x00000000L
 #define KL1 0x5A827999L
 #define KL2 0x6ED9EBA1L
@@ -394,11 +388,13 @@ int
 RIPEMD160_Init(RIPEMD160_CTX *c)
 {
 	memset(c, 0, sizeof(*c));
-	c->A = RIPEMD160_A;
-	c->B = RIPEMD160_B;
-	c->C = RIPEMD160_C;
-	c->D = RIPEMD160_D;
-	c->E = RIPEMD160_E;
+
+	c->A = 0x67452301UL;
+	c->B = 0xEFCDAB89UL;
+	c->C = 0x98BADCFEUL;
+	c->D = 0x10325476UL;
+	c->E = 0xC3D2E1F0UL;
+
 	return 1;
 }
 
