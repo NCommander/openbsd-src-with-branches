@@ -1,4 +1,4 @@
-/*	$OpenBSD: vpci.c,v 1.32 2020/10/24 05:07:47 jmatthew Exp $	*/
+/*	$OpenBSD: vpci.c,v 1.33 2020/10/27 21:01:33 kettenis Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis <kettenis@openbsd.org>
  *
@@ -769,7 +769,7 @@ vpci_msi_eq_intr(void *arg)
 		if (err != H_EOK)
 			printf("%s: pci_msi_setstate: %d\n", __func__, err);
 
-		send_softint(-1, ih->ih_pil, ih);
+		send_softint(ih->ih_pil, ih);
 
 		head += sizeof(struct vpci_msi_msg);
 		head &= eq->eq_mask;
