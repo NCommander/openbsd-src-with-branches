@@ -1,4 +1,4 @@
-/*	$OpenBSD: autoconf.h,v 1.17 2008/03/08 16:30:36 kettenis Exp $	*/
+/*	$OpenBSD: autoconf.h,v 1.18 2008/06/26 05:42:13 ray Exp $	*/
 /*	$NetBSD: autoconf.h,v 1.10 2001/07/24 19:32:11 eeh Exp $ */
 
 /*-
@@ -146,15 +146,11 @@ struct bootpath {
 };
 struct bootpath	*bootpath_store(int, struct bootpath *);
 
-/* Establish a mountroot_hook, for benefit of floppy drive, mostly. */
-void	mountroot_hook_establish(void (*)(struct device *), struct device *);
-
 void	bootstrap(int);
 int	firstchild(int);
 int	nextsibling(int);
 void	callrom(void);
 struct device *getdevunit(char *, int);
-void	*findzs(int);
 int	romgetcursoraddr(int **, int **);
 int	findroot(void);
 int	findnode(int, const char *);

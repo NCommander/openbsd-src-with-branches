@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.110 2023/01/24 07:26:34 miod Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.111 2023/04/13 15:23:22 miod Exp $	*/
 /*	$NetBSD: pmap.c,v 1.107 2001/08/31 16:47:41 eeh Exp $	*/
 /*
  * 
@@ -116,7 +116,6 @@ void	pmap_page_cache(struct pmap *pm, paddr_t pa, int mode);
 
 void	pmap_bootstrap_cpu(paddr_t);
 
-void	pmap_pinit(struct pmap *);
 void	pmap_release(struct pmap *);
 pv_entry_t pa_to_pvh(paddr_t);
 
