@@ -1,4 +1,4 @@
-# $OpenBSD: symbols.awk,v 1.7 2022/09/21 15:24:45 tb Exp $
+# $OpenBSD: symbols.awk,v 1.8 2023/05/04 20:15:27 tb Exp $
 
 # Copyright (c) 2018,2020 Theo Buehler <tb@openbsd.org>
 #
@@ -17,7 +17,6 @@
 # usage: awk -f symbols.awk < Symbols.list > symbols.c
 
 BEGIN {
-	printf("#include <openssl/pem.h> /* CMS special */\n\n")
 	printf("#include \"include_headers.c\"\n\n")
 }
 
