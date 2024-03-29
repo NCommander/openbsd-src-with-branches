@@ -1,4 +1,4 @@
-/* $OpenBSD: enc_writ.c,v 1.16 2023/07/08 07:11:07 beck Exp $ */
+/* $OpenBSD: enc_writ.c,v 1.17 2023/07/08 07:34:34 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -165,3 +165,4 @@ DES_enc_write(int fd, const void *_buf, int len,
 
 	return (len);
 }
+LCRYPTO_ALIAS(DES_enc_write);

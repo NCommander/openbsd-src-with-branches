@@ -1,4 +1,4 @@
-/* $OpenBSD: enc_read.c,v 1.16 2022/11/26 16:08:51 tb Exp $ */
+/* $OpenBSD: enc_read.c,v 1.17 2023/07/08 07:11:07 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -220,3 +220,4 @@ DES_enc_read(int fd, void *buf, int len, DES_key_schedule *sched,
 	}
 	return num;
 }
+LCRYPTO_ALIAS(DES_enc_read);

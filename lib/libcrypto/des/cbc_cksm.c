@@ -1,4 +1,4 @@
-/* $OpenBSD: cbc_cksm.c,v 1.9 2023/07/08 07:11:07 beck Exp $ */
+/* $OpenBSD: cbc_cksm.c,v 1.10 2023/07/08 07:34:34 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -103,3 +103,4 @@ DES_cbc_cksum(const unsigned char *in, DES_cblock *output,
 	    ((tout1 << 24L) & 0xFF000000);
 	return (tout1);
 }
+LCRYPTO_ALIAS(DES_cbc_cksum);

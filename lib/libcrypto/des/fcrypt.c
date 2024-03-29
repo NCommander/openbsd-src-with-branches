@@ -1,4 +1,4 @@
-/* $OpenBSD: fcrypt.c,v 1.14 2023/07/08 07:11:07 beck Exp $ */
+/* $OpenBSD: fcrypt.c,v 1.15 2023/07/08 07:34:34 jsing Exp $ */
 
 #include <stdio.h>
 
@@ -58,6 +58,7 @@ DES_crypt(const char *buf, const char *salt)
 
 	return (DES_fcrypt(buf, salt, buff));
 }
+LCRYPTO_ALIAS(DES_crypt);
 
 char *
 DES_fcrypt(const char *buf, const char *salt, char *ret)
@@ -123,3 +124,4 @@ r=(r+7)/8;
 	ret[13] = '\0';
 	return (ret);
 }
+LCRYPTO_ALIAS(DES_fcrypt);
