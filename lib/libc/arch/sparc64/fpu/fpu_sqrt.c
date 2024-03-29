@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu_sqrt.c,v 1.5 2019/03/15 05:42:38 kevlo Exp $	*/
+/*	$OpenBSD: fpu_sqrt.c,v 1.6 2022/12/27 17:10:06 jmc Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -50,8 +50,6 @@
  */
 
 #include <sys/types.h>
-
-#include <machine/frame.h>
 
 #include "fpu_arith.h"
 #include "fpu_emu.h"

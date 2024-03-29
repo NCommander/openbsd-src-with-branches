@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu_compare.c,v 1.2 2012/12/05 23:19:59 deraadt Exp $	*/
+/*	$OpenBSD: fpu_compare.c,v 1.3 2019/03/15 05:42:38 kevlo Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -54,7 +54,6 @@
 
 #include <sys/types.h>
 
-#include <machine/frame.h>
 #include <machine/fsr.h>
 
 #include "fpu_arith.h"

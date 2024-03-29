@@ -1,4 +1,4 @@
-/*	$OpenBSD: fpu_div.c,v 1.3 2013/11/26 20:33:07 deraadt Exp $	*/
+/*	$OpenBSD: fpu_div.c,v 1.4 2019/03/15 05:42:38 kevlo Exp $	*/
 
 /*
  * Copyright (c) 1992, 1993
@@ -51,7 +51,6 @@
 
 #include <sys/types.h>
 
-#include <machine/frame.h>
 #include <machine/fsr.h>
 
 #include "fpu_arith.h"
