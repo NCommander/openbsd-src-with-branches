@@ -1,4 +1,4 @@
-/*	$OpenBSD: zs.c,v 1.32 2021/10/24 17:05:04 mpi Exp $	*/
+/*	$OpenBSD: zs.c,v 1.33 2024/03/29 21:09:04 miod Exp $	*/
 /*	$NetBSD: zs.c,v 1.29 2001/05/30 15:24:24 lukem Exp $	*/
 
 /*-
@@ -287,8 +287,6 @@ zs_attach_fhc(struct device *parent, struct device *self, void *aux)
 
 /*
  * Attach a found zs.
- *
- * USE ROM PROPERTY keyboard FOR KEYBOARD/MOUSE?
  */
 static void
 zs_attach(struct zsc_softc *zsc, struct zsdevice *zsd, int pri)
