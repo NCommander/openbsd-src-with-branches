@@ -1,4 +1,4 @@
-/*	$OpenBSD: fhc.c,v 1.20 2015/09/19 21:07:04 semarie Exp $	*/
+/*	$OpenBSD: fhc.c,v 1.21 2017/09/08 05:36:52 deraadt Exp $	*/
 
 /*
  * Copyright (c) 2004 Jason L. Wright (jason@thought.net)
@@ -273,7 +273,7 @@ fhc_intr_establish(bus_space_tag_t t, bus_space_tag_t t0, int ihandle,
 	if (ih == NULL)
 		return (NULL);
 
-	intr_establish(ih->ih_pil, ih);
+	intr_establish(ih);
 
 	if (intrmapptr != NULL) {
 		u_int64_t r;

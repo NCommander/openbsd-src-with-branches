@@ -1,4 +1,4 @@
-/*	$OpenBSD: vbus.c,v 1.11 2018/06/27 11:38:59 kettenis Exp $	*/
+/*	$OpenBSD: vbus.c,v 1.12 2021/10/24 17:05:04 mpi Exp $	*/
 /*
  * Copyright (c) 2008 Mark Kettenis
  *
@@ -244,7 +244,7 @@ vbus_intr_establish(bus_space_tag_t t, bus_space_tag_t t0, int ihandle,
 	if (err != H_EOK)
 		return (NULL);
 
-	intr_establish(ih->ih_pil, ih);
+	intr_establish(ih);
 	ih->ih_ack = vbus_intr_ack;
 
 	err = sun4v_intr_settarget(devhandle, sysino, ih->ih_cpu->ci_upaid);
