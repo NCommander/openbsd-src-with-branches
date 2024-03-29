@@ -1,4 +1,4 @@
-/*	$OpenBSD: kdump.c,v 1.160 2023/12/12 15:30:55 deraadt Exp $	*/
+/*	$OpenBSD: kdump.c,v 1.161 2023/12/15 15:12:08 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1988, 1993
@@ -754,7 +754,6 @@ static const formatter scargs[][8] = {
     [SYS_access]	= { Ppath, Accessmodename },
     [SYS_chflags]	= { Ppath, Chflagsname },
     [SYS_fchflags]	= { Pfd, Chflagsname },
-    [SYS_msyscall]	= { Pptr, Pbigsize },
     [SYS_stat]		= { Ppath, Pptr },
     [SYS_lstat]		= { Ppath, Pptr },
     [SYS_dup]		= { Pfd },
