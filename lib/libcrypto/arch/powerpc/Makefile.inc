@@ -1,9 +1,7 @@
-# $OpenBSD: Makefile.inc,v 1.9 2024/03/28 12:52:58 jsing Exp $
+# $OpenBSD: Makefile.inc,v 1.10 2024/03/29 02:33:44 jsing Exp $
 
 # powerpc-specific libcrypto build rules
 
-# aes
-SRCS+= aes_core.c
 # slower than C code
 #CFLAGS+= -DAES_ASM
 #SSLASM+= aes aes-ppc aes-ppc
