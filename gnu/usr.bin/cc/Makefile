@@ -1,5 +1,5 @@
 # $FreeBSD: src/gnu/usr.bin/cc/Makefile,v 1.41.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD: Makefile,v 1.2 2013/05/18 18:18:21 miod Exp $
+# $OpenBSD: Makefile,v 1.3 2017/07/24 19:23:57 robert Exp $
 
 .include <bsd.own.mk>
 
@@ -13,7 +13,6 @@ SUBDIR+= cpp
 .endif
 
 SUBDIR+= cc1plus c++ c++filt
-SUBDIR+= cc1obj
 SUBDIR+= gcov
 SUBDIR+= libgcc
 SUBDIR+= libgcov
