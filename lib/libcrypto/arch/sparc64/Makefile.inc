@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.13 2024/03/28 01:57:00 jsing Exp $
+# $OpenBSD: Makefile.inc,v 1.14 2024/03/28 12:52:58 jsing Exp $
 
 # sparc64-specific libcrypto build rules
 
@@ -19,8 +19,6 @@ SSLASM+= sha sha512-sparcv9 sha256-sparcv9
 CFLAGS+= -DSHA256_ASM
 SSLASM+= sha sha512-sparcv9 sha512-sparcv9
 CFLAGS+= -DSHA512_ASM
-# whrlpool
-SRCS+= wp_block.c
 
 .for dir src dst in ${SSLASM}
 SRCS+=	${dst}.S

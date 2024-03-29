@@ -1,4 +1,4 @@
-# $OpenBSD: Makefile.inc,v 1.9 2024/03/28 01:57:00 jsing Exp $
+# $OpenBSD: Makefile.inc,v 1.10 2024/03/28 12:52:58 jsing Exp $
 
 # aarch64-specific libcrypto build rules
 
@@ -9,8 +9,6 @@ SRCS+= aes_core.c
 SRCS+= camellia.c cmll_cbc.c cmll_misc.c
 # modes
 # sha
-# whrlpool
-SRCS+= wp_block.c
 
 .for dir f in ${SSLASM}
 SRCS+=	${f}.S
