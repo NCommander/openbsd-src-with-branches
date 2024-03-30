@@ -1,4 +1,4 @@
-/* $OpenBSD: aes_ige.c,v 1.8 2022/01/22 00:43:41 inoguchi Exp $ */
+/* $OpenBSD: aes_ige.c,v 1.9 2022/11/26 16:08:50 tb Exp $ */
 /* ====================================================================
  * Copyright (c) 2006 The OpenSSL Project.  All rights reserved.
  *
@@ -192,3 +192,4 @@ AES_ige_encrypt(const unsigned char *in, unsigned char *out, size_t length,
 		}
 	}
 }
+LCRYPTO_ALIAS(AES_ige_encrypt);
