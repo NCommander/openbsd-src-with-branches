@@ -1,10 +1,8 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: freenull.c.tail,v 1.2 2018/07/10 20:55:57 tb Exp $	*/
 
 	BIO_free_all(NULL);
 	NCONF_free_data(NULL);
 	_CONF_free_data(NULL);
-
-	lh_FUNCTION_free(NULL);
 
 	sk_ASN1_OBJECT_pop_free(NULL, NULL);
 	sk_CONF_VALUE_pop_free(NULL, NULL);
