@@ -1,6 +1,6 @@
 define(MACHINE,landisk)dnl
 vers(__file__,
-	{-$OpenBSD: MAKEDEV.md,v 1.50 2021/11/11 09:47:33 claudio Exp $-},
+	{-$OpenBSD: MAKEDEV.md,v 1.51 2022/11/09 19:35:23 krw Exp $-},
 etc.MACHINE)dnl
 dnl
 dnl Copyright (c) 2001-2004 Todd T. Fries <todd@OpenBSD.org>
@@ -71,7 +71,7 @@ _DEV(usb, 64)
 _TITLE(spec)
 dnl _DEV(apm, 34)
 _DEV(au, 36)
-_DEV(bio, 37)
+_DEV(bio, 38)
 dnl _DEV(bktr, 75)
 _DEV(bpf, 22)
 _DEV(dt, 30)
