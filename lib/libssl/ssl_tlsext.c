@@ -324,8 +324,22 @@ static int
 tlsext_supportedgroups_client_process(SSL *s, uint16_t msg_type, CBS *cbs,
     int *alert)
 {
-	/* Servers should not send this extension per the RFC. */
-	return 0;
+	/*
+	 * Servers should not send this extension per the RFC.
+	 *
+	 * However, certain F5 BIG-IP systems incorrectly send it. This bug is
+	 * from at least 2014 but as of 2017, there are still large sites with
+	 * this unpatched in production. As a result, we need to currently skip
+	 * over the extension and ignore its content:
+	 *
+	 *  https://support.f5.com/csp/article/K37345003
+	 */
+	if (!CBS_skip(cbs, CBS_len(cbs))) {
+		*alert = SSL_AD_INTERNAL_ERROR;
+		return 0;
+	}
+
+	return 1;
 }
 
 /*
