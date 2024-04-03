@@ -1,0 +1,8 @@
+.\" $OpenBSD$
+.TH ARGS-ESC 1 "October 21, 2023"
+.SH NAME
+args-esc - delayed escape sequence expansion in macro arguments
+.SH DESCRIPTION
+.ds inner content
+.ds outer \\*[inner]
+.B \\*[outer]

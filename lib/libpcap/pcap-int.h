@@ -1,7 +1,7 @@
-/*	$NetBSD: pcap-int.h,v 1.2 1995/03/06 11:38:47 mycroft Exp $	*/
+/*	$OpenBSD: pcap-int.h,v 1.13 2014/04/11 04:08:58 lteo Exp $	*/
 
 /*
- * Copyright (c) 1994
+ * Copyright (c) 1994, 1995, 1996
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,14 +31,25 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * @(#) Header: pcap-int.h,v 1.7 94/06/14 20:03:33 leres Exp (LBL)
  */
 
 #ifndef pcap_int_h
 #define pcap_int_h
 
 #include <pcap.h>
+
+/*
+ * Stuff to do when we close.
+ */
+#define MUST_CLEAR_RFMON	0x00000002	/* clear rfmon (monitor) mode */
+
+struct pcap_opt {
+	int	buffer_size;
+	char	*source;
+	int	promisc;
+	int	rfmon;
+	int	immediate;	/* immediate mode - deliver packets as soon as they arrive */
+};
 
 /*
  * Savefile
@@ -53,14 +64,16 @@ struct pcap_sf {
 
 struct pcap_md {
 	struct pcap_stat stat;
-#ifdef PCAP_PF
+	/*XXX*/
 	int use_bpf;
 	u_long	TotPkts;	/* can't oflow for 79 hrs on ether */
 	u_long	TotAccepted;	/* count accepted by filter */
 	u_long	TotDrops;	/* count of dropped packets */
 	long	TotMissed;	/* missed by i/f during this run */
 	long	OrigMissed;	/* missed by i/f before this run */
-#endif
+	int	timeout;	/* timeout for buffering */
+	int	must_do_on_close; /* stuff we must do when we close */
+	struct pcap *next;	/* list of open pcaps that need stuff cleared on close */
 };
 
 struct pcap {
@@ -68,9 +81,14 @@ struct pcap {
 	int snapshot;
 	int linktype;
 	int tzoff;		/* timezone offset */
+	int offset;		/* offset for proper alignment */
+	int activated;		/* true if the capture is really started */
+	int oldstyle;		/* if we're opening with pcap_open_live() */
+	int break_loop;		/* force break from packet-reading loop */
 
 	struct pcap_sf sf;
 	struct pcap_md md;
+	struct pcap_opt opt;
 
 	/*
 	 * Read buffer.
@@ -91,10 +109,55 @@ struct pcap {
 	 */
 	struct bpf_program fcode;
 
+	/*
+	 * Datalink types supported on underlying fd
+	 */
+	int dlt_count;
+	u_int *dlt_list;
+
 	char errbuf[PCAP_ERRBUF_SIZE];
+
+	struct pcap_pkthdr pcap_header;	/* This is needed for the pcap_next_ex() to work */
 };
+
+/*
+ * How a `pcap_pkthdr' is actually stored in the dumpfile.
+ */
+
+struct pcap_sf_pkthdr {
+    struct bpf_timeval ts;	/* time stamp */
+    bpf_u_int32 caplen;		/* length of portion present */
+    bpf_u_int32 len;		/* length this packet (off wire) */
+};
+
+int	yylex(void);
+
+#ifndef min
+#define min(a, b) ((a) > (b) ? (b) : (a))
+#endif
+
+/* Not all systems have IFF_LOOPBACK */
+#ifdef IFF_LOOPBACK
+#define ISLOOPBACK(name, flags) ((flags) & IFF_LOOPBACK)
+#else
+#define ISLOOPBACK(name, flags) ((name)[0] == 'l' && (name)[1] == 'o' && \
+    (isdigit((unsigned char)((name)[2])) || (name)[2] == '\0'))
+#endif
 
 /* XXX should these be in pcap.h? */
 int	pcap_offline_read(pcap_t *, int, pcap_handler, u_char *);
 int	pcap_read(pcap_t *, int cnt, pcap_handler, u_char *);
+
+int	pcap_do_addexit(pcap_t *);
+void	pcap_add_to_pcaps_to_close(pcap_t *);
+void	pcap_remove_from_pcaps_to_close(pcap_t *);
+int	pcap_check_activated(pcap_t *);
+
+/* Ultrix pads to make everything line up on a nice boundary */
+#if defined(ultrix) || defined(__alpha)
+#define       PCAP_FDDIPAD 3
+#endif
+
+/* XXX */
+extern int pcap_fddipad;
 #endif

@@ -136,6 +136,8 @@ public:
 
   void emitInstruction(const MachineInstr *MI) override;
 
+  void emitTrapToAlignment(Align Alignment) const override;
+
   void emitBasicBlockEnd(const MachineBasicBlock &MBB) override;
 
   bool PrintAsmOperand(const MachineInstr *MI, unsigned OpNo,

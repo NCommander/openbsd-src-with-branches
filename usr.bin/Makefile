@@ -1,31 +1,39 @@
-#	from: @(#)Makefile	5.8.1.1 (Berkeley) 5/8/91
-#	$Id: Makefile,v 1.57 1995/10/09 12:05:42 pk Exp $
+#	$OpenBSD: Makefile,v 1.167 2022/04/19 01:32:06 dlg Exp $
 
-SUBDIR=	apply apropos asa at banner basename bdes biff cal calendar cap_mkdb \
-	checknr chflags chpass cksum cmp col colcrt colrm column comm \
-	compress crontab ctags cut dirname du \
-	env error expand false file find finger fmt fold fpr from \
-	fsplit fstat ftp gencat getconf getopt head hexdump id indent \
-	ipcrm ipcs join jot kdump ktrace lam last lastcomm leave lex locate \
-	lock logger login logname look lorder m4 machine mail make man mesg \
-	mkdep mkfifo mkstr modstat more msgs netstat newsyslog nfsstat nice \
-	nohup pagesize passwd paste patch pr printenv printf quota \
-	rdist renice rev rlogin rpcgen rpcinfo rs \
-	rsh rup ruptime rusers rwall rwho \
-	script sed shar showmount skey skeyinit soelim split strings \
-	su systat tail talk tcopy tee telnet tftp time \
-	tip tn3270 touch tput tr true tset tsort tty ul uname unexpand \
-	unifdef uniq units unvis users uudecode uuencode \
-	vacation vgrind vi vis vmstat w wall wc what whatis whereis \
-	which who whois window write \
-	xargs xinstall xlint xstr yacc yes ypcat ypmatch ypwhich
+.include <bsd.own.mk>
 
-# Don't use the standard tool chain on the alpha.
-.if (${MACHINE_ARCH} != "alpha")
-SUBDIR+= ar gprof nm ranlib size strip
-.endif
-.if (${MACHINE_ARCH} == "sparc")
-SUBDIR+= fdeject
+SUBDIR= apply arch at aucat audioctl awk banner \
+	basename bc bgplg \
+	biff cal calendar cap_mkdb cdio chpass cmp col colrm \
+	column comm compress cpp crontab csplit ctags ctfconv ctfdump \
+	cu cut cvs \
+	dc deroff diff diff3 dig dirname doas du encrypt env expand false file \
+	find fgen finger fmt fold from fstat ftp gencat getcap \
+	getconf getent getopt gprof grep head hexdump htpasswd id indent \
+	infocmp ipcrm ipcs \
+	join jot kdump keynote kstat ktrace \
+	lam last lastcomm ldap leave less lex \
+	libtool lndir \
+	locale locate lock logger login logname look lorder \
+	m4 mail make mandoc mesg mg \
+	midicat mixerctl mkdep mklocale mktemp nc netstat \
+	newsyslog \
+	nfsstat nice nm nl nohup openssl pagesize passwd paste patch pctr \
+	pkg-config pkill \
+	pr printenv printf quota radioctl rcs rdist rdistd \
+	readlink realpath renice rev rpcgen rpcinfo rs rsync rup rusers rwall \
+	sdiff seq script sed sendbug shar showmount signify skey \
+	skeyaudit skeyinfo skeyinit sndioctl sndiod snmp \
+	sort spell split ssh stat su systat \
+	tail talk tcpbench tee telnet tftp tic time timeout \
+	tmux top touch tput tr true ts tset tsort tty usbhidaction usbhidctl \
+	ul uname unexpand unifdef uniq units \
+	unvis users uudecode uuencode vacation vi vis vmstat w wall wc \
+	what which who whois write x99token xargs xinstall \
+	yacc yes
+
+.if (${YP:L} == "yes")
+SUBDIR+=ypcat ypmatch ypwhich
 .endif
 
 .include <bsd.subdir.mk>

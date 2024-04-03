@@ -1,3 +1,4 @@
+.\"	$OpenBSD: split.1,v 1.21 2014/05/27 13:52:30 jmc Exp $
 .\"	$NetBSD: split.1,v 1.5 1994/12/21 08:20:35 jtc Exp $
 .\"
 .\" Copyright (c) 1990, 1991, 1993, 1994
@@ -11,11 +12,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -33,7 +30,7 @@
 .\"
 .\"	@(#)split.1	8.3 (Berkeley) 4/16/94
 .\"
-.Dd April 16, 1994
+.Dd $Mdocdate: May 27 2014 $
 .Dt SPLIT 1
 .Os
 .Sh NAME
@@ -41,61 +38,116 @@
 .Nd split a file into pieces
 .Sh SYNOPSIS
 .Nm split
-.Op Fl b Ar byte_count[k|m]
-.Op Fl l Ar line_count
+.Op Fl a Ar suffix_length
+.br
+.Oo
+.Fl b
+.Sm off
+.Ar byte_count Op Cm k | m
+.Sm on
+.No \&| Fl l Ar line_count
+.No \&| Fl p Ar pattern
+.Oc
 .Op Ar file Op Ar name
 .Sh DESCRIPTION
 The
-.Nm split
+.Nm
 utility reads the given
-.Ar file
-(or standard input if no file is specified)
+.Ar file ,
+or standard input if no file is specified,
 and breaks it up into files of 1000 lines each.
+.Ar file
+itself is not altered.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl b
-Create smaller files
+.It Fl a Ar suffix_length
+Use
+.Ar suffix_length
+letters to form the suffix of the file name
+(see below).
+The default suffix length is 2.
+.It Xo
+.Fl b
+.Sm off
+.Ar byte_count
+.Op Cm k | m
+.Sm on
+.Xc
+Create files
 .Ar byte_count
 bytes in length.
 If
-.Dq Li k
+.Sq k
 is appended to the number, the file is split into
 .Ar byte_count
 kilobyte pieces.
 If
-.Dq Li m
+.Sq m
 is appended to the number, the file is split into
 .Ar byte_count
 megabyte pieces.
-.It Fl l
-Create smaller files
-.Ar n
+.It Fl l Ar line_count
+Create files
+.Ar line_count
 lines in length.
+.It Fl p Ar pattern
+The file is split whenever an input line matches
+.Ar pattern ,
+which is interpreted as an extended regular expression.
+The matching line will be the first line of the next output file.
+This option is incompatible with the
+.Fl b
+and
+.Fl l
+options.
 .El
 .Pp
-If additional arguments are specified, the first is used as the name
-of the input file which is to be split.
-If a second additional argument is specified, it is used as a prefix
+If
+.Ar name
+is specified,
+it is used as a prefix
 for the names of the files into which the file is split.
 In this case, each file into which the file is split is named by the
-prefix followed by a lexically ordered suffix in the range of 
-.Dq Li aa-zz .
+prefix followed by a lexically ordered suffix using
+.Ar suffix_length
+characters in the range
+.Dq a-z .
 .Pp
 If the
 .Ar name
 argument is not specified, the file is split into lexically ordered
-files named in the range of
-.Dq Li xaa-zzz .
-.Sh BUGS
-For historical reasons, if you specify
-.Ar name ,
-.Nm split
-can only create 676 separate
-files.
-The default naming convention allows 2028 separate files.
+files named with the prefixes
+.Sq x ,
+.Sq y ,
+and
+.Sq z .
+.Sh EXIT STATUS
+.Ex -std split
+.Sh SEE ALSO
+.Xr csplit 1 ,
+.Xr re_format 7
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.
+.Pp
+The flag
+.Op Fl p ,
+as well as the
+.Sq y
+and
+.Sq z
+prefixes in the absence of a
+.Ar name
+parameter,
+are an extension to that specification.
 .Sh HISTORY
 A
-.Nm split
+.Nm
 command appeared in
-.At v6 .
+.At v3 .
+.Sh BUGS
+The maximum line length for matching patterns is 65536.

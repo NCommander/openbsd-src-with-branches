@@ -1,3 +1,4 @@
+/*	$OpenBSD: unstr.c,v 1.14 2016/01/10 13:35:09 mestre Exp $	*/
 /*	$NetBSD: unstr.c,v 1.3 1995/03/23 08:29:00 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,16 +33,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1991, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-static char sccsid[] = "@(#)unstr.c	8.1 (Berkeley) 5/31/93";
-#endif /* not lint */
-
 /*
  *	This program un-does what "strfile" makes, thereby obtaining the
  * original file again.  This can be invoked with the name of the output
@@ -59,80 +46,81 @@ static char sccsid[] = "@(#)unstr.c	8.1 (Berkeley) 5/31/93";
  *	Ken Arnold		Aug 13, 1978
  */
 
-# include	<machine/endian.h>
-# include	<sys/param.h>
-# include	"strfile.h"
-# include	<stdio.h>
-# include	<ctype.h>
+#include <ctype.h>
+#include <err.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-# ifndef MAXPATHLEN
-# define	MAXPATHLEN	1024
-# endif	/* MAXPATHLEN */
+#include "strfile.h"
 
 char	*Infile,			/* name of input file */
-	Datafile[MAXPATHLEN],		/* name of data file */
+	Datafile[PATH_MAX],		/* name of data file */
 	Delimch;			/* delimiter character */
 
 FILE	*Inf, *Dataf;
 
-char	*strcat(), *strcpy();
+void getargs(char *[]);
+void order_unstr(STRFILE *);
 
-/* ARGSUSED */
-main(ac, av)
-int	ac;
-char	**av;
+int
+main(int ac, char *av[])
 {
 	static STRFILE	tbl;		/* description table */
 
+	if (pledge("stdio rpath wpath cpath", NULL) == -1)
+		err(1, "pledge");
+
 	getargs(av);
-	if ((Inf = fopen(Infile, "r")) == NULL) {
-		perror(Infile);
-		exit(1);
-	}
-	if ((Dataf = fopen(Datafile, "r")) == NULL) {
-		perror(Datafile);
-		exit(1);
-	}
-	(void) fread((char *) &tbl, sizeof tbl, 1, Dataf);
-	tbl.str_version = ntohl(tbl.str_version);
-	tbl.str_numstr = ntohl(tbl.str_numstr);
-	tbl.str_longlen = ntohl(tbl.str_longlen);
-	tbl.str_shortlen = ntohl(tbl.str_shortlen);
-	tbl.str_flags = ntohl(tbl.str_flags);
-	if (!(tbl.str_flags & (STR_ORDERED | STR_RANDOM))) {
-		fprintf(stderr, "nothing to do -- table in file order\n");
-		exit(1);
-	}
+	if ((Inf = fopen(Infile, "r")) == NULL)
+		err(1, "fopen `%s'", Infile);
+	if ((Dataf = fopen(Datafile, "r")) == NULL)
+		err(1, "fopen `%s'", Datafile);
+
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
+
+	(void) fread(&tbl.str_version,  sizeof(tbl.str_version),  1, Dataf);
+	(void) fread(&tbl.str_numstr,   sizeof(tbl.str_numstr),   1, Dataf);
+	(void) fread(&tbl.str_longlen,  sizeof(tbl.str_longlen),  1, Dataf);
+	(void) fread(&tbl.str_shortlen, sizeof(tbl.str_shortlen), 1, Dataf);
+	(void) fread(&tbl.str_flags,    sizeof(tbl.str_flags),    1, Dataf);
+	(void) fread( tbl.stuff,	sizeof(tbl.stuff),	  1, Dataf);
+	if (!(tbl.str_flags & (STR_ORDERED | STR_RANDOM)))
+		errx(1, "nothing to do -- table in file order");
 	Delimch = tbl.str_delim;
 	order_unstr(&tbl);
 	(void) fclose(Inf);
 	(void) fclose(Dataf);
-	exit(0);
+	return 0;
 }
 
-getargs(av)
-register char	*av[];
+void
+getargs(char *av[])
 {
 	if (!*++av) {
-		(void) fprintf(stderr, "usage: unstr datafile\n");
+		(void) fprintf(stderr, "usage: %s datafile\n", getprogname());
 		exit(1);
 	}
 	Infile = *av;
-	(void) strcpy(Datafile, Infile);
-	(void) strcat(Datafile, ".dat");
+	(void) strlcpy(Datafile, Infile, sizeof(Datafile));
+	if (strlcat(Datafile, ".dat", sizeof(Datafile)) >= sizeof(Datafile))
+		errx(1, "`%s': filename too long", Infile);
 }
 
-order_unstr(tbl)
-register STRFILE	*tbl;
+void
+order_unstr(STRFILE *tbl)
 {
-	register int	i;
-	register char	*sp;
-	auto off_t	pos;
-	char		buf[BUFSIZ];
+	unsigned int	i;
+	char	*sp;
+	int32_t	pos;
+	char	buf[BUFSIZ];
 
 	for (i = 0; i < tbl->str_numstr; i++) {
 		(void) fread((char *) &pos, 1, sizeof pos, Dataf);
-		(void) fseek(Inf, ntohl(pos), 0);
+		(void) fseek(Inf, ntohl(pos), SEEK_SET);
 		if (i != 0)
 			(void) printf("%c\n", Delimch);
 		for (;;) {

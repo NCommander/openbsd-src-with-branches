@@ -1,9 +1,8 @@
-# $OpenBSD$
-
-EQN = /usr/local/bin/eqn
+# $OpenBSD: Makefile.inc,v 1.4 2020/01/08 10:17:15 schwarze Exp $
 
 SKIP_GROFF ?= ${REGRESS_TARGETS}
-SKIP_TMAN ?= ALL SILENT
+SKIP_TMAN ?= ALL
+SKIP_MARKDOWN ?= ALL
 
 _FULLHTMLFILES = ${HTML_TARGETS:S/$/.html/}
 
@@ -22,5 +21,4 @@ ${t}.out_html: ${t}.in
 
 .in.mandoc_html:
 	${MANDOC} ${MOPTS} -Thtml ${.IMPSRC} > ${.TARGET:S/mandoc_html$/html/}
-	@echo "extract.pl < ${.TARGET:S/mandoc_html$/html/} > ${.TARGET}"
-	@${.CURDIR}/../extract.pl < ${.TARGET:S/mandoc_html$/html/} > ${.TARGET}
+	${.CURDIR}/../extract.pl < ${.TARGET:S/mandoc_html$/html/} > ${.TARGET}

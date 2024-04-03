@@ -1,5 +1,4 @@
-/*	$NetBSD: vis.c,v 1.6 1995/02/25 15:40:09 cgd Exp $	*/
-
+/*	$OpenBSD: vis.c,v 1.25 2015/09/13 11:32:51 guenther Exp $ */
 /*-
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,44 +28,73 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)vis.c	8.1 (Berkeley) 7/19/93";
-#else
-static char rcsid[] = "$NetBSD: vis.c,v 1.6 1995/02/25 15:40:09 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
-#include <limits.h>
+#include <errno.h>
 #include <ctype.h>
+#include <limits.h>
+#include <string.h>
+#include <stdlib.h>
 #include <vis.h>
 
-#define	isoctal(c)	(((u_char)(c)) >= '0' && ((u_char)(c)) <= '7')
+static int
+isoctal(int c)
+{
+	u_char uc = c;
+
+	return uc >= '0' && uc <= '7';
+}
+
+static int
+isvisible(int c, int flag)
+{
+	int vis_sp = flag & VIS_SP;
+	int vis_tab = flag & VIS_TAB;
+	int vis_nl = flag & VIS_NL;
+	int vis_safe = flag & VIS_SAFE;
+	int vis_glob = flag & VIS_GLOB;
+	int vis_all = flag & VIS_ALL;
+	u_char uc = c;
+
+	if (c == '\\' || !vis_all) {
+		if ((u_int)c <= UCHAR_MAX && isascii(uc) &&
+		    ((c != '*' && c != '?' && c != '[' && c != '#') || !vis_glob) &&
+		    isgraph(uc))
+			return 1;
+		if (!vis_sp && c == ' ')
+			return 1;
+		if (!vis_tab && c == '\t')
+			return 1;
+		if (!vis_nl && c == '\n')
+			return 1;
+		if (vis_safe && (c == '\b' || c == '\007' || c == '\r' || isgraph(uc)))
+			return 1;
+	}
+	return 0;
+}
 
 /*
  * vis - visually encode characters
  */
 char *
-vis(dst, c, flag, nextc)
-	register char *dst;
-	int c, nextc;
-	register int flag;
+vis(char *dst, int c, int flag, int nextc)
 {
-	if ((u_int)c <= UCHAR_MAX && isascii(c) && isgraph(c) ||
-	   ((flag & VIS_SP) == 0 && c == ' ') ||
-	   ((flag & VIS_TAB) == 0 && c == '\t') ||
-	   ((flag & VIS_NL) == 0 && c == '\n') ||
-	   ((flag & VIS_SAFE) && (c == '\b' || c == '\007' || c == '\r'))) {
-		*dst++ = c;
-		if (c == '\\' && (flag & VIS_NOSLASH) == 0)
+	int vis_dq = flag & VIS_DQ;
+	int vis_noslash = flag & VIS_NOSLASH;
+	int vis_cstyle = flag & VIS_CSTYLE;
+	int vis_octal = flag & VIS_OCTAL;
+	int vis_glob = flag & VIS_GLOB;
+
+	if (isvisible(c, flag)) {
+		if ((c == '"' && vis_dq) ||
+		    (c == '\\' && !vis_noslash))
 			*dst++ = '\\';
+		*dst++ = c;
 		*dst = '\0';
 		return (dst);
 	}
 
-	if (flag & VIS_CSTYLE) {
-		switch(c) {
+	if (vis_cstyle) {
+		switch (c) {
 		case '\n':
 			*dst++ = '\\';
 			*dst++ = 'n';
@@ -83,11 +107,7 @@ vis(dst, c, flag, nextc)
 			*dst++ = '\\';
 			*dst++ = 'b';
 			goto done;
-#if __STDC__
 		case '\a':
-#else
-		case '\007':
-#endif
 			*dst++ = '\\';
 			*dst++ = 'a';
 			goto done;
@@ -117,20 +137,21 @@ vis(dst, c, flag, nextc)
 			goto done;
 		}
 	}
-	if (((c & 0177) == ' ') || (flag & VIS_OCTAL)) {	
+	if (((c & 0177) == ' ') || vis_octal ||
+	    (vis_glob && (c == '*' || c == '?' || c == '[' || c == '#'))) {
 		*dst++ = '\\';
 		*dst++ = ((u_char)c >> 6 & 07) + '0';
 		*dst++ = ((u_char)c >> 3 & 07) + '0';
 		*dst++ = ((u_char)c & 07) + '0';
 		goto done;
 	}
-	if ((flag & VIS_NOSLASH) == 0)
+	if (!vis_noslash)
 		*dst++ = '\\';
 	if (c & 0200) {
 		c &= 0177;
 		*dst++ = 'M';
 	}
-	if (iscntrl(c)) {
+	if (iscntrl((u_char)c)) {
 		*dst++ = '^';
 		if (c == 0177)
 			*dst++ = '?';
@@ -144,40 +165,102 @@ done:
 	*dst = '\0';
 	return (dst);
 }
+DEF_WEAK(vis);
 
 /*
- * strvis, strvisx - visually encode characters from src into dst
+ * strvis, strnvis, strvisx - visually encode characters from src into dst
  *	
  *	Dst must be 4 times the size of src to account for possible
  *	expansion.  The length of dst, not including the trailing NULL,
  *	is returned. 
  *
+ *	Strnvis will write no more than siz-1 bytes (and will NULL terminate).
+ *	The number of bytes needed to fully encode the string is returned.
+ *
  *	Strvisx encodes exactly len bytes from src into dst.
  *	This is useful for encoding a block of data.
  */
 int
-strvis(dst, src, flag)
-	register char *dst;
-	register const char *src;
-	int flag;
+strvis(char *dst, const char *src, int flag)
 {
-	register char c;
+	char c;
 	char *start;
 
-	for (start = dst; c = *src;)
+	for (start = dst; (c = *src);)
 		dst = vis(dst, c, flag, *++src);
 	*dst = '\0';
 	return (dst - start);
 }
+DEF_WEAK(strvis);
 
 int
-strvisx(dst, src, len, flag)
-	register char *dst;
-	register const char *src;
-	register size_t len;
-	int flag;
+strnvis(char *dst, const char *src, size_t siz, int flag)
 {
-	register char c;
+	int vis_dq = flag & VIS_DQ;
+	int vis_noslash = flag & VIS_NOSLASH;
+	char *start, *end;
+	char tbuf[5];
+	int c, i;
+
+	i = 0;
+	for (start = dst, end = start + siz - 1; (c = *src) && dst < end; ) {
+		if (isvisible(c, flag)) {
+			if ((c == '"' && vis_dq) ||
+			    (c == '\\' && !vis_noslash)) {
+				/* need space for the extra '\\' */
+				if (dst + 1 >= end) {
+					i = 2;
+					break;
+				}
+				*dst++ = '\\';
+			}
+			i = 1;
+			*dst++ = c;
+			src++;
+		} else {
+			i = vis(tbuf, c, flag, *++src) - tbuf;
+			if (dst + i <= end) {
+				memcpy(dst, tbuf, i);
+				dst += i;
+			} else {
+				src--;
+				break;
+			}
+		}
+	}
+	if (siz > 0)
+		*dst = '\0';
+	if (dst + i > end) {
+		/* adjust return value for truncation */
+		while ((c = *src))
+			dst += vis(tbuf, c, flag, *++src) - tbuf;
+	}
+	return (dst - start);
+}
+
+int
+stravis(char **outp, const char *src, int flag)
+{
+	char *buf;
+	int len, serrno;
+
+	buf = reallocarray(NULL, 4, strlen(src) + 1);
+	if (buf == NULL)
+		return -1;
+	len = strvis(buf, src, flag);
+	serrno = errno;
+	*outp = realloc(buf, len + 1);
+	if (*outp == NULL) {
+		*outp = buf;
+		errno = serrno;
+	}
+	return (len);
+}
+
+int
+strvisx(char *dst, const char *src, size_t len, int flag)
+{
+	char c;
 	char *start;
 
 	for (start = dst; len > 1; len--) {
@@ -187,6 +270,5 @@ strvisx(dst, src, len, flag)
 	if (len)
 		dst = vis(dst, *src, flag, '\0');
 	*dst = '\0';
-
 	return (dst - start);
 }

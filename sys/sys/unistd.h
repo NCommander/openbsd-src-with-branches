@@ -1,3 +1,4 @@
+/*	$OpenBSD: unistd.h,v 1.30 2014/12/13 20:42:41 tedu Exp $	*/
 /*	$NetBSD: unistd.h,v 1.10 1994/06/29 06:46:06 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,29 +35,15 @@
 #ifndef _SYS_UNISTD_H_
 #define	_SYS_UNISTD_H_
 
-/* compile-time symbolic constants */
-#define	_POSIX_JOB_CONTROL	/* implementation supports job control */
+#include <sys/cdefs.h>
 
-/*
- * Although we have saved user/group IDs, we do not use them in setuid
- * as described in POSIX 1003.1, because the feature does not work for
- * root.  We use the saved IDs in seteuid/setegid, which are not currently
- * part of the POSIX 1003.1 specification.
- */
-#ifdef	_NOT_AVAILABLE
-#define	_POSIX_SAVED_IDS	/* saved set-user-ID and set-group-ID */
-#endif
+#define	_POSIX_VDISABLE		(0377)
+#define	_POSIX_ASYNC_IO		(-1)
+#define	_POSIX_PRIO_IO		(-1)
+#define	_POSIX_SYNC_IO		(-1)
 
-#define	_POSIX_VERSION		198808L
-#define	_POSIX2_VERSION		199212L
-
-/* execution-time symbolic constants */
-				/* chown requires appropriate privileges */
-#define	_POSIX_CHOWN_RESTRICTED	1
-				/* too-long path components generate errors */
-#define	_POSIX_NO_TRUNC		1
-				/* may disable terminal special characters */
-#define	_POSIX_VDISABLE		((unsigned char)'\377')
+/* Define the POSIX.1 version we target for compliance. */
+#define	_POSIX_VERSION		200809L
 
 /* access function */
 #define	F_OK		0	/* test for existence of file */
@@ -73,54 +56,51 @@
 #define	SEEK_CUR	1	/* set file offset to current plus offset */
 #define	SEEK_END	2	/* set file offset to EOF plus offset */
 
-#ifndef _POSIX_SOURCE
-/* whence values for lseek(2); renamed by POSIX 1003.1 */
+#if __BSD_VISIBLE
+/* old BSD whence values for lseek(2); renamed by POSIX 1003.1 */
 #define	L_SET		SEEK_SET
 #define	L_INCR		SEEK_CUR
 #define	L_XTND		SEEK_END
+
+/* the parameters argument passed to the __tfork() syscall */
+struct __tfork {
+	void	*tf_tcb;
+	pid_t	*tf_tid;
+	void	*tf_stack;
+};
+
+/* the parameters argument for the kbind() syscall */
+struct __kbind {
+	void	*kb_addr;
+	size_t	kb_size;
+};
+#define	KBIND_BLOCK_MAX	2	/* powerpc, sparc, and sparc64 need 2 blocks */
+#define	KBIND_DATA_MAX	24	/* sparc64 needs 6, four-byte words */
 #endif
 
+/* the pathconf(2) variable values are part of the ABI */
+
 /* configurable pathname variables */
-#define	_PC_LINK_MAX		 1
-#define	_PC_MAX_CANON		 2
-#define	_PC_MAX_INPUT		 3
-#define	_PC_NAME_MAX		 4
-#define	_PC_PATH_MAX		 5
-#define	_PC_PIPE_BUF		 6
-#define	_PC_CHOWN_RESTRICTED	 7
-#define	_PC_NO_TRUNC		 8
-#define	_PC_VDISABLE		 9
-
-/* configurable system variables */
-#define	_SC_ARG_MAX		 1
-#define	_SC_CHILD_MAX		 2
-#define	_SC_CLK_TCK		 3
-#define	_SC_NGROUPS_MAX		 4
-#define	_SC_OPEN_MAX		 5
-#define	_SC_JOB_CONTROL		 6
-#define	_SC_SAVED_IDS		 7
-#define	_SC_VERSION		 8
-#define	_SC_BC_BASE_MAX		 9
-#define	_SC_BC_DIM_MAX		10
-#define	_SC_BC_SCALE_MAX	11
-#define	_SC_BC_STRING_MAX	12
-#define	_SC_COLL_WEIGHTS_MAX	13
-#define	_SC_EXPR_NEST_MAX	14
-#define	_SC_LINE_MAX		15
-#define	_SC_RE_DUP_MAX		16
-#define	_SC_2_VERSION		17
-#define	_SC_2_C_BIND		18
-#define	_SC_2_C_DEV		19
-#define	_SC_2_CHAR_TERM		20
-#define	_SC_2_FORT_DEV		21
-#define	_SC_2_FORT_RUN		22
-#define	_SC_2_LOCALEDEF		23
-#define	_SC_2_SW_DEV		24
-#define	_SC_2_UPE		25
-#define	_SC_STREAM_MAX		26
-#define	_SC_TZNAME_MAX		27
-
-/* configurable system strings */
-#define	_CS_PATH		 1
+#define	_PC_LINK_MAX			 1
+#define	_PC_MAX_CANON			 2
+#define	_PC_MAX_INPUT			 3
+#define	_PC_NAME_MAX			 4
+#define	_PC_PATH_MAX			 5
+#define	_PC_PIPE_BUF			 6
+#define	_PC_CHOWN_RESTRICTED		 7
+#define	_PC_NO_TRUNC			 8
+#define	_PC_VDISABLE			 9
+#define	_PC_2_SYMLINKS			10
+#define	_PC_ALLOC_SIZE_MIN		11
+#define	_PC_ASYNC_IO			12
+#define	_PC_FILESIZEBITS		13
+#define	_PC_PRIO_IO			14
+#define	_PC_REC_INCR_XFER_SIZE		15
+#define	_PC_REC_MAX_XFER_SIZE		16
+#define	_PC_REC_MIN_XFER_SIZE		17
+#define	_PC_REC_XFER_ALIGN		18
+#define	_PC_SYMLINK_MAX			19
+#define	_PC_SYNC_IO			20
+#define	_PC_TIMESTAMP_RESOLUTION	21
 
 #endif /* !_SYS_UNISTD_H_ */

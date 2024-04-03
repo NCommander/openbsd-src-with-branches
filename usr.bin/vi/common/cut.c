@@ -1,62 +1,31 @@
+/*	$OpenBSD: cut.c,v 1.16 2016/05/27 09:18:11 martijn Exp $	*/
+
 /*-
  * Copyright (c) 1992, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
+ * Copyright (c) 1992, 1993, 1994, 1995, 1996
+ *	Keith Bostic.  All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * See the LICENSE file for redistribution information.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)cut.c	8.34 (Berkeley) 8/17/94";
-#endif /* not lint */
+#include "config.h"
 
 #include <sys/types.h>
 #include <sys/queue.h>
-#include <sys/time.h>
 
 #include <bitstring.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <termios.h>
 
-#include "compat.h"
-#include <db.h>
-#include <regex.h>
+#include "common.h"
 
-#include "vi.h"
-
-static int	cb_rotate __P((SCR *));
+static void	cb_rotate(SCR *);
 
 /*
  * cut --
@@ -89,17 +58,14 @@ static int	cb_rotate __P((SCR *));
  * and, in the latter case, the text was appended to the buffer instead of
  * replacing the contents.  Hopefully it's not worth getting right, and here
  * we just treat the numeric buffers like any other named buffer.
+ *
+ * PUBLIC: int cut(SCR *, CHAR_T *, MARK *, MARK *, int);
  */
 int
-cut(sp, ep, namep, fm, tm, flags)
-	SCR *sp;
-	EXF *ep;
-	CHAR_T *namep;
-	int flags;
-	MARK *fm, *tm;
+cut(SCR *sp, CHAR_T *namep, MARK *fm, MARK *tm, int flags)
 {
 	CB *cbp;
-	CHAR_T name;
+	CHAR_T name = '1';	/* default numeric buffer */
 	recno_t lno;
 	int append, copy_one, copy_def;
 
@@ -128,8 +94,8 @@ cut(sp, ep, namep, fm, tm, flags)
 	append = copy_one = copy_def = 0;
 	if (namep != NULL) {
 		name = *namep;
-		if (LF_ISSET(CUT_NUMREQ) || LF_ISSET(CUT_NUMOPT) && 
-		    (LF_ISSET(CUT_LINEMODE) || fm->lno != tm->lno)) {
+		if (LF_ISSET(CUT_NUMREQ) || (LF_ISSET(CUT_NUMOPT) &&
+		    (LF_ISSET(CUT_LINEMODE) || fm->lno != tm->lno))) {
 			copy_one = 1;
 			cb_rotate(sp);
 		}
@@ -139,9 +105,9 @@ cut(sp, ep, namep, fm, tm, flags)
 			name = tolower(name);
 		}
 namecb:		CBNAME(sp, cbp, name);
-	} else if (LF_ISSET(CUT_NUMREQ) || LF_ISSET(CUT_NUMOPT) &&
-	    (LF_ISSET(CUT_LINEMODE) || fm->lno != tm->lno)) {
-		name = '1';
+	} else if (LF_ISSET(CUT_NUMREQ) || (LF_ISSET(CUT_NUMOPT) &&
+	    (LF_ISSET(CUT_LINEMODE) || fm->lno != tm->lno))) {
+		/* Copy into numeric buffer 1. */
 		cb_rotate(sp);
 		goto namecb;
 	} else
@@ -153,9 +119,9 @@ copyloop:
 	 * Otherwise, if it's not an append, free its current contents.
 	 */
 	if (cbp == NULL) {
-		CALLOC_RET(sp, cbp, CB *, 1, sizeof(CB));
+		CALLOC_RET(sp, cbp, 1, sizeof(CB));
 		cbp->name = name;
-		CIRCLEQ_INIT(&cbp->textq);
+		TAILQ_INIT(&cbp->textq);
 		LIST_INSERT_HEAD(&sp->gp->cutq, cbp, q);
 	} else if (!append) {
 		text_lfree(&cbp->textq);
@@ -164,42 +130,36 @@ copyloop:
 	}
 
 
-#define	ENTIRE_LINE	0
 	/* In line mode, it's pretty easy, just cut the lines. */
 	if (LF_ISSET(CUT_LINEMODE)) {
 		cbp->flags |= CB_LMODE;
 		for (lno = fm->lno; lno <= tm->lno; ++lno)
-			if (cut_line(sp, ep, lno, 0, 0, cbp))
+			if (cut_line(sp, lno, 0, CUT_LINE_TO_EOL, cbp))
 				goto cut_line_err;
 	} else {
 		/*
-		 * Get the first line.  A length of 0 causes cut_line
-		 * to cut from the MARK to the end of the line.
+		 * Get the first line.  A length of CUT_LINE_TO_EOL causes
+		 * cut_line() to cut from the MARK to the end of the line.
 		 */
-		if (cut_line(sp, ep, fm->lno, fm->cno, fm->lno != tm->lno ?
-		    ENTIRE_LINE : (tm->cno - fm->cno) + 1, cbp))
+		if (cut_line(sp, fm->lno, fm->cno, fm->lno != tm->lno ?
+		    CUT_LINE_TO_EOL : (tm->cno - fm->cno) + 1, cbp))
 			goto cut_line_err;
 
 		/* Get the intermediate lines. */
 		for (lno = fm->lno; ++lno < tm->lno;)
-			if (cut_line(sp, ep, lno, 0, ENTIRE_LINE, cbp))
+			if (cut_line(sp, lno, 0, CUT_LINE_TO_EOL, cbp))
 				goto cut_line_err;
 
 		/* Get the last line. */
 		if (tm->lno != fm->lno &&
-		    cut_line(sp, ep, lno, 0, tm->cno + 1, cbp)) {
-cut_line_err:		text_lfree(&cbp->textq);
-			cbp->len = 0;
-			cbp->flags = 0;
-			return (1);
-		}
+		    cut_line(sp, lno, 0, tm->cno + 1, cbp))
+			goto cut_line_err;
 	}
 
 	append = 0;		/* Only append to the named buffer. */
 	sp->gp->dcbp = cbp;	/* Repoint the default buffer on each pass. */
 
 	if (copy_one) {		/* Copy into numeric buffer 1. */
-		name = '1';
 		CBNAME(sp, cbp, name);
 		copy_one = 0;
 		goto copyloop;
@@ -210,20 +170,25 @@ cut_line_err:		text_lfree(&cbp->textq);
 		goto copyloop;
 	}
 	return (0);
+
+cut_line_err:	
+	text_lfree(&cbp->textq);
+	cbp->len = 0;
+	cbp->flags = 0;
+	return (1);
 }
 
 /*
  * cb_rotate --
  *	Rotate the numbered buffers up one.
  */
-static int
-cb_rotate(sp)
-	SCR *sp;
+static void
+cb_rotate(SCR *sp)
 {
 	CB *cbp, *del_cbp;
 
 	del_cbp = NULL;
-	for (cbp = sp->gp->cutq.lh_first; cbp != NULL; cbp = cbp->q.le_next)
+	LIST_FOREACH(cbp, &sp->gp->cutq, q)
 		switch(cbp->name) {
 		case '1':
 			cbp->name = '2';
@@ -256,32 +221,26 @@ cb_rotate(sp)
 	if (del_cbp != NULL) {
 		LIST_REMOVE(del_cbp, q);
 		text_lfree(&del_cbp->textq);
-		FREE(del_cbp, sizeof(CB));
+		free(del_cbp);
 	}
-	return (0);
 }
 
 /*
  * cut_line --
  *	Cut a portion of a single line.
+ *
+ * PUBLIC: int cut_line(SCR *, recno_t, size_t, size_t, CB *);
  */
 int
-cut_line(sp, ep, lno, fcno, clen, cbp)
-	SCR *sp;
-	EXF *ep;
-	recno_t lno;
-	size_t fcno, clen;
-	CB *cbp;
+cut_line(SCR *sp, recno_t lno, size_t fcno, size_t clen, CB *cbp)
 {
 	TEXT *tp;
 	size_t len;
 	char *p;
 
 	/* Get the line. */
-	if ((p = file_gline(sp, ep, lno, &len)) == NULL) {
-		GETLINE_ERR(sp, lno);
+	if (db_get(sp, lno, DBG_FATAL, &p, &len))
 		return (1);
-	}
 
 	/* Create a TEXT structure that can hold the entire line. */
 	if ((tp = text_init(sp, NULL, 0, len)) == NULL)
@@ -292,43 +251,67 @@ cut_line(sp, ep, lno, fcno, clen, cbp)
 	 * copy the portion we want, and reset the TEXT length.
 	 */
 	if (len != 0) {
-		if (clen == 0)
+		if (clen == CUT_LINE_TO_EOL)
 			clen = len - fcno;
-		memmove(tp->lb, p + fcno, clen);
+		memcpy(tp->lb, p + fcno, clen);
 		tp->len = clen;
 	}
 
 	/* Append to the end of the cut buffer. */
-	CIRCLEQ_INSERT_TAIL(&cbp->textq, tp, q);
+	TAILQ_INSERT_TAIL(&cbp->textq, tp, q);
 	cbp->len += tp->len;
 
 	return (0);
 }
 
 /*
+ * cut_close --
+ *	Discard all cut buffers.
+ *
+ * PUBLIC: void cut_close(GS *);
+ */
+void
+cut_close(GS *gp)
+{
+	CB *cbp;
+
+	/* Free cut buffer list. */
+	while ((cbp = LIST_FIRST(&gp->cutq)) != NULL) {
+		if (!TAILQ_EMPTY(&cbp->textq))
+			text_lfree(&cbp->textq);
+		LIST_REMOVE(cbp, q);
+		free(cbp);
+	}
+
+	/* Free default cut storage. */
+	cbp = &gp->dcb_store;
+	if (!TAILQ_EMPTY(&cbp->textq))
+		text_lfree(&cbp->textq);
+}
+
+/*
  * text_init --
  *	Allocate a new TEXT structure.
+ *
+ * PUBLIC: TEXT *text_init(SCR *, const char *, size_t, size_t);
  */
 TEXT *
-text_init(sp, p, len, total_len)
-	SCR *sp;
-	const char *p;
-	size_t len, total_len;
+text_init(SCR *sp, const char *p, size_t len, size_t total_len)
 {
 	TEXT *tp;
 
-	CALLOC(sp, tp, TEXT *, 1, sizeof(TEXT));
+	CALLOC(sp, tp, 1, sizeof(TEXT));
 	if (tp == NULL)
 		return (NULL);
-	/* ANSI C doesn't define a call to malloc(2) for 0 bytes. */
+	/* ANSI C doesn't define a call to malloc(3) for 0 bytes. */
 	if ((tp->lb_len = total_len) != 0) {
-		MALLOC(sp, tp->lb, CHAR_T *, tp->lb_len);
+		MALLOC(sp, tp->lb, tp->lb_len);
 		if (tp->lb == NULL) {
 			free(tp);
 			return (NULL);
 		}
 		if (p != NULL && len != 0)
-			memmove(tp->lb, p, len);
+			memcpy(tp->lb, p, len);
 	}
 	tp->len = len;
 	return (tp);
@@ -337,15 +320,16 @@ text_init(sp, p, len, total_len)
 /*
  * text_lfree --
  *	Free a chain of text structures.
+ *
+ * PUBLIC: void text_lfree(TEXTH *);
  */
 void
-text_lfree(headp)
-	TEXTH *headp;
+text_lfree(TEXTH *headp)
 {
 	TEXT *tp;
 
-	while ((tp = headp->cqh_first) != (void *)headp) {
-		CIRCLEQ_REMOVE(headp, tp, q);
+	while ((tp = TAILQ_FIRST(headp))) {
+		TAILQ_REMOVE(headp, tp, q);
 		text_free(tp);
 	}
 }
@@ -353,14 +337,12 @@ text_lfree(headp)
 /*
  * text_free --
  *	Free a text structure.
+ *
+ * PUBLIC: void text_free(TEXT *);
  */
 void
-text_free(tp)
-	TEXT *tp;
+text_free(TEXT *tp)
 {
-	if (tp->lb != NULL)
-		FREE(tp->lb, tp->lb_len);
-	if (tp->wd != NULL)
-		FREE(tp->wd, tp->wd_len);
-	FREE(tp, sizeof(TEXT));
+	free(tp->lb);
+	free(tp);
 }

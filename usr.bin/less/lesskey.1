@@ -1,4 +1,4 @@
-.\"	$OpenBSD: lesskey.1,v 1.10 2013/07/16 00:07:52 schwarze Exp $
+.\"	$OpenBSD: lesskey.1,v 1.17 2021/12/07 13:26:49 schwarze Exp $
 .\"
 .\" Copyright (C) 2000-2012  Mark Nudelman
 .\"
@@ -22,12 +22,12 @@
 .\" WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 .\" OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 .\" IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-.Dd $Mdocdate: July 16 2013 $
+.Dd $Mdocdate: December 7 2021 $
 .Dt LESSKEY 1
 .Os
 .Sh NAME
 .Nm lesskey
-.Nd specify key bindings for less
+.Nd customize key bindings for less
 .Sh SYNOPSIS
 .Nm lesskey
 .Oo Fl o Ar output
@@ -37,7 +37,7 @@
 .Fl V | -version
 .Sh DESCRIPTION
 .Nm
-is used to specify a set of key bindings to be used by
+is used to change the default key bindings of
 .Xr less 1 .
 The input file is a text file which describes the key bindings.
 If the input file is
@@ -118,32 +118,42 @@ The command section begins with the line
 .Pp
 If the command section is the first section in the file,
 this line may be omitted.
+.Pp
 The command section consists of lines of the form:
 .Bd -filled -offset indent
-.Ar string
-.Aq whitespace
+.Ar keys
 .Ar action
-.Bq extra-string
-.Aq newline
+.Op Ar extra
 .Ed
 .Pp
-Whitespace is any sequence of one or more spaces and/or tabs.
+The three fields are separated by whitespace
+consisting of one or more spaces and/or tabs.
+.Pp
 The
-.Ar string
-is the command key(s) which invoke the action.
-The
-.Ar string
-may be a single command key, or a sequence of up to 15 keys.
-The
+.Ar keys
+string consists of at least one and at most 15 keys.
+By typing it in
+.Xr less 1 ,
+the
 .Ar action
-is the name of the less action, from the list below.
-The characters in the
-.Ar string
-may appear literally, or be prefixed by a caret to indicate a control key.
-A backslash followed by one to three octal digits may be used to
-specify a character by its octal value.
-A backslash followed by certain characters specifies input
-characters as follows:
+is invoked.
+The list of default key bindings given below
+also serves as a list of supported actions.
+.Pp
+Each of the
+.Ar keys
+can be specified in these forms:
+.Bl -bullet -offset indent
+.It
+a literal character
+.It
+a character prefixed by a caret to indicate a control key
+.It
+a backslash followed by one to three octal digits
+to specify a key by its octal value
+.It
+a backslash followed by certain characters
+to specify input characters as follows:
 .Pp
 .Bl -tag -width Ds -offset indent -compact
 .It \eb
@@ -175,33 +185,43 @@ END
 .It \ekx
 DELETE
 .El
-.Pp
-A backslash followed by any other character indicates that character is
-to be taken literally.
+.It
+a backslash followed by any other character
+to indicate that character is to be taken literally.
 Characters which must be preceded by backslash include
-caret, space, tab and the backslash itself.
+caret, space, tab, and the backslash itself.
+.El
 .Pp
 An action may be followed by an
-.Qq extra
+.Ar extra
 string.
-When such a command is entered while running less,
-the action is performed, and then the extra
-string is parsed, just as if it were typed in to less.
+It is parsed, just as if it were typed into
+.Xr less 1 ,
+after performing the
+.Ar action .
 This feature can be used in certain cases to extend
 the functionality of a command.
 For example, see the
 .Sq {
 and
 .Sq :t
-commands in the example below.
-The extra string has a special meaning for the
+keys in the list of default bindings below.
+.Pp
+The
+.Ar extra
+string has a special meaning for the
 .Qq quit
 action:
-when less quits,
-first character of the extra string is used as its exit status.
+when
+.Xr less 1
+quits,
+first character of the
+.Ar extra
+string is used as its exit status.
 .Pp
 The following input file describes the set of
-default command keys used by less:
+default command keys used by
+.Xr less 1 :
 .Bd -literal -offset indent
 #command
 \er	forw-line
@@ -277,7 +297,7 @@ N	reverse-search
 \eeN	reverse-search-all
 &	filter
 m	set-mark
-\'	goto-mark
+\(aq	goto-mark
 ^X^X	goto-mark
 E	examine
 :e	examine
@@ -294,7 +314,6 @@ s	toggle-option o
 _	display-option
 |	pipe
 v	visual
-!	shell
 +	firstcmd
 H	help
 h	help
@@ -410,13 +429,10 @@ Although the lesskey file can be used to override variables set in the
 environment, the main purpose of assigning variables in the lesskey file
 is simply to have all less configuration information stored in one file.
 .Pp
-The following input file sets the -i option whenever less is run,
-and specifies the character set to be
-.Qq latin1 :
+The following input file sets the -i option whenever less is run:
 .Bd -literal -offset indent
 #env
 LESS = -i
-LESSCHARSET = latin1
 .Ed
 .Sh ENVIRONMENT
 .Bl -tag -width LESSKEY_SYSTEM -compact
@@ -448,10 +464,3 @@ file.
 .Xr less 1
 .Sh AUTHORS
 .An Mark Nudelman
-.Pp
-Send bug reports or comments to
-.Aq Mt bug\-less@gnu.org .
-.\" .Sh CAVEATS
-.\" On MS-DOS and OS/2 systems, certain keys send a sequence of characters
-.\" which start with a NUL character (0).
-.\" This NUL character should be represented as \e340 in a lesskey file.

@@ -1,4 +1,5 @@
-/*	$NetBSD: dir.h,v 1.6 1995/06/15 23:22:49 cgd Exp $	*/
+/*	$OpenBSD: dir.h,v 1.12 2019/05/04 15:38:12 deraadt Exp $	*/
+/*	$NetBSD: dir.h,v 1.8 1996/03/09 19:42:41 scottr Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -47,7 +44,7 @@
  * Theoretically, directories can be more than 2Gb in length, however, in
  * practice this seems unlikely. So, we define the type doff_t as a 32-bit
  * quantity to keep down the cost of doing lookup on a 32-bit machine.
-*/
+ */
 #define	doff_t		int32_t
 #define	MAXDIRSIZE	(0x7fffffff)
 
@@ -64,9 +61,9 @@
  * with null bytes.  All names are guaranteed null terminated.
  * The maximum length of a name in a directory is MAXNAMLEN.
  *
- * The macro DIRSIZ(fmt, dp) gives the amount of space required to represent
+ * The macro DIRSIZ(dp) gives the amount of space required to represent
  * a directory entry.  Free space in a directory is represented by
- * entries which have dp->d_reclen > DIRSIZ(fmt, dp).  All DIRBLKSIZ bytes
+ * entries which have dp->d_reclen > DIRSIZ(dp).  All DIRBLKSIZ bytes
  * in a directory block are claimed by the directory entries.  This
  * usually results in the last entry in a directory having a large
  * dp->d_reclen.  When entries are deleted from a directory, the
@@ -98,7 +95,6 @@ struct	direct {
 #define	DT_REG		 8
 #define	DT_LNK		10
 #define	DT_SOCK		12
-#define	DT_WHT		14
 
 /*
  * Convert between stat structure types and directory types.
@@ -112,17 +108,12 @@ struct	direct {
  * without the d_name field, plus enough space for the name with a terminating
  * null byte (dp->d_namlen+1), rounded up to a 4 byte boundary.
  */
-#if (BYTE_ORDER == LITTLE_ENDIAN)
-#define DIRSIZ(oldfmt, dp) \
-    ((oldfmt) ? \
-    ((sizeof(struct direct) - (MAXNAMLEN+1)) + (((dp)->d_type+1 + 3) &~ 3)) : \
-    ((sizeof(struct direct) - (MAXNAMLEN+1)) + (((dp)->d_namlen+1 + 3) &~ 3)))
-#else
-#define DIRSIZ(oldfmt, dp) \
+#define DIR_ROUNDUP	4	/* Directory name roundup size */
+#define DIRECTSIZ(namlen)						\
+	((offsetof(struct direct, d_name) +				\
+	  ((namlen)+1)*sizeof(((struct direct *)0)->d_name[0]) + 3) & ~3)
+#define DIRSIZ(dp) \
     ((sizeof(struct direct) - (MAXNAMLEN+1)) + (((dp)->d_namlen+1 + 3) &~ 3))
-#endif
-#define OLDDIRFMT	1
-#define NEWDIRFMT	0
 
 /*
  * Template for manipulating directories.  Should use struct direct's,
@@ -138,20 +129,6 @@ struct dirtemplate {
 	int16_t		dotdot_reclen;
 	u_int8_t	dotdot_type;
 	u_int8_t	dotdot_namlen;
-	char		dotdot_name[4];	/* ditto */
-};
-
-/*
- * This is the old format of directories, sanz type element.
- */
-struct odirtemplate {
-	u_int32_t	dot_ino;
-	int16_t		dot_reclen;
-	u_int16_t	dot_namlen;
-	char		dot_name[4];	/* must be multiple of 4 */
-	u_int32_t	dotdot_ino;
-	int16_t		dotdot_reclen;
-	u_int16_t	dotdot_namlen;
 	char		dotdot_name[4];	/* ditto */
 };
 #endif /* !_DIR_H_ */

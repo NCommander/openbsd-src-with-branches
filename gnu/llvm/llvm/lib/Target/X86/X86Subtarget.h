@@ -139,6 +139,8 @@ public:
     return &getInstrInfo()->getRegisterInfo();
   }
 
+  bool getSaveArgs() const { return SaveArgs; }
+
   unsigned getTileConfigSize() const { return 64; }
   Align getTileConfigAlignment() const { return TileConfigAlignment; }
 
@@ -279,6 +281,7 @@ public:
 
   bool isTargetDarwin() const { return TargetTriple.isOSDarwin(); }
   bool isTargetFreeBSD() const { return TargetTriple.isOSFreeBSD(); }
+  bool isTargetOpenBSD() const { return TargetTriple.isOSOpenBSD(); }
   bool isTargetDragonFly() const { return TargetTriple.isOSDragonFly(); }
   bool isTargetSolaris() const { return TargetTriple.isOSSolaris(); }
   bool isTargetPS() const { return TargetTriple.isPS(); }

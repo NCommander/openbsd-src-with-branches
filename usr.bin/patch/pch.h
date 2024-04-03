@@ -1,27 +1,60 @@
-/*	$Id: pch.h,v 1.2 1993/08/02 17:55:22 mycroft Exp $ */
+/*	$OpenBSD: pch.h,v 1.13 2019/12/11 20:10:17 jca Exp $	*/
 
-EXT FILE *pfp INIT(Nullfp);		/* patch file pointer */
+/*
+ * patch - a program to apply diffs to original files
+ * 
+ * Copyright 1986, Larry Wall
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following condition is met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this condition and the following disclaimer.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * 
+ * -C option added in 1998, original code by Marc Espie, based on FreeBSD
+ * behaviour
+ */
 
-void re_patch();
-void open_patch_file();
-void set_hunkmax();
-void grow_hunkmax();
-bool there_is_another_patch();
-int intuit_diff_type();
-void next_intuit_at();
-void skip_to();
-bool another_hunk();
-bool pch_swap();
-char *pfetch();
-short pch_line_len();
-LINENUM pch_first();
-LINENUM pch_ptrn_lines();
-LINENUM pch_newfirst();
-LINENUM pch_repl_lines();
-LINENUM pch_end();
-LINENUM pch_context();
-LINENUM pch_hunk_beg();
-char pch_char();
-char *pfetch();
-char *pgets();
-void do_ed_script();
+#define OLD_FILE	0
+#define NEW_FILE	1
+#define INDEX_FILE	2
+#define MAX_FILE	3
+
+struct file_name {
+	char *path;
+	bool exists;
+};
+
+extern FILE	*pfp;
+extern LINENUM	p_input_line;
+
+void		re_patch(void);
+void		open_patch_file(const char *);
+void		set_hunkmax(void);
+bool		there_is_another_patch(void);
+void		next_intuit_at(off_t, LINENUM);
+bool		another_hunk(void);
+int		pgetline(char **, size_t *, FILE *);
+bool		pch_swap(void);
+LINENUM		pch_first(void);
+LINENUM		pch_ptrn_lines(void);
+LINENUM		pch_newfirst(void);
+LINENUM		pch_repl_lines(void);
+LINENUM		pch_end(void);
+LINENUM		pch_context(void);
+ssize_t		pch_line_len(LINENUM);
+char		pch_char(LINENUM);
+char		*pfetch(LINENUM);
+LINENUM		pch_hunk_beg(void);
+LINENUM		strtolinenum(char *, char **);

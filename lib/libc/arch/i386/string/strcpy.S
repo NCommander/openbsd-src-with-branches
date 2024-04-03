@@ -1,3 +1,4 @@
+/*	$OpenBSD: strcpy.S,v 1.9 2015/08/31 02:53:56 guenther Exp $ */
 /*
  * Written by J.T. Conklin <jtc@netbsd.org>.
  * Public domain.
@@ -5,8 +6,11 @@
 
 #include <machine/asm.h>
 
-#if defined(LIBC_SCCS)
-	RCSID("$NetBSD: strcpy.S,v 1.8 1995/04/28 22:58:12 jtc Exp $")
+#if defined(APIWARN)
+#APP
+	.section .gnu.warning.strcpy
+	.ascii "strcpy() is almost always misused, please use strlcpy()"
+#NO_APP
 #endif
 
 /*
@@ -57,3 +61,4 @@ L1:	movb	(%edx),%al		/* unroll loop, but not too much */
 	jnz	L1
 L2:	popl	%eax			/* pop dst address */
 	ret
+END(strcpy)

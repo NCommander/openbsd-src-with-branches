@@ -1,0 +1,10 @@
+.\" $OpenBSD$
+.Dt DD-LATE 1
+.Os
+.Sh NAME
+.Nm Dd-late
+.Nd late date macro
+.Sh DESCRIPTION
+initial text
+.Dd August 5, 2014
+final text

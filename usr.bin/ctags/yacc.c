@@ -1,3 +1,4 @@
+/*	$OpenBSD: yacc.c,v 1.8 2009/10/27 23:59:37 deraadt Exp $	*/
 /*	$NetBSD: yacc.c,v 1.3 1995/03/26 20:14:12 glass Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)yacc.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: yacc.c,v 1.3 1995/03/26 20:14:12 glass Exp $";
-#endif
-#endif /* not lint */
-
 #include <ctype.h>
 #include <limits.h>
 #include <stdio.h>
@@ -53,7 +42,7 @@ static char rcsid[] = "$NetBSD: yacc.c,v 1.3 1995/03/26 20:14:12 glass Exp $";
  *	find the yacc tags and put them in.
  */
 void
-y_entries()
+y_entries(void)
 {
 	int	c;
 	char	*sp;
@@ -88,7 +77,7 @@ y_entries()
 			break;
 		case '/':
 			if (GETC(==, '*'))
-				skip_comment();
+				skip_comment('*');
 			else
 				(void)ungetc(c, inf);
 			break;
@@ -97,14 +86,14 @@ y_entries()
 			in_rule = NO;
 			break;
 		default:
-			if (in_rule || !isalpha(c) && c != '.' && c != '_')
+			if (in_rule || (!isalpha(c) && c != '.' && c != '_'))
 				break;
 			sp = tok;
 			*sp++ = c;
 			while (GETC(!=, EOF) && (intoken(c) || c == '.'))
 				*sp++ = c;
 			*sp = EOS;
-			getline();		/* may change before ':' */
+			get_line();		/* may change before ':' */
 			while (iswhite(c)) {
 				if (c == '\n')
 					SETLINE;
@@ -125,7 +114,7 @@ y_entries()
  *	throw away lines up to the next "\n%%\n"
  */
 void
-toss_yysec()
+toss_yysec(void)
 {
 	int	c;			/* read character */
 	int	state;
@@ -134,7 +123,7 @@ toss_yysec()
 	 * state == 0 : waiting
 	 * state == 1 : received a newline
 	 * state == 2 : received first %
-	 * state == 3 : recieved second %
+	 * state == 3 : received second %
 	 */
 	lineftell = ftell(inf);
 	for (state = 0; GETC(!=, EOF);)

@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: engine.c,v 1.2 2018/09/05 17:32:56 eric Exp $	*/
 
 /*
  * Copyright (c) 2017 Eric Faurot <eric@openbsd.org>
@@ -49,7 +49,7 @@ engine(int debug, int verbose)
 		fatal("%s: malloc", __func__);
 	gethostname(lpd_hostname, HOST_NAME_MAX + 1);
 
-	/* Drop priviledges. */
+	/* Drop privileges. */
 	if ((pw = getpwnam(LPD_USER)) == NULL)
 		fatal("%s: getpwnam: %s", __func__, LPD_USER);
 
@@ -148,8 +148,8 @@ engine_dispatch_frontend(struct imsgproc *proc, struct imsg *imsg, void *arg)
 		log_imsg(proc, imsg);
 
 	switch (imsg->hdr.type) {
-	case IMSG_RES_GETADDRINFO:
-	case IMSG_RES_GETNAMEINFO:
+	case IMSG_GETADDRINFO:
+	case IMSG_GETNAMEINFO:
 		resolver_dispatch_request(proc, imsg);
 		break;
 

@@ -1,4 +1,4 @@
-/*	$NetBSD: caesar.c,v 1.3 1995/03/21 15:08:21 cgd Exp $	*/
+/*	$OpenBSD: caesar.c,v 1.20 2017/08/10 17:24:30 tedu Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -20,11 +20,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -41,23 +37,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1989, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)caesar.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: caesar.c,v 1.3 1995/03/21 15:08:21 cgd Exp $";
-#endif
-#endif /* not lint */
-
+#include <ctype.h>
+#include <err.h>
+#include <errno.h>
 #include <math.h>
 #include <stdio.h>
-#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #define	LINELENGTH	2048
@@ -66,46 +52,54 @@ static char rcsid[] = "$NetBSD: caesar.c,v 1.3 1995/03/21 15:08:21 cgd Exp $";
 	    islower(ch) ? ('a' + (ch - 'a' + perm) % 26) : ch
 
 /*
- * letter frequencies (taken from some unix(tm) documentation)
- * (unix is a trademark of Bell Laboratories)
+ * letter frequencies
  */
 double stdf[26] = {
-	7.97, 1.35, 3.61, 4.78, 12.37, 2.01, 1.46, 4.49, 6.39, 0.04,
-	0.42, 3.81, 2.69, 5.92,  6.96, 2.91, 0.08, 6.63, 8.77, 9.68,
-	2.62, 0.81, 1.88, 0.23,  2.07, 0.06,
+	8.1, 1.4, 2.7, 3.8, 13.0, 2.9, 2.0, 5.2, 6.3, 0.13,
+	0.4, 3.4, 2.5, 7.1, 7.9, 1.9, 0.11, 6.8, 6.1, 10.5,
+	2.4, 0.9, 1.5, 0.15, 1.9, 0.07
 };
 
-main(argc, argv)
-	int argc;
-	char **argv;
+__dead void printit(int);
+
+int
+main(int argc, char *argv[])
 {
-	extern int errno;
-	register int ch, dot, i, nread, winnerdot;
-	register char *inbuf;
+	int ch, i, nread;
+	extern char *__progname;
+	const char *errstr;
+	char *inbuf;
 	int obs[26], try, winner;
-	char *malloc(), *strerror();
+	double dot, winnerdot;
 
-	if (argc > 1)
-		printit(argv[1]);
+	if (pledge("stdio", NULL) == -1)
+		err(1, "pledge");
 
-	if (!(inbuf = malloc(LINELENGTH))) {
-		(void)fprintf(stderr, "caesar: out of memory.\n");
-		exit(1);
+	/* check to see if we were called as rot13 */
+	if (strcmp(__progname, "rot13") == 0)
+		printit(13);
+
+	if (argc > 1) {
+		i = strtonum(argv[1], -25, 25, &errstr);
+		if (errstr)
+			errx(1, "rotation is %s: %s", errstr, argv[1]);
+		else
+			printit(i);
 	}
+
+	if (!(inbuf = malloc(LINELENGTH)))
+		err(1, NULL);
 
 	/* adjust frequency table to weight low probs REAL low */
 	for (i = 0; i < 26; ++i)
 		stdf[i] = log(stdf[i]) + log(26.0 / 100.0);
 
 	/* zero out observation table */
-	bzero(obs, 26 * sizeof(int));
+	memset(obs, 0, 26 * sizeof(int));
 
-	if ((nread = read(STDIN_FILENO, inbuf, LINELENGTH)) < 0) {
-		(void)fprintf(stderr, "caesar: %s\n", strerror(errno));
-		exit(1);
-	}
-	for (i = nread; i--;) {
-		ch = inbuf[i];
+	nread = 0;
+	while ((nread < LINELENGTH) && ((ch = getchar()) != EOF)) {
+		inbuf[nread++] = ch;
 		if (islower(ch))
 			++obs[ch - 'a'];
 		else if (isupper(ch))
@@ -116,13 +110,11 @@ main(argc, argv)
 	 * now "dot" the freqs with the observed letter freqs
 	 * and keep track of best fit
 	 */
+	winnerdot = 0;
 	for (try = winner = 0; try < 26; ++try) { /* += 13) { */
 		dot = 0;
 		for (i = 0; i < 26; i++)
 			dot += obs[i] * stdf[(i + try) % 26];
-		/* initialize winning score */
-		if (try == 0)
-			winnerdot = dot;
 		if (dot > winnerdot) {
 			/* got a new winner! */
 			winner = try;
@@ -130,30 +122,21 @@ main(argc, argv)
 		}
 	}
 
-	for (;;) {
-		for (i = 0; i < nread; ++i) {
-			ch = inbuf[i];
-			putchar(ROTATE(ch, winner));
-		}
-		if (nread < LINELENGTH)
-			break;
-		if ((nread = read(STDIN_FILENO, inbuf, LINELENGTH)) < 0) {
-			(void)fprintf(stderr, "caesar: %s\n", strerror(errno));
-			exit(1);
-		}
+	/* dump the buffer before calling printit */
+	for (i = 0; i < nread; ++i) {
+		ch = inbuf[i];
+		putchar(ROTATE(ch, winner));
 	}
-	exit(0);
+	printit(winner);
 }
 
-printit(arg)
-	char *arg;
+void
+printit(int rot)
 {
-	register int ch, rot;
+	int ch;
 
-	if ((rot = atoi(arg)) < 0) {
-		(void)fprintf(stderr, "caesar: bad rotation value.\n");
-		exit(1);
-	}
+	if (rot < 0)
+		rot = rot + 26;
 	while ((ch = getchar()) != EOF)
 		putchar(ROTATE(ch, rot));
 	exit(0);

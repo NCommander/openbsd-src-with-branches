@@ -1,11 +1,12 @@
-#	$NetBSD: Makefile,v 1.5 1995/10/09 03:51:32 thorpej Exp $
-#	from: Id: Makefile,v 1.5 1993/06/24 05:11:16 deering Exp
+#	$OpenBSD: Makefile,v 1.7 2015/10/26 10:34:19 tedu Exp $
 
 PROG=	mrouted
-SRCS=	igmp.c inet.c kern.c config.c cfparse.c main.c route.c vif.c \
-	prune.c callout.c
+SRCS=	callout.c cfparse.c config.c igmp.c inet.c kern.c main.c prune.c \
+	route.c vif.c
 MAN=	mrouted.8
 
-CLEANFILES+= cfparse.c y.tab.h
+CFLAGS+=-I${.CURDIR}
+
+CLEANFILES+= cfparse.c cfparse.h y.tab.h
 
 .include <bsd.prog.mk>

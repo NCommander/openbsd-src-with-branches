@@ -1,0 +1,36 @@
+dnl	$OpenBSD: contents,v 1.38 2022/09/19 04:29:56 jsg Exp $
+TopPart
+
+OpenBSDdistsets
+
+OpenBSDbsd
+
+OpenBSDbsdmp
+
+OpenBSDrd
+
+OpenBSDinstalliso
+
+OpenBSDcd
+
+	ofwboot		The OpenBSD/MACHINE secondary boot loader.
+dnl
+dnl	bsd.tbxi
+
+DistributionDescription(eight)
+
+OpenBSDbase(199668579,452485796)
+
+OpenBSDcomp(61612698,204541884)
+
+OpenBSDgame(2852593,6656098)
+
+OpenBSDman(8021282,30950175)
+
+OpenBSDxbase(46275547,133096639)
+
+OpenBSDxfont(23519081,35818896)
+
+OpenBSDxserv(11067042,33545999)
+
+OpenBSDxshare(4695947,24958258)

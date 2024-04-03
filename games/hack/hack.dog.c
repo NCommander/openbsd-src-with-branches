@@ -1,16 +1,74 @@
+/*	$OpenBSD: hack.dog.c,v 1.8 2009/10/27 23:59:25 deraadt Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: hack.dog.c,v 1.3 1995/03/23 08:29:59 cgd Exp $";
-#endif /* not lint */
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
-#include	"hack.h"
-#include	"hack.mfndpos.h"
-extern struct monst *makemon();
 #include "def.edog.h"
-#include "def.mkroom.h"
+#include "hack.h"
+#include "hack.mfndpos.h"
+
+extern struct monst *makemon(struct permonst *, int, int);
+
+static void initedog(struct monst *);
+static int  dogfood(struct obj *);
 
 struct permonst li_dog =
 	{ "little dog", 'd',2,18,6,1,6,sizeof(struct edog) };
@@ -20,13 +78,18 @@ struct permonst la_dog =
 	{ "large dog", 'd',6,15,4,2,4,sizeof(struct edog) };
 
 
-makedog(){
-register struct monst *mtmp = makemon(&li_dog,u.ux,u.uy);
+void
+makedog(void)
+{
+	struct monst *mtmp = makemon(&li_dog,u.ux,u.uy);
+
 	if(!mtmp) return; /* dogs were genocided */
 	initedog(mtmp);
 }
 
-initedog(mtmp) register struct monst *mtmp; {
+void
+initedog(struct monst *mtmp)
+{
 	mtmp->mtame = mtmp->mpeaceful = 1;
 	EDOG(mtmp)->hungrytime = 1000 + moves;
 	EDOG(mtmp)->eattime = 0;
@@ -41,15 +104,18 @@ struct monst *mydogs = 0;
 struct monst *fallen_down = 0;	/* monsters that fell through a trapdoor */
 	/* they will appear on the next level @ goes to, even if he goes up! */
 
-losedogs(){
-register struct monst *mtmp;
-	while(mtmp = mydogs){
+void
+losedogs(void)
+{
+	struct monst *mtmp;
+
+	while ((mtmp = mydogs)) {
 		mydogs = mtmp->nmon;
 		mtmp->nmon = fmon;
 		fmon = mtmp;
 		mnexto(mtmp);
 	}
-	while(mtmp = fallen_down){
+	while ((mtmp = fallen_down) ){
 		fallen_down = mtmp->nmon;
 		mtmp->nmon = fmon;
 		fmon = mtmp;
@@ -57,8 +123,11 @@ register struct monst *mtmp;
 	}
 }
 
-keepdogs(){
-register struct monst *mtmp;
+void
+keepdogs(void)
+{
+	struct monst *mtmp;
+
 	for(mtmp = fmon; mtmp; mtmp = mtmp->nmon)
 	    if(dist(mtmp->mx,mtmp->my) < 3 && follower(mtmp)
 		&& !mtmp->msleep && !mtmp->mfroz) {
@@ -71,7 +140,9 @@ register struct monst *mtmp;
 	}
 }
 
-fall_down(mtmp) register struct monst *mtmp; {
+void
+fall_down(struct monst *mtmp)
+{
 	relmon(mtmp);
 	mtmp->nmon = fallen_down;
 	fallen_down = mtmp;
@@ -87,7 +158,9 @@ fall_down(mtmp) register struct monst *mtmp; {
 #define	APPORT	4
 #define	POISON	5
 #define	UNDEF	6
-dogfood(obj) register struct obj *obj; {
+static int
+dogfood(struct obj *obj)
+{
 	switch(obj->olet) {
 	case FOOD_SYM:
 	    return(
@@ -109,19 +182,21 @@ dogfood(obj) register struct obj *obj; {
 }
 
 /* return 0 (no move), 1 (move) or 2 (dead) */
-dog_move(mtmp, after) register struct monst *mtmp; {
-register int nx,ny,omx,omy,appr,nearer,j;
-int udist,chi,i,whappr;
-register struct monst *mtmp2;
-register struct permonst *mdat = mtmp->data;
-register struct edog *edog = EDOG(mtmp);
-struct obj *obj;
-struct trap *trap;
-xchar cnt,chcnt,nix,niy;
-schar dogroom,uroom;
-xchar gx,gy,gtyp,otyp;	/* current goal */
-coord poss[9];
-int info[9];
+int
+dog_move(struct monst *mtmp, int after)
+{
+	int nx, ny, omx, omy, appr, nearer, j;
+	int udist, chi, i, whappr;
+	struct monst *mtmp2;
+	struct permonst *mdat = mtmp->data;
+	struct edog *edog = EDOG(mtmp);
+	struct obj *obj;
+	struct trap *trap;
+	xchar cnt, chcnt, nix, niy;
+	schar dogroom, uroom;
+	xchar gx, gy, gtyp, otyp;	/* current goal */
+	coord poss[9];
+	int info[9];
 #define GDIST(x,y) ((x-gx)*(x-gx) + (y-gy)*(y-gy))
 #define DDIST(x,y) ((x-omx)*(x-omx) + (y-omy)*(y-omy))
 
@@ -164,29 +239,28 @@ int info[9];
 			edog->droptime = moves;
 		}
 	} else {
-		if(obj = o_at(omx,omy)) if(!index("0_", obj->olet)){
-		    if((otyp = dogfood(obj)) <= CADAVER){
-			nix = omx;
-			niy = omy;
-			goto eatobj;
-		    }
-		    if(obj->owt < 10*mtmp->data->mlevel)
-		    if(rn2(20) < edog->apport+3)
-		    if(rn2(udist) || !rn2((int) edog->apport)){
-			freeobj(obj);
-			unpobj(obj);
-			/* if(levl[omx][omy].scrsym == obj->olet)
-				newsym(omx,omy); */
-			mpickobj(mtmp,obj);
-		    }
-		}
+		if ((obj = o_at(omx,omy)))
+			if(!strchr("0_", obj->olet)){
+				if((otyp = dogfood(obj)) <= CADAVER){
+					nix = omx;
+					niy = omy;
+					goto eatobj;
+				}
+				if (obj->owt < 10*mtmp->data->mlevel)
+					if (rn2(20) < edog->apport+3)
+						if (rn2(udist) || !rn2((int) edog->apport)){
+							freeobj(obj);
+							unpobj(obj);
+							/* if(levl[omx][omy].scrsym == obj->olet)
+								newsym(omx,omy); */
+							mpickobj(mtmp,obj);
+						}
+			}
 	}
 
 	/* first we look for food */
 	gtyp = UNDEF;	/* no goal as yet */
-#ifdef LINT
-	gx = gy = 0;	/* suppress 'used before set' message */
-#endif LINT
+	gx = gy = 0;
 	for(obj = fobj; obj; obj = obj->nobj) {
 		otyp = dogfood(obj);
 		if(otyp > gtyp || otyp == UNDEF) continue;
@@ -215,8 +289,8 @@ int info[9];
 			gy = u.uy;
 #ifndef QUEST
 		} else {
-			int tmp = rooms[dogroom].fdoor;
-			    cnt = rooms[dogroom].doorct;
+			int tmp = rooms[(int)dogroom].fdoor;
+			    cnt = rooms[(int)dogroom].doorct;
 
 			gx = gy = FAR;	/* random, far away */
 			while(cnt--){
@@ -232,19 +306,19 @@ int info[9];
 				gx = u.ux;
 				gy = u.uy;
 			}
-#endif QUEST
+#endif /* QUEST */
 		}
 		appr = (udist >= 9) ? 1 : (mtmp->mflee) ? -1 : 0;
 		if(after && udist <= 4 && gx == u.ux && gy == u.uy)
 			return(0);
 		if(udist > 1){
-			if(!IS_ROOM(levl[u.ux][u.uy].typ) || !rn2(4) ||
+			if (!IS_ROOM(levl[(int)u.ux][(int)u.uy].typ) || !rn2(4) ||
 			   whappr ||
 			   (mtmp->minvent && rn2((int) edog->apport)))
 				appr = 1;
 		}
 		/* if you have dog food he'll follow you more closely */
-		if(appr == 0){
+		if (appr == 0) {
 			obj = invent;
 			while(obj){
 				if(obj->otyp == TRIPE_RATION){
@@ -258,8 +332,7 @@ int info[9];
 	if(mtmp->mconf) appr = 0;
 
 	if(gx == u.ux && gy == u.uy && (dogroom != uroom || dogroom < 0)){
-	extern coord *gettrack();
-	register coord *cp;
+	coord *cp;
 		cp = gettrack(omx,omy);
 		if(cp){
 			gx = cp->x;
@@ -369,24 +442,25 @@ newdogpos:
 }
 
 /* return roomnumber or -1 */
-inroom(x,y) xchar x,y; {
+int
+inroom(xchar x, xchar y)
+{
 #ifndef QUEST
-	register struct mkroom *croom = &rooms[0];
+	struct mkroom *croom = &rooms[0];
 	while(croom->hx >= 0){
 		if(croom->hx >= x-1 && croom->lx <= x+1 &&
 		   croom->hy >= y-1 && croom->ly <= y+1)
 			return(croom - rooms);
 		croom++;
 	}
-#endif QUEST
+#endif /* QUEST */
 	return(-1);	/* not in room or on door */
 }
 
-tamedog(mtmp, obj)
-register struct monst *mtmp;
-register struct obj *obj;
+int
+tamedog(struct monst *mtmp, struct obj *obj)
 {
-	register struct monst *mtmp2;
+	struct monst *mtmp2;
 
 	if(flags.moonphase == FULL_MOON && night() && rn2(6))
 		return(0);
@@ -397,8 +471,8 @@ register struct obj *obj;
 	if(mtmp->mtame || mtmp->mfroz ||
 #ifndef NOWORM
 		mtmp->wormno ||
-#endif NOWORM
-		mtmp->isshk || mtmp->isgd || index(" &@12", mtmp->data->mlet))
+#endif /* NOWORM */
+		mtmp->isshk || mtmp->isgd || strchr(" &@12", mtmp->data->mlet))
 		return(0); /* no tame long worms? */
 	if(obj) {
 		if(dogfood(obj) >= MANFOOD) return(0);
@@ -411,7 +485,8 @@ register struct obj *obj;
 	mtmp2 = newmonst(sizeof(struct edog) + mtmp->mnamelth);
 	*mtmp2 = *mtmp;
 	mtmp2->mxlth = sizeof(struct edog);
-	if(mtmp->mnamelth) (void) strcpy(NAME(mtmp2), NAME(mtmp));
+	if(mtmp->mnamelth)
+		(void) strlcpy(NAME(mtmp2), NAME(mtmp), mtmp2->mnamelth);
 	initedog(mtmp2);
 	replmon(mtmp,mtmp2);
 	return(1);

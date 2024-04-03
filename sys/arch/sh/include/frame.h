@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: frame.h,v 1.2 2007/03/02 06:11:54 miod Exp $	*/
 /*	$NetBSD: frame.h,v 1.14 2005/12/11 12:18:58 christos Exp $	*/
 
 /*-
@@ -88,6 +88,7 @@ struct trapframe {
 	/* hardware registers */
 	int	tf_spc;
 	int	tf_ssr;
+	int	tf_gbr;
 	int	tf_macl;
 	int	tf_mach;
 	int	tf_pr;
@@ -125,6 +126,8 @@ struct switchframe {
 	int	sf_r6_bank;
 	int	sf_sr;
 	int	sf_r7_bank;
+	int	sf_macl;
+	int	sf_mach;
 };
 
 #endif /* !_SH_FRAME_H_ */

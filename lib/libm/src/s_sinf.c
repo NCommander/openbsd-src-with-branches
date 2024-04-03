@@ -13,19 +13,11 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_sinf.c,v 1.4 1995/05/10 20:48:16 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
-	float sinf(float x)
-#else
-	float sinf(x)
-	float x;
-#endif
+float
+sinf(float x)
 {
 	float y[2],z=0.0;
 	int32_t n, ix;
@@ -34,7 +26,11 @@ static char rcsid[] = "$NetBSD: s_sinf.c,v 1.4 1995/05/10 20:48:16 jtc Exp $";
 
     /* |x| ~< pi/4 */
 	ix &= 0x7fffffff;
-	if(ix <= 0x3f490fd8) return __kernel_sinf(x,z,0);
+	if(ix <= 0x3f490fd8) {
+	    if(ix<0x39800000)			/* if x < 2**-12 */
+		if(((int)x)==0) return x;	/* generate inexact */
+	    return __kernel_sinf(x,z,0);
+	}
 
     /* sin(Inf or NaN) is NaN */
 	else if (ix>=0x7f800000) return x-x;
@@ -51,3 +47,4 @@ static char rcsid[] = "$NetBSD: s_sinf.c,v 1.4 1995/05/10 20:48:16 jtc Exp $";
 	    }
 	}
 }
+DEF_STD(sinf);

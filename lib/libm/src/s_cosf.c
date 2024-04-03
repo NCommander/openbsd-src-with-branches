@@ -13,25 +13,11 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: s_cosf.c,v 1.4 1995/05/10 20:47:03 jtc Exp $";
-#endif
-
 #include "math.h"
 #include "math_private.h"
 
-#ifdef __STDC__
-static const float one=1.0;
-#else
-static float one=1.0;
-#endif
-
-#ifdef __STDC__
-	float cosf(float x)
-#else
-	float cosf(x)
-	float x;
-#endif
+float
+cosf(float x)
 {
 	float y[2],z=0.0;
 	int32_t n,ix;
@@ -40,7 +26,12 @@ static float one=1.0;
 
     /* |x| ~< pi/4 */
 	ix &= 0x7fffffff;
-	if(ix <= 0x3f490fd8) return __kernel_cosf(x,z);
+	if(ix <= 0x3f490fd8) {
+	    if(ix<0x39800000)			/* if x < 2**-12 */
+		if(((int)x)==0) return 1.0;	/* generate inexact */
+	    return __kernel_cosf(x,z);
+	}
+
 
     /* cos(Inf or NaN) is NaN */
 	else if (ix>=0x7f800000) return x-x;
@@ -57,3 +48,4 @@ static float one=1.0;
 	    }
 	}
 }
+DEF_STD(cosf);

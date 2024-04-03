@@ -1,3 +1,6 @@
+/*	$OpenBSD: lpq.c,v 1.24 2022/12/04 23:50:51 cheloha Exp $	*/
+/*	$NetBSD: lpq.c,v 1.9 1999/12/07 14:54:47 mrg Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -11,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,83 +31,89 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1983, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-static char sccsid[] = "@(#)lpq.c	8.1 (Berkeley) 6/6/93";
-#endif /* not lint */
-
 /*
  * Spool Queue examination program
  *
- * lpq [-l] [-Pprinter] [user...] [job...]
+ * lpq [-a] [-l] [-Pprinter] [user...] [job...]
  *
+ * -a show all non-null queues on the local machine
  * -l long output
  * -P used to identify printer as per lpr/lprm
  */
 
-#include <sys/param.h>
 
-#include <syslog.h>
+#include <ctype.h>
+#include <signal.h>
 #include <dirent.h>
+#include <err.h>
+#include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <ctype.h>
+#include <limits.h>
+#include <syslog.h>
+
 #include "lp.h"
 #include "lp.local.h"
+#include "pathnames.h"
 
 int	 requ[MAXREQUESTS];	/* job number of spool entries */
 int	 requests;		/* # of spool requests */
 char	*user[MAXUSERS];	/* users to process */
 int	 users;			/* # of users in user array */
 
-uid_t	uid, euid;
+volatile sig_atomic_t gotintr;
 
-void usage __P((void));
+static __dead void usage(void);
 
 int
-main(argc, argv)
-	register int	argc;
-	register char	**argv;
+main(int argc, char **argv)
 {
-	extern char	*optarg;
-	extern int	optind;
-	int	ch, lflag;		/* long output option */
+	int	ch, aflag, lflag;
+	char	*buf, *cp;
+	long	l;
 
-	euid = geteuid();
-	uid = getuid();
-	seteuid(uid);
-	name = *argv;
-	if (gethostname(host, sizeof(host))) {
-		perror("lpq: gethostname");
-		exit(1);
-	}
-	openlog("lpd", 0, LOG_LPR);
+	effective_uid = geteuid();
+	real_uid = getuid();
+	effective_gid = getegid();
+	real_gid = getgid();
+	PRIV_END;	/* be safe */
 
-	lflag = 0;
-	while ((ch = getopt(argc, argv, "lP:")) != EOF)
-		switch((char)ch) {
+	if (gethostname(host, sizeof(host)) != 0)
+		err(1, "gethostname");
+	openlog("lpq", 0, LOG_LPR);
+
+	aflag = lflag = 0;
+	while ((ch = getopt(argc, argv, "alP:w:")) != -1) {
+		switch(ch) {
+		case 'a':
+			aflag = 1;
+			break;
 		case 'l':			/* long output */
-			++lflag;
+			lflag = 1;
 			break;
 		case 'P':		/* printer name */
 			printer = optarg;
 			break;
-		case '?':
+		case 'w':
+			l = strtol(optarg, &cp, 10);
+			if (*cp != '\0' || l < 0 || l >= INT_MAX)
+				errx(1, "wait time must be positive integer: %s",
+				    optarg);
+			wait_time = (u_int)l;
+			if (wait_time < 30)
+				warnx("warning: wait time less than 30 seconds");
+			break;
 		default:
 			usage();
 		}
+	}
 
-	if (printer == NULL && (printer = getenv("PRINTER")) == NULL)
+	if (!aflag && printer == NULL && (printer = getenv("PRINTER")) == NULL)
 		printer = DEFLP;
 
 	for (argc -= optind, argv += optind; argc; --argc, ++argv)
-		if (isdigit(argv[0][0])) {
+		if (isdigit((unsigned char)argv[0][0])) {
 			if (requests >= MAXREQUESTS)
 				fatal("too many requests");
 			requ[requests++] = atoi(*argv);
@@ -119,13 +124,35 @@ main(argc, argv)
 			user[users++] = *argv;
 		}
 
-	displayq(lflag);
+	if (aflag) {
+		while (cgetnext(&buf, printcapdb) > 0) {
+			if (ckqueue(buf) <= 0) {
+				free(buf);
+				continue;	/* no jobs */
+			}
+			for (cp = buf; *cp; cp++)
+				if (*cp == '|' || *cp == ':') {
+					*cp = '\0';
+					break;
+				}
+			printer = buf;
+			printf("%s:\n", printer);
+			displayq(lflag);
+			free(buf);
+			printf("\n");
+		}
+	} else
+		displayq(lflag);
 	exit(0);
 }
 
-void
-usage()
+static __dead void
+usage(void)
 {
-	puts("usage: lpq [-l] [-Pprinter] [user ...] [job ...]");
+	extern char *__progname;
+
+	fprintf(stderr,
+	    "usage: %s [-al] [-Pprinter] [job# ...] [user ...]\n",
+	    __progname);
 	exit(1);
 }

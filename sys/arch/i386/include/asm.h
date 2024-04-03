@@ -1,3 +1,4 @@
+/*	$OpenBSD: asm.h,v 1.18 2022/08/30 16:26:29 miod Exp $	*/
 /*	$NetBSD: asm.h,v 1.7 1994/10/27 04:15:56 cgd Exp $	*/
 
 /*-
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,16 +35,16 @@
  *	@(#)asm.h	5.5 (Berkeley) 5/7/91
  */
 
-#ifndef _I386_ASM_H_
-#define _I386_ASM_H_
+#ifndef _MACHINE_ASM_H_
+#define _MACHINE_ASM_H_
 
-#ifdef PIC
+#ifdef __PIC__
 #define PIC_PROLOGUE	\
 	pushl	%ebx;	\
-	call	1f;	\
-1:			\
+	call	666f;	\
+666:			\
 	popl	%ebx;	\
-	addl	$_GLOBAL_OFFSET_TABLE_+[.-1b], %ebx
+	addl	$_GLOBAL_OFFSET_TABLE_+[.-666b], %ebx
 #define PIC_EPILOGUE	\
 	popl	%ebx
 #define PIC_PLT(x)	x@PLT
@@ -61,28 +58,74 @@
 #define PIC_GOTOFF(x)	x
 #endif
 
-#ifdef __STDC__
-# define _C_LABEL(x)	_ ## x
-#else
-# define _C_LABEL(x)	_/**/x
-#endif
+#define _C_LABEL(name)	name
 #define	_ASM_LABEL(x)	x
 
-#define _ENTRY(x) \
-	.text; .align 2; .globl x; .type x,@function; x:
+#define CVAROFF(x, y)	x + y
 
-#ifdef PROF
+#ifdef __STDC__
+# define __CONCAT(x,y)	x ## y
+# define __STRING(x)	#x
+#else
+# define __CONCAT(x,y)	x/**/y
+# define __STRING(x)	"x"
+#endif
+
+/*
+ * STRONG_ALIAS, WEAK_ALIAS
+ *	Create a strong or weak alias.
+ */
+#define STRONG_ALIAS(alias,sym) \
+	.global alias; \
+	alias = sym
+#define WEAK_ALIAS(alias,sym) \
+	.weak alias; \
+	alias = sym
+
+/* let kernels and others override entrypoint alignment */
+#ifndef _ALIGN_TEXT
+# define _ALIGN_TEXT .align 2, 0x90
+#endif
+
+/* NB == No Binding: use .globl or .weak as necessary */
+#define _ENTRY_NB(x) \
+	.text; _ALIGN_TEXT; .type x,@function; x:
+#define _ENTRY(x)	.globl x; _ENTRY_NB(x)
+
+#ifdef _KERNEL
+#define KUTEXT	.section .kutext, "ax"
+
+#define IDTVEC(name)    \
+	KUTEXT; ALIGN_TEXT;	\
+	.globl X##name; X##name:
+#define KIDTVEC(name)    \
+	.text; ALIGN_TEXT;	\
+	.globl X##name; X##name:
+#define KUENTRY(x) \
+	KUTEXT; _ALIGN_TEXT; .globl x; .type x,@function; x:
+
+#endif	/* _KERNEL */
+
+#if defined(PROF) || defined(GPROF)
 # define _PROF_PROLOGUE	\
 	pushl %ebp; movl %esp,%ebp; call PIC_PLT(mcount); popl %ebp
 #else
 # define _PROF_PROLOGUE
 #endif
 
-#define	ENTRY(y)	_ENTRY(_C_LABEL(y)); _PROF_PROLOGUE
-#define	ASENTRY(y)	_ENTRY(_ASM_LABEL(y)); _PROF_PROLOGUE
+#define	ENTRY(y)	_ENTRY(y); _PROF_PROLOGUE
+#define	ENTRY_NB(y)	_ENTRY_NB(y); _PROF_PROLOGUE
+#define	NENTRY(y)	_ENTRY(y)
+#define	ASENTRY(y)	_ENTRY(y); _PROF_PROLOGUE
+#define	NASENTRY(y)	_ENTRY(y)
+#define	END(y)		.size y, . - y
 
-#define	ASMSTR		.asciz
+#define	ALTENTRY(name)	.globl name; name:
 
-#define RCSID(x)	.text; .asciz x
+#ifdef _KERNEL
 
-#endif /* !_I386_ASM_H_ */
+#define CPUVAR(var)	%fs:__CONCAT(CPU_INFO_,var)
+
+#endif /* _KERNEL */
+
+#endif /* !_MACHINE_ASM_H_ */

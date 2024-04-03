@@ -1,4 +1,5 @@
-/*	$NetBSD: create.c,v 1.9 1995/03/07 21:12:06 cgd Exp $	*/
+/*	$NetBSD: create.c,v 1.11 1996/09/05 09:24:19 mycroft Exp $	*/
+/*	$OpenBSD: create.c,v 1.35 2021/10/24 21:24:19 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,15 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)create.c	8.1 (Berkeley) 6/6/93";
-#else
-static char rcsid[] = "$NetBSD: create.c,v 1.9 1995/03/07 21:12:06 cgd Exp $";
-#endif
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <fcntl.h>
@@ -51,34 +39,43 @@ static char rcsid[] = "$NetBSD: create.c,v 1.9 1995/03/07 21:12:06 cgd Exp $";
 #include <pwd.h>
 #include <errno.h>
 #include <unistd.h>
+#include <limits.h>
 #include <stdio.h>
+#include <stdarg.h>
+#include <vis.h>
+#include <md5.h>
+#include <rmd160.h>
+#include <sha1.h>
+#include <sha2.h>
 #include "mtree.h"
 #include "extern.h"
 
 #define	INDENTNAMELEN	15
 #define	MAXLINELEN	80
 
-extern int crc_total, ftsoptions;
-extern int dflag, sflag;
-extern u_short keys;
-extern char fullpath[MAXPATHLEN];
+extern u_int32_t crc_total;
+extern int ftsoptions;
+extern int dflag, iflag, nflag, sflag;
+extern u_int keys;
+extern char fullpath[PATH_MAX];
 
 static gid_t gid;
 static uid_t uid;
 static mode_t mode;
 
-static int	dsort __P((const FTSENT **, const FTSENT **));
-static void	output __P((int *, const char *, ...));
-static int	statd __P((FTS *, FTSENT *, uid_t *, gid_t *, mode_t *));
-static void	statf __P((FTSENT *));
+static void	output(int, int *, const char *, ...)
+		    __attribute__((__format__ (printf, 3, 4)));
+static int	statd(FTS *, FTSENT *, uid_t *, gid_t *, mode_t *);
+static void	statf(int, FTSENT *);
 
 void
-cwalk()
+cwalk(void)
 {
-	register FTS *t;
-	register FTSENT *p;
+	FTS *t;
+	FTSENT *p;
 	time_t clock;
-	char *argv[2], host[MAXHOSTNAMELEN];
+	char *argv[2], host[HOST_NAME_MAX+1];
+	int indent = 0;
 
 	(void)time(&clock);
 	(void)gethostname(host, sizeof(host));
@@ -89,87 +86,177 @@ cwalk()
 	argv[0] = ".";
 	argv[1] = NULL;
 	if ((t = fts_open(argv, ftsoptions, dsort)) == NULL)
-		err("fts_open: %s", strerror(errno));
-	while (p = fts_read(t))
+		error("fts_open: %s", strerror(errno));
+	while ((p = fts_read(t))) {
+		if (iflag)
+			indent = p->fts_level * 4;
 		switch(p->fts_info) {
 		case FTS_D:
-			(void)printf("\n# %s\n", p->fts_path);
+			if (!dflag)
+				(void)printf("\n");
+			if (!nflag)
+				(void)printf("# %s\n", p->fts_path);
 			statd(t, p, &uid, &gid, &mode);
-			statf(p);
+			statf(indent, p);
 			break;
 		case FTS_DP:
-			if (p->fts_level > 0)
-				(void)printf("# %s\n..\n\n", p->fts_path);
+			if (!nflag && (p->fts_level > 0))
+				(void)printf("%*s# %s\n", indent, "", p->fts_path);
+			(void)printf("%*s..\n", indent, "");
+			if (!dflag)
+				(void)printf("\n");
 			break;
 		case FTS_DNR:
 		case FTS_ERR:
 		case FTS_NS:
-			(void)fprintf(stderr,
-			    "mtree: %s: %s\n", p->fts_path, strerror(errno));
+			(void)fprintf(stderr, "mtree: %s: %s\n",
+			    p->fts_path, strerror(p->fts_errno));
 			break;
 		default:
 			if (!dflag)
-				statf(p);
+				statf(indent, p);
 			break;
-			
 		}
+	}
 	(void)fts_close(t);
 	if (sflag && keys & F_CKSUM)
 		(void)fprintf(stderr,
-		    "mtree: %s checksum: %lu\n", fullpath, crc_total);
+		    "mtree: %s checksum: %u\n", fullpath, crc_total);
 }
 
 static void
-statf(p)
-	FTSENT *p;
+statf(int indent, FTSENT *p)
 {
-	struct group *gr;
-	struct passwd *pw;
-	u_long len, val;
-	int fd, indent;
+	u_int32_t len, val;
+	int fd, offset;
+	const char *name;
+	char *escaped_name;
+	size_t esc_len;
 
-	if (S_ISDIR(p->fts_statp->st_mode))
-		indent = printf("%s", p->fts_name); 
+	esc_len = p->fts_namelen * 4 + 1;
+	escaped_name = malloc(esc_len);
+	if (escaped_name == NULL)
+		error("statf: %s", strerror(errno));
+	strnvis(escaped_name, p->fts_name, esc_len,
+	    VIS_WHITE | VIS_OCTAL | VIS_GLOB);
+
+	if (iflag || S_ISDIR(p->fts_statp->st_mode))
+		offset = printf("%*s%s", indent, "", escaped_name);
 	else
-		indent = printf("    %s", p->fts_name);
+		offset = printf("%*s    %s", indent, "", escaped_name);
 
-	if (indent > INDENTNAMELEN)
-		indent = MAXLINELEN;
+	free(escaped_name);
+
+	if (offset > (INDENTNAMELEN + indent))
+		offset = MAXLINELEN;
 	else
-		indent += printf("%*s", INDENTNAMELEN - indent, "");
+		offset += printf("%*s", (INDENTNAMELEN + indent) - offset, "");
 
-	if (!S_ISREG(p->fts_statp->st_mode))
-		output(&indent, "type=%s", inotype(p->fts_statp->st_mode));
-	if (keys & (F_UID | F_UNAME) && p->fts_statp->st_uid != uid)
-		if (keys & F_UNAME && (pw = getpwuid(p->fts_statp->st_uid)))
-			output(&indent, "uname=%s", pw->pw_name);
-		else /* if (keys & F_UID) */
-			output(&indent, "uid=%u", p->fts_statp->st_uid);
-	if (keys & (F_GID | F_GNAME) && p->fts_statp->st_gid != gid)
-		if (keys & F_GNAME && (gr = getgrgid(p->fts_statp->st_gid)))
-			output(&indent, "gname=%s", gr->gr_name);
-		else /* if (keys & F_GID) */
-			output(&indent, "gid=%u", p->fts_statp->st_gid);
+	if (!S_ISREG(p->fts_statp->st_mode) && !dflag)
+		output(indent, &offset, "type=%s", inotype(p->fts_statp->st_mode));
+	if (p->fts_statp->st_uid != uid) {
+		if (keys & F_UNAME) {
+			name = user_from_uid(p->fts_statp->st_uid, 1);
+			if (name != NULL) {
+				output(indent, &offset, "uname=%s", name);
+			} else {
+				error("could not get uname for uid=%u",
+				    p->fts_statp->st_uid);
+			}
+		}
+		if (keys & F_UID)
+			output(indent, &offset, "uid=%u", p->fts_statp->st_uid);
+	}
+	if (p->fts_statp->st_gid != gid) {
+		if (keys & F_GNAME) {
+			name = group_from_gid(p->fts_statp->st_gid, 1);
+			if (name != NULL) {
+				output(indent, &offset, "gname=%s", name);
+			} else {
+				error("could not get gname for gid=%u",
+				    p->fts_statp->st_gid);
+			}
+		}
+		if (keys & F_GID)
+			output(indent, &offset, "gid=%u", p->fts_statp->st_gid);
+	}
 	if (keys & F_MODE && (p->fts_statp->st_mode & MBITS) != mode)
-		output(&indent, "mode=%#o", p->fts_statp->st_mode & MBITS);
+		output(indent, &offset, "mode=%#o", p->fts_statp->st_mode & MBITS);
 	if (keys & F_NLINK && p->fts_statp->st_nlink != 1)
-		output(&indent, "nlink=%u", p->fts_statp->st_nlink);
-	if (keys & F_SIZE)
-		output(&indent, "size=%qd", p->fts_statp->st_size);
+		output(indent, &offset, "nlink=%u", p->fts_statp->st_nlink);
+	if (keys & F_SIZE && S_ISREG(p->fts_statp->st_mode))
+		output(indent, &offset, "size=%lld",
+		    (long long)p->fts_statp->st_size);
 	if (keys & F_TIME)
-		output(&indent, "time=%ld.%ld",
-		    p->fts_statp->st_mtimespec.ts_sec,
-		    p->fts_statp->st_mtimespec.ts_nsec);
+		output(indent, &offset, "time=%lld.%ld",
+		    (long long)p->fts_statp->st_mtim.tv_sec,
+		    p->fts_statp->st_mtim.tv_nsec);
 	if (keys & F_CKSUM && S_ISREG(p->fts_statp->st_mode)) {
-		if ((fd = open(p->fts_accpath, O_RDONLY, 0)) < 0 ||
+		if ((fd = open(p->fts_accpath, MTREE_O_FLAGS)) == -1 ||
 		    crc(fd, &val, &len))
-			err("%s: %s", p->fts_accpath, strerror(errno));
+			error("%s: %s", p->fts_accpath, strerror(errno));
 		(void)close(fd);
-		output(&indent, "cksum=%lu", val);
+		output(indent, &offset, "cksum=%u", val);
+	}
+	if (keys & F_MD5 && S_ISREG(p->fts_statp->st_mode)) {
+		char *md5digest, buf[MD5_DIGEST_STRING_LENGTH];
+
+		md5digest = MD5File(p->fts_accpath,buf);
+		if (!md5digest)
+			error("%s: %s", p->fts_accpath, strerror(errno));
+		else
+			output(indent, &offset, "md5digest=%s", md5digest);
+	}
+	if (keys & F_RMD160 && S_ISREG(p->fts_statp->st_mode)) {
+		char *rmd160digest, buf[RMD160_DIGEST_STRING_LENGTH];
+
+		rmd160digest = RMD160File(p->fts_accpath,buf);
+		if (!rmd160digest)
+			error("%s: %s", p->fts_accpath, strerror(errno));
+		else
+			output(indent, &offset, "rmd160digest=%s", rmd160digest);
+	}
+	if (keys & F_SHA1 && S_ISREG(p->fts_statp->st_mode)) {
+		char *sha1digest, buf[SHA1_DIGEST_STRING_LENGTH];
+
+		sha1digest = SHA1File(p->fts_accpath,buf);
+		if (!sha1digest)
+			error("%s: %s", p->fts_accpath, strerror(errno));
+		else
+			output(indent, &offset, "sha1digest=%s", sha1digest);
+	}
+	if (keys & F_SHA256 && S_ISREG(p->fts_statp->st_mode)) {
+		char *sha256digest, buf[SHA256_DIGEST_STRING_LENGTH];
+
+		sha256digest = SHA256File(p->fts_accpath,buf);
+		if (!sha256digest)
+			error("%s: %s", p->fts_accpath, strerror(errno));
+		else
+			output(indent, &offset, "sha256digest=%s", sha256digest);
 	}
 	if (keys & F_SLINK &&
-	    (p->fts_info == FTS_SL || p->fts_info == FTS_SLNONE))
-		output(&indent, "link=%s", rlink(p->fts_accpath));
+	    (p->fts_info == FTS_SL || p->fts_info == FTS_SLNONE)) {
+		name = rlink(p->fts_accpath);
+		esc_len = strlen(name) * 4 + 1;
+		escaped_name = malloc(esc_len);
+		if (escaped_name == NULL)
+			error("statf: %s", strerror(errno));
+		strnvis(escaped_name, name, esc_len, VIS_WHITE | VIS_OCTAL);
+		output(indent, &offset, "link=%s", escaped_name);
+		free(escaped_name);
+	}
+	if (keys & F_FLAGS && !S_ISLNK(p->fts_statp->st_mode)) {
+		char *file_flags;
+
+		file_flags = fflagstostr(p->fts_statp->st_flags);
+		if (file_flags == NULL)
+			error("%s", strerror(errno));
+		if (*file_flags != '\0')
+			output(indent, &offset, "flags=%s", file_flags);
+		else
+			output(indent, &offset, "flags=none");
+		free(file_flags);
+	}
 	(void)putchar('\n');
 }
 
@@ -178,27 +265,27 @@ statf(p)
 #define	MAXMODE	MBITS + 1
 
 static int
-statd(t, parent, puid, pgid, pmode)
-	FTS *t;
-	FTSENT *parent;
-	uid_t *puid;
-	gid_t *pgid;
-	mode_t *pmode;
+statd(FTS *t, FTSENT *parent, uid_t *puid, gid_t *pgid, mode_t *pmode)
 {
-	register FTSENT *p;
-	register gid_t sgid;
-	register uid_t suid;
-	register mode_t smode;
-	struct group *gr;
-	struct passwd *pw;
-	gid_t savegid;
-	uid_t saveuid;
-	mode_t savemode;
-	u_short maxgid, maxuid, maxmode, g[MAXGID], u[MAXUID], m[MAXMODE];
+	FTSENT *p;
+	gid_t sgid;
+	uid_t suid;
+	mode_t smode;
+	gid_t savegid = *pgid;
+	uid_t saveuid = *puid;
+	mode_t savemode = *pmode;
+	int maxgid;
+	int maxuid;
+	u_short maxmode;
+	gid_t g[MAXGID];
+	uid_t u[MAXUID];
+	mode_t m[MAXMODE];
+	const char *name;
+	static int first = 1;
 
 	if ((p = fts_children(t, 0)) == NULL) {
 		if (errno)
-			err("%s: %s", RP(parent), strerror(errno));
+			error("%s: %s", RP(parent), strerror(errno));
 		return (1);
 	}
 
@@ -208,51 +295,67 @@ statd(t, parent, puid, pgid, pmode)
 
 	maxuid = maxgid = maxmode = 0;
 	for (; p; p = p->fts_link) {
-		smode = p->fts_statp->st_mode & MBITS;
-		if (smode < MAXMODE && ++m[smode] > maxmode) {
-			savemode = smode;
-			maxmode = m[smode];
-		}
-		sgid = p->fts_statp->st_gid;
-		if (sgid < MAXGID && ++g[sgid] > maxgid) {
-			savegid = sgid;
-			maxgid = g[sgid];
-		}
-		suid = p->fts_statp->st_uid;
-		if (suid < MAXUID && ++u[suid] > maxuid) {
-			saveuid = suid;
-			maxuid = u[suid];
+		if (!dflag || (dflag && S_ISDIR(p->fts_statp->st_mode))) {
+			smode = p->fts_statp->st_mode & MBITS;
+			if (smode < MAXMODE && ++m[smode] > maxmode) {
+				savemode = smode;
+				maxmode = m[smode];
+			}
+			sgid = p->fts_statp->st_gid;
+			if (sgid < MAXGID && ++g[sgid] > maxgid) {
+				savegid = sgid;
+				maxgid = g[sgid];
+			}
+			suid = p->fts_statp->st_uid;
+			if (suid < MAXUID && ++u[suid] > maxuid) {
+				saveuid = suid;
+				maxuid = u[suid];
+			}
 		}
 	}
-	(void)printf("/set type=file");
-	if (keys & F_GID)
-		(void)printf(" gid=%u", savegid);
-	if (keys & F_GNAME)
-		if ((gr = getgrgid(savegid)) != NULL)
-			(void)printf(" gname=%s", gr->gr_name);
+	/*
+	 * If the /set record is the same as the last one we do not need to output
+	 * a new one.  So first we check to see if anything changed.  Note that we
+	 * always output a /set record for the first directory.
+	 */
+	if ((((keys & F_UNAME) | (keys & F_UID)) && (*puid != saveuid)) ||
+	    (((keys & F_GNAME) | (keys & F_GID)) && (*pgid != savegid)) ||
+	    ((keys & F_MODE) && (*pmode != savemode)) || (first)) {
+		first = 0;
+		if (dflag)
+			(void)printf("/set type=dir");
 		else
-			(void)printf(" gid=%u", savegid);
-	if (keys & F_UNAME)
-		if ((pw = getpwuid(saveuid)) != NULL)
-			(void)printf(" uname=%s", pw->pw_name);
-		else
+			(void)printf("/set type=file");
+		if (keys & F_UNAME) {
+			if ((name = user_from_uid(saveuid, 1)) != NULL)
+				(void)printf(" uname=%s", name);
+			else
+				error("could not get uname for uid=%u", saveuid);
+		}
+		if (keys & F_UID)
 			(void)printf(" uid=%u", saveuid);
-	if (keys & F_UID)
-		(void)printf(" uid=%u", saveuid);
-	if (keys & F_MODE)
-		(void)printf(" mode=%#o", savemode);
-	if (keys & F_NLINK)
-		(void)printf(" nlink=1");
-	(void)printf("\n");
-	*puid = saveuid;
-	*pgid = savegid;
-	*pmode = savemode;
+		if (keys & F_GNAME) {
+			if ((name = group_from_gid(savegid, 1)) != NULL)
+				(void)printf(" gname=%s", name);
+			else
+				error("could not get gname for gid=%u", savegid);
+		}
+		if (keys & F_GID)
+			(void)printf(" gid=%u", savegid);
+		if (keys & F_MODE)
+			(void)printf(" mode=%#o", savemode);
+		if (keys & F_NLINK)
+			(void)printf(" nlink=1");
+		(void)printf("\n");
+		*puid = saveuid;
+		*pgid = savegid;
+		*pmode = savemode;
+	}
 	return (0);
 }
 
-static int
-dsort(a, b)
-	const FTSENT **a, **b;
+int
+dsort(const FTSENT **a, const FTSENT **b)
 {
 	if (S_ISDIR((*a)->fts_statp->st_mode)) {
 		if (!S_ISDIR((*b)->fts_statp->st_mode))
@@ -262,35 +365,19 @@ dsort(a, b)
 	return (strcmp((*a)->fts_name, (*b)->fts_name));
 }
 
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
 void
-#if __STDC__
-output(int *offset, const char *fmt, ...)
-#else
-output(offset, fmt, va_alist)
-	int *offset;
-	char *fmt;
-        va_dcl
-#endif
+output(int indent, int *offset, const char *fmt, ...)
 {
 	va_list ap;
 	char buf[1024];
-#if __STDC__
+
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	(void)vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 
 	if (*offset + strlen(buf) > MAXLINELEN - 3) {
-		(void)printf(" \\\n%*s", INDENTNAMELEN, "");
-		*offset = INDENTNAMELEN;
+		(void)printf(" \\\n%*s", INDENTNAMELEN + indent, "");
+		*offset = INDENTNAMELEN + indent;
 	}
 	*offset += printf(" %s", buf) + 1;
 }

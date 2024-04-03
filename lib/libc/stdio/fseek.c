@@ -1,5 +1,4 @@
-/*	$NetBSD: fseek.c,v 1.8 1995/03/05 06:56:09 jtc Exp $	*/
-
+/*	$OpenBSD: fseek.c,v 1.13 2019/06/28 13:32:42 deraadt Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,13 +31,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)fseek.c	8.3 (Berkeley) 1/2/94";
-#endif
-static char rcsid[] = "$NetBSD: fseek.c,v 1.8 1995/03/05 06:56:09 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -58,12 +46,9 @@ static char rcsid[] = "$NetBSD: fseek.c,v 1.8 1995/03/05 06:56:09 jtc Exp $";
  * `Whence' must be one of the three SEEK_* macros.
  */
 int
-fseek(fp, offset, whence)
-	register FILE *fp;
-	long offset;
-	int whence;
+fseeko(FILE *fp, off_t offset, int whence)
 {
-	register fpos_t (*seekfn) __P((void *, fpos_t, int));
+	fpos_t (*seekfn)(void *, fpos_t, int);
 	fpos_t target, curoff;
 	size_t n;
 	struct stat st;
@@ -85,6 +70,7 @@ fseek(fp, offset, whence)
 	 * Change any SEEK_CUR to SEEK_SET, and check `whence' argument.
 	 * After this, whence is either SEEK_SET or SEEK_END.
 	 */
+	FLOCKFILE(fp);
 	switch (whence) {
 
 	case SEEK_CUR:
@@ -98,8 +84,10 @@ fseek(fp, offset, whence)
 			curoff = fp->_offset;
 		else {
 			curoff = (*seekfn)(fp->_cookie, (fpos_t)0, SEEK_CUR);
-			if (curoff == -1L)
+			if (curoff == (fpos_t)-1) {
+				FUNLOCKFILE(fp);
 				return (EOF);
+			}
 		}
 		if (fp->_flags & __SRD) {
 			curoff -= fp->_r;
@@ -120,6 +108,7 @@ fseek(fp, offset, whence)
 		break;
 
 	default:
+		FUNLOCKFILE(fp);
 		errno = EINVAL;
 		return (EOF);
 	}
@@ -138,7 +127,7 @@ fseek(fp, offset, whence)
 		goto dumb;
 	if ((fp->_flags & __SOPT) == 0) {
 		if (seekfn != __sseek ||
-		    fp->_file < 0 || fstat(fp->_file, &st) ||
+		    fp->_file < 0 || fstat(fp->_file, &st) == -1 ||
 		    (st.st_mode & S_IFMT) != S_IFREG) {
 			fp->_flags |= __SNPT;
 			goto dumb;
@@ -154,7 +143,7 @@ fseek(fp, offset, whence)
 	if (whence == SEEK_SET)
 		target = offset;
 	else {
-		if (fstat(fp->_file, &st))
+		if (fstat(fp->_file, &st) == -1)
 			goto dumb;
 		target = st.st_size + offset;
 	}
@@ -197,13 +186,14 @@ fseek(fp, offset, whence)
 	 */
 	if ((fp->_flags & __SMOD) == 0 &&
 	    target >= curoff && target < curoff + n) {
-		register int o = target - curoff;
+		int o = target - curoff;
 
 		fp->_p = fp->_bf._base + o;
 		fp->_r = n - o;
 		if (HASUB(fp))
 			FREEUB(fp);
 		fp->_flags &= ~__SEOF;
+		FUNLOCKFILE(fp);
 		return (0);
 	}
 
@@ -230,6 +220,7 @@ fseek(fp, offset, whence)
 		fp->_p += n;
 		fp->_r -= n;
 	}
+	FUNLOCKFILE(fp);
 	return (0);
 
 	/*
@@ -239,6 +230,7 @@ fseek(fp, offset, whence)
 dumb:
 	if (__sflush(fp) ||
 	    (*seekfn)(fp->_cookie, (fpos_t)offset, whence) == POS_ERR) {
+		FUNLOCKFILE(fp);
 		return (EOF);
 	}
 	/* success: clear EOF indicator and discard ungetc() data */
@@ -248,5 +240,13 @@ dumb:
 	fp->_r = 0;
 	/* fp->_w = 0; */	/* unnecessary (I think...) */
 	fp->_flags &= ~__SEOF;
+	FUNLOCKFILE(fp);
 	return (0);
+}
+DEF_WEAK(fseeko);
+
+int
+fseek(FILE *fp, long offset, int whence)
+{
+	return (fseeko(fp, offset, whence));
 }

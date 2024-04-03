@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 
-print("send icmp options padding")
+print("send icmp with options padding")
 
 import os
 import sys

@@ -1,10 +1,19 @@
-#	from: @(#)Makefile	5.5 (Berkeley) 7/1/90
-#	$Id: Makefile,v 1.3 1994/12/22 12:31:36 cgd Exp $
+#	$OpenBSD: Makefile,v 1.8 2013/04/15 16:34:19 guenther Exp $
 
-MAN=	which.1
+PROG=	which
+MAN=	which.1 whereis.1
+LINKS=	${BINDIR}/which ${BINDIR}/whereis
 
-beforeinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
-	    ${.CURDIR}/which.csh ${DESTDIR}${BINDIR}/which
+check_path_in_man:
+	@echo "Checking path expansion in whereis.1"; \
+	stdpath=`printf '#include <paths.h>\n_PATH_STDPATH\n' | \
+	${CC} -E -P ${CPPFLAGS} - | \
+	sed -n 's/^[    ]*"\(.*\)".*/.D1 \1/p'` ; \
+	fgrep -xq "$$stdpath" ${.CURDIR}/whereis.1 && { touch $@; exit 0; }; \
+	echo "Update the expansion of _PATH_STDPATH in ${.CURDIR}/whereis.1"; \
+	exit 1
+
+all: check_path_in_man
+CLEANFILES = check_path_in_man
 
 .include <bsd.prog.mk>

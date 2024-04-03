@@ -1,3 +1,4 @@
+/*	$OpenBSD: time.c,v 1.17 2018/09/18 06:56:09 deraadt Exp $	*/
 /*	$NetBSD: time.c,v 1.7 1995/03/21 13:55:25 mycroft Exp $	*/
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,20 +30,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)time.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: time.c,v 1.7 1995/03/21 13:55:25 mycroft Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
-#if __STDC__
-# include <stdarg.h>
-#else
-# include <varargs.h>
-#endif
+#include <stdarg.h>
 
 #include "csh.h"
 #include "extern.h"
@@ -54,14 +39,14 @@ static char rcsid[] = "$NetBSD: time.c,v 1.7 1995/03/21 13:55:25 mycroft Exp $";
 /*
  * C Shell - routines handling process timing and niceing
  */
-static void	pdeltat __P((struct timeval *, struct timeval *));
+static void	pdeltat(struct timeval *, struct timeval *);
 
 void
-settimes()
+settimes(void)
 {
     struct rusage ruch;
 
-    (void) gettimeofday(&time0, NULL);
+    (void) clock_gettime(CLOCK_MONOTONIC, &time0);
     (void) getrusage(RUSAGE_SELF, &ru0);
     (void) getrusage(RUSAGE_CHILDREN, &ruch);
     ruadd(&ru0, &ruch);
@@ -72,18 +57,15 @@ settimes()
  * prefix to another command
  */
 void
-/*ARGSUSED*/
-dotime(v, t)
-    Char **v;
-    struct command *t;
+dotime(Char **v, struct command *t)
 {
-    struct timeval timedol;
+    struct timespec timedol;
     struct rusage ru1, ruch;
 
     (void) getrusage(RUSAGE_SELF, &ru1);
     (void) getrusage(RUSAGE_CHILDREN, &ruch);
     ruadd(&ru1, &ruch);
-    (void) gettimeofday(&timedol, NULL);
+    (void) clock_gettime(CLOCK_MONOTONIC, &timedol);
     prusage(&ru0, &ru1, &timedol, &time0);
 }
 
@@ -91,12 +73,9 @@ dotime(v, t)
  * donice is only called when it on the line by itself or with a +- value
  */
 void
-/*ARGSUSED*/
-donice(v, t)
-    Char **v;
-    struct command *t;
+donice(Char **v, struct command *t)
 {
-    register Char *cp;
+    Char *cp;
     int     nval = 0;
 
     v++, cp = *v++;
@@ -108,8 +87,7 @@ donice(v, t)
 }
 
 void
-ruadd(ru, ru2)
-    register struct rusage *ru, *ru2;
+ruadd(struct rusage *ru, struct rusage *ru2)
 {
     timeradd(&ru->ru_utime, &ru2->ru_utime, &ru->ru_utime);
     timeradd(&ru->ru_stime, &ru2->ru_stime, &ru->ru_stime);
@@ -132,21 +110,20 @@ ruadd(ru, ru2)
 }
 
 void
-prusage(r0, r1, e, b)
-    register struct rusage *r0, *r1;
-    struct timeval *e, *b;
+prusage(struct rusage *r0, struct rusage *r1, struct timespec *e,
+    struct timespec *b)
 {
-    register time_t t =
+    time_t t =
     (r1->ru_utime.tv_sec - r0->ru_utime.tv_sec) * 100 +
     (r1->ru_utime.tv_usec - r0->ru_utime.tv_usec) / 10000 +
     (r1->ru_stime.tv_sec - r0->ru_stime.tv_sec) * 100 +
     (r1->ru_stime.tv_usec - r0->ru_stime.tv_usec) / 10000;
-    register char *cp;
-    register long i;
-    register struct varent *vp = adrof(STRtime);
+    char *cp;
+    long i;
+    struct varent *vp = adrof(STRtime);
 
     int     ms =
-    (e->tv_sec - b->tv_sec) * 100 + (e->tv_usec - b->tv_usec) / 10000;
+    (e->tv_sec - b->tv_sec) * 100 + (e->tv_nsec - b->tv_nsec) / 10000000;
 
     cp = "%Uu %Ss %E %P %X+%Dk %I+%Oio %Fpf+%Ww";
 
@@ -173,7 +150,7 @@ prusage(r0, r1, e, b)
 
 	    case 'P':		/* percent time spent running */
 		/* check if it did not run at all */
-		i = (ms == 0) ? 0 : (t * 1000 / ms);
+		i = (ms == 0) ? 0 : ((long long)t * 1000 / ms);
 		/* nn.n% */
 		(void) fprintf(cshout, "%ld.%01ld%%", i / 10, i % 10);
 		break;
@@ -184,20 +161,21 @@ prusage(r0, r1, e, b)
 		break;
 
 	    case 'X':		/* (average) shared text size */
-		(void) fprintf(cshout, "%ld", t == 0 ? 0L : 
-			       (r1->ru_ixrss - r0->ru_ixrss) / t);
+		(void) fprintf(cshout, "%ld", t == 0 ? 0L :
+			       (long)((r1->ru_ixrss - r0->ru_ixrss) / t));
 		break;
 
 	    case 'D':		/* (average) unshared data size */
 		(void) fprintf(cshout, "%ld", t == 0 ? 0L :
-			(r1->ru_idrss + r1->ru_isrss -
-			 (r0->ru_idrss + r0->ru_isrss)) / t);
+			(long)((r1->ru_idrss + r1->ru_isrss -
+			       (r0->ru_idrss + r0->ru_isrss)) / t));
 		break;
 
 	    case 'K':		/* (average) total data memory used  */
 		(void) fprintf(cshout, "%ld", t == 0 ? 0L :
-			((r1->ru_ixrss + r1->ru_isrss + r1->ru_idrss) -
-			 (r0->ru_ixrss + r0->ru_idrss + r0->ru_isrss)) / t);
+			(long)(((r1->ru_ixrss + r1->ru_isrss + r1->ru_idrss)
+			      - (r0->ru_ixrss + r0->ru_idrss + r0->ru_isrss))
+			      / t));
 		break;
 
 	    case 'M':		/* max. Resident Set Size */
@@ -220,7 +198,7 @@ prusage(r0, r1, e, b)
 		(void) fprintf(cshout, "%ld", r1->ru_oublock - r0->ru_oublock);
 		break;
 
-	    case 'r':		/* socket messages recieved */
+	    case 'r':		/* socket messages received */
 		(void) fprintf(cshout, "%ld", r1->ru_msgrcv - r0->ru_msgrcv);
 		break;
 
@@ -228,7 +206,7 @@ prusage(r0, r1, e, b)
 		(void) fprintf(cshout, "%ld", r1->ru_msgsnd - r0->ru_msgsnd);
 		break;
 
-	    case 'k':		/* number of signals recieved */
+	    case 'k':		/* number of signals received */
 		(void) fprintf(cshout, "%ld", r1->ru_nsignals-r0->ru_nsignals);
 		break;
 
@@ -244,22 +222,21 @@ prusage(r0, r1, e, b)
 }
 
 static void
-pdeltat(t1, t0)
-    struct timeval *t1, *t0;
+pdeltat(struct timeval *t1, struct timeval *t0)
 {
     struct timeval td;
 
     timersub(t1, t0, &td);
-    (void) fprintf(cshout, "%d.%01d", td.tv_sec, td.tv_usec / 100000);
+    (void) fprintf(cshout, "%lld.%01ld", (long long)td.tv_sec,
+	td.tv_usec / 100000);
 }
 
 #define  P2DIG(i) (void) fprintf(cshout, "%d%d", (i) / 10, (i) % 10)
 
 void
-psecs(l)
-    long    l;
+psecs(long l)
 {
-    register int i;
+    int i;
 
     i = l / 3600;
     if (i) {
@@ -277,10 +254,9 @@ minsec:
 }
 
 void
-pcsecs(l)			/* PWP: print mm:ss.dd, l is in sec*100 */
-    long    l;
+pcsecs(long l)			/* PWP: print mm:ss.dd, l is in sec*100 */
 {
-    register int i;
+    int i;
 
     i = l / 360000;
     if (i) {

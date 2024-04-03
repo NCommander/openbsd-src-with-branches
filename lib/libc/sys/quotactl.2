@@ -1,3 +1,4 @@
+.\"	$OpenBSD: quotactl.2,v 1.15 2015/01/19 15:54:11 millert Exp $
 .\"	$NetBSD: quotactl.2,v 1.8 1995/02/27 12:35:43 cgd Exp $
 .\"
 .\" Copyright (c) 1983, 1990, 1991, 1993
@@ -14,11 +15,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -36,14 +33,15 @@
 .\"
 .\"	@(#)quotactl.2	8.1 (Berkeley) 6/4/93
 .\"
-.Dd June 4, 1993
+.Dd $Mdocdate: January 19 2015 $
 .Dt QUOTACTL 2
 .Os
 .Sh NAME
 .Nm quotactl
 .Nd manipulate filesystem quotas
 .Sh SYNOPSIS
-.Fd #include <ufs/quota.h>	/* for ufs quotas */
+.In ufs/ufs/quota.h
+.In unistd.h
 .Ft int
 .Fn quotactl "const char *path" "int cmd" "int id" "char *addr"
 .Sh DESCRIPTION
@@ -63,14 +61,19 @@ The address of an optional command specific data structure,
 may be given; its interpretation
 is discussed below with each command.
 .Pp
-Currently quotas are supported only for the ``ufs'' filesystem.
-For ``ufs'',
+Currently quotas are supported only for the
+.Dq ffs
+filesystem.
+For
+.Dq ffs ,
 a command is composed of a primary command (see below)
 and a command type used to interpret the
 .Fa id .
 Types are supported for interpretation of user identifiers
 and group identifiers.
-The ``ufs'' specific commands are:
+The
+.Dq ffs
+specific commands are:
 .Bl -tag -width Q_QUOTAON
 .It Dv Q_QUOTAON
 Enable disk quotas for the filesystem specified by
@@ -80,13 +83,13 @@ The
 .Fa addr
 argument specifies a file from which to take the quotas.
 The quota file must exist;
-it is normally created with the 
+it is normally created with the
 .Xr quotacheck 8
 program.
 The
 .Fa id
 argument is unused.
-Only the super-user may turn quotas on.
+Only the superuser may turn quotas on.
 .It Dv Q_QUOTAOFF
 Disable disk quotas for the filesystem specified by
 .Fa path .
@@ -96,40 +99,37 @@ The
 and
 .Fa id
 arguments are unused.
-Only the super-user may turn quotas off.
+Only the superuser may turn quotas off.
 .It Dv Q_GETQUOTA
 Get disk quota limits and current usage for the user or group
 (as determined by the command type) with identifier
 .Fa id .
-.Fa Addr
+.Fa addr
 is a pointer to a
-.Fa struct dqblk
-structure (defined in 
-.Ao Pa ufs/quota.h Ac ) .
+.Vt struct dqblk
+structure.
 .It Dv Q_SETQUOTA
 Set disk quota limits for the user or group
 (as determined by the command type) with identifier
 .Fa id .
-.Fa Addr
+.Fa addr
 is a pointer to a
-.Fa struct dqblk
-structure (defined in 
-.Ao Pa ufs/quota.h Ac ) .
-The usage fields of the
-.Fa dqblk
+.Vt struct dqblk
+structure.
+The usage fields of
+.Vt struct dqblk
 structure are ignored.
-This call is restricted to the super-user.
+This call is restricted to the superuser.
 .It Dv Q_SETUSE
 Set disk usage limits for the user or group
 (as determined by the command type) with identifier
 .Fa id .
-.Fa Addr
+.Fa addr
 is a pointer to a
-.Fa struct dqblk
-structure (defined in
-.Ao Pa ufs/quota.h Ac ) .
+.Vt struct dqblk
+structure.
 Only the usage fields are used.
-This call is restricted to the super-user.
+This call is restricted to the superuser.
 .It Dv Q_SYNC
 Update the on-disk copy of quota usages.
 The command type specifies which type of quotas are to be updated.
@@ -140,10 +140,7 @@ and
 parameters are ignored.
 .El
 .Sh RETURN VALUES
-A successful call returns 0,
-otherwise the value -1 is returned and the global variable
-.Va errno
-indicates the reason for the failure.
+.Rv -std
 .Sh ERRORS
 A
 .Fn quotactl
@@ -156,7 +153,7 @@ option.
 .It Bq Er EUSERS
 The quota table cannot be expanded.
 .It Bq Er EINVAL
-.Fa Cmd
+.Fa cmd
 or the command type is invalid.
 .It Bq Er EACCES
 In
@@ -167,11 +164,12 @@ Search permission is denied for a component of a path prefix.
 .It Bq Er ENOTDIR
 A component of a path prefix was not a directory.
 .It Bq Er ENAMETOOLONG
-A component of a pathname exceeded 
-.Dv {NAME_MAX}
-characters, or an entire path name exceeded 
-.Dv {PATH_MAX}
-characters.
+A component of a pathname exceeded
+.Dv NAME_MAX
+characters, or an entire pathname (including the terminating NUL)
+exceeded
+.Dv PATH_MAX
+bytes.
 .It Bq Er ENOENT
 A filename does not exist.
 .It Bq Er ELOOP
@@ -181,9 +179,7 @@ In
 .Dv Q_QUOTAON ,
 the quota file resides on a read-only filesystem.
 .It Bq Er EIO
-An
-.Tn I/O
-error occurred while reading from or writing
+An I/O error occurred while reading from or writing
 to a file containing quotas.
 .It Bq Er EFAULT
 An invalid
@@ -191,10 +187,10 @@ An invalid
 was supplied; the associated structure could not be copied in or out
 of the kernel.
 .It Bq Er EFAULT
-.Fa Path
+.Fa path
 points outside the process's allocated address space.
 .It Bq Er EPERM
-The call was privileged and the caller was not the super-user.
+The call was privileged and the caller was not the superuser.
 .El
 .Sh SEE ALSO
 .Xr quota 1 ,
@@ -203,14 +199,14 @@ The call was privileged and the caller was not the super-user.
 .Xr quotacheck 8 ,
 .Xr quotaon 8 ,
 .Xr repquota 8
+.Sh HISTORY
+The
+.Fn quotactl
+function call appeared in
+.Bx 4.3 Reno .
 .Sh BUGS
 There should be some way to integrate this call with the resource
 limit interface provided by
 .Xr setrlimit 2
 and
 .Xr getrlimit 2 .
-.Sh HISTORY
-The
-.Fn quotactl
-function call appeared in
-.Bx 4.3 Reno .

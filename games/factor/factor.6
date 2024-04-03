@@ -1,4 +1,4 @@
-.\"	$NetBSD: factor.6,v 1.4 1995/03/23 08:28:05 cgd Exp $
+.\"	$OpenBSD: factor.6,v 1.12 2011/01/24 00:42:44 schwarze Exp $
 .\"
 .\" Copyright (c) 1989, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -14,11 +14,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -41,46 +37,41 @@
 .\"
 .\"   chongo <for a good prime call: 391581 * 2^216193 - 1> /\oo/\
 .\"
-.Dd May 31, 1993
+.Dd $Mdocdate: January 24 2011 $
 .Dt FACTOR 6
 .Os
 .Sh NAME
 .Nm factor ,
 .Nm primes
-.Nd
-factor a number, generate primes
+.Nd factor a number, generate primes
 .Sh SYNOPSIS
 .Nm factor
 .Op Ar number ...
-.br
 .Nm primes
 .Op Ar start Op Ar stop
 .Sh DESCRIPTION
 The
-.Nm factor
-utility will factor integers between -2147483648 and 2147483647 inclusive.
-When a number is factored, it is printed, followed by a 
-.Dq \: ,
-and the list of factors on a single line.
-Factors are listed in ascending order, and are preceded by a space.
-If a factor divides a value more than once, it will be printed
-more than once.
+.Nm
+utility will factor 64-bit positive integers.
+When a number is factored, it is printed, followed by a
+.Sq \&: ,
+and the list of its prime factors in ascending order, on a single line.
+Every prime factor is printed as often as it divides the number.
 .Pp
 When
-.Nm factor
+.Nm
 is invoked with one or more arguments,
 each argument will be factored.
 .Pp
 When
-.Nm factor
+.Nm
 is invoked with no arguments,
-.Nm factor
+.Nm
 reads numbers, one per line, from standard input, until end of file or error.
-Leading white-space and empty lines are ignored.
-Numbers may be preceded by a single - or +.
-Numbers are terminated by a non-digit character (such as a newline).
+White-space and empty lines are ignored.
+Numbers may be preceded by a single +.
 After a number is read, it is factored.
-Input lines must not be longer than 255 characters.
+Input lines must not be longer than 99 characters.
 .Pp
 The
 .Nm primes
@@ -89,7 +80,7 @@ utility prints primes in ascending order, one per line, starting at or above
 and continuing until, but not including
 .Ar stop .
 The
-.Ar start 
+.Ar start
 value must be at least 0 and not greater than
 .Ar stop .
 The
@@ -109,18 +100,11 @@ is taken to be 4294967295.
 The
 .Ar start
 value may be preceded by a single +.
-The
-.Ar start
-value is terminated by a non-digit character (such as a newline).
-The input line must not be longer than 255 characters.
-.Sh DIAGNOSTICS
-Out of range or invalid input results in 
-.Sq ouch
-being written to standard error.
+The input line must not be longer than 99 characters.
 .Sh BUGS
-.Nm Factor
-cannot handle the 
+.Nm factor
+cannot handle the
 .Dq 10 most wanted
-factor list,
+factor list;
 .Nm primes
 won't get you a world record.

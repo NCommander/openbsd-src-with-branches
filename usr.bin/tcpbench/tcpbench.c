@@ -1,5 +1,8 @@
+/*	$OpenBSD: tcpbench.c,v 1.68 2023/05/22 12:37:00 bluhm Exp $	*/
+
 /*
  * Copyright (c) 2008 Damien Miller <djm@mindrot.org>
+ * Copyright (c) 2011 Christiano F. Haesbaert <haesbaert@haesbaert.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,11 +21,13 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/socketvar.h>
+#include <sys/resource.h>
+#include <sys/queue.h>
+#include <sys/un.h>
 
 #include <net/route.h>
 
 #include <netinet/in.h>
-#include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <netinet/tcp_timer.h>
@@ -38,98 +43,191 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <event.h>
 #include <netdb.h>
 #include <signal.h>
 #include <err.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <paths.h>
+#include <math.h>
 
-#include <kvm.h>
-#include <nlist.h>
+#define DEFAULT_PORT "12345"
+#define DEFAULT_STATS_INTERVAL 1000 /* ms */
+#define DEFAULT_BUF (256 * 1024)
+#define DEFAULT_UDP_PKT (1500 - 28) /* TODO don't hardcode this */
+#define TCP_MODE !ptb->uflag
+#define UDP_MODE ptb->uflag
+#define MAX_FD 1024
 
-#define DEFAULT_PORT		"12345"
-#define DEFAULT_STATS_INTERVAL	1000		/* ms */
-#define DEFAULT_BUF 		256 * 1024
+/* Our tcpbench globals */
+struct {
+	int	  Dflag;	/* Socket debug */
+	int	  Sflag;	/* Socket buffer size */
+	u_int	  rflag;	/* Report rate (ms) */
+	int	  sflag;	/* True if server */
+	int	  Tflag;	/* ToS if != -1 */
+	int	  vflag;	/* Verbose */
+	int	  uflag;	/* UDP mode */
+	int	  Uflag;	/* UNIX (AF_LOCAL) mode */
+	int	  Rflag;	/* randomize client write size */
+	char	**kvars;	/* Kvm enabled vars */
+	char	 *dummybuf;	/* IO buffer */
+	size_t	  dummybuf_len;	/* IO buffer len */
+} tcpbench, *ptb;
 
-sig_atomic_t done = 0;
-sig_atomic_t print_stats = 0;
-
-struct statctx {
-	struct timeval t_start, t_last, t_cur;
-	unsigned long long bytes;
-	pid_t pid;
-	u_long tcbaddr;
-	kvm_t *kh;
-	char **kvars;
+struct tcpservsock {
+	struct event ev;
+	struct event evt;
+	int fd;
 };
 
-/* When adding variables, also add to stats_display() */
+/* stats for a single tcp connection, udp uses only one  */
+struct statctx {
+	TAILQ_ENTRY(statctx) entry;
+	struct timeval t_start, t_last;
+	unsigned long long bytes;
+	int fd;
+	char *buf;
+	size_t buflen;
+	struct event ev;
+	/* TCP only */
+	struct tcpservsock *tcp_ts;
+	/* UDP only */
+	u_long udp_slice_pkts;
+};
+
+struct statctx *udp_sc; /* singleton */
+
+static void	signal_handler(int, short, void *);
+static void	saddr_ntop(const struct sockaddr *, socklen_t, char *, size_t);
+static void	set_slice_timer(int);
+static void	print_tcp_header(void);
+static void	list_kvars(void);
+static void	check_kvar(const char *);
+static char **	check_prepare_kvars(char *);
+static void	stats_prepare(struct statctx *);
+static void	summary_display(void);
+static void	tcp_stats_display(unsigned long long, long double, float,
+    struct statctx *, struct tcp_info *);
+static void	tcp_process_slice(int, short, void *);
+static void	tcp_server_handle_sc(int, short, void *);
+static void	tcp_server_accept(int, short, void *);
+static void	server_init(struct addrinfo *);
+static void	client_handle_sc(int, short, void *);
+static void	client_init(struct addrinfo *, int, struct addrinfo *);
+static int	clock_gettime_tv(clockid_t, struct timeval *);
+static void	udp_server_handle_sc(int, short, void *);
+static void	udp_process_slice(int, short, void *);
+static int	map_tos(char *, int *);
+static void	quit(int, short, void *);
+static void	wrapup(int);
+
+/*
+ * We account the mainstats here, that is the stats
+ * for all connections, all variables starting with slice
+ * are used to account information for the timeslice
+ * between each output. Peak variables record the highest
+ * between all slices so far.
+ */
+static struct {
+	struct timeval t_first;		/* first connect / packet */
+ 	unsigned long long total_bytes; /* bytes since t_first */
+	unsigned long long n_slices;	/* slices since start */
+	unsigned long long slice_bytes; /* bytes since slice reset */
+	long double peak_mbps;		/* peak mbps so far */
+	long double floor_mbps;		/* floor mbps so far */
+	long double mean_mbps;		/* mean mbps so far */
+	long double nvariance_mbps;     /* for online std dev */
+	int nconns;		        /* connected clients */
+	struct event timer;		/* process timer */
+	const char *host;               /* remote server for display */
+} mainstats;
+
+/* When adding variables, also add to tcp_stats_display() */
 static const char *allowed_kvars[] = {
-	"inpcb.inp_flags",
-	"sockb.so_rcv.sb_cc",
-	"sockb.so_rcv.sb_hiwat",
-	"sockb.so_snd.sb_cc",
-	"sockb.so_snd.sb_hiwat",
-	"tcpcb.snd_una",
-	"tcpcb.snd_nxt",
-	"tcpcb.snd_wl1",
-	"tcpcb.snd_wl2",
-	"tcpcb.snd_wnd",
-	"tcpcb.rcv_wnd",
-	"tcpcb.rcv_nxt",
-	"tcpcb.rcv_adv",
-	"tcpcb.snd_max",
-	"tcpcb.snd_cwnd",
-	"tcpcb.snd_ssthresh",
-	"tcpcb.t_rcvtime",
-	"tcpcb.t_rtttime",
-	"tcpcb.t_rtseq",
-	"tcpcb.t_srtt",
-	"tcpcb.t_rttvar",
-	"tcpcb.t_rttmin",
-	"tcpcb.max_sndwnd",
-	"tcpcb.snd_scale",
-	"tcpcb.rcv_scale",
-	"tcpcb.last_ack_sent",
+	"last_ack_recv",
+	"last_ack_sent",
+	"last_data_recv",
+	"last_data_sent",
+	"max_sndwnd",
+	"options",
+	"rcv_adv",
+	"rcv_mss",
+	"rcv_nxt",
+	"rcv_ooopack",
+	"rcv_space",
+	"rcv_up",
+	"rcv_wscale",
+	"rfbuf_cnt",
+	"rfbuf_ts",
+	"rtt",
+	"rttmin",
+	"rttvar",
+	"snd_cwnd",
+	"snd_max",
+	"snd_mss",
+	"snd_nxt",
+	"snd_rexmitpack",
+	"snd_ssthresh",
+	"snd_una",
+	"snd_wl1",
+	"snd_wl2",
+	"snd_wnd",
+	"snd_wscale",
+	"snd_zerowin",
+	"so_rcv_sb_cc",
+	"so_rcv_sb_hiwat",
+	"so_rcv_sb_lowat",
+	"so_rcv_sb_wat",
+	"so_snd_sb_cc",
+	"so_snd_sb_hiwat",
+	"so_snd_sb_lowat",
+	"so_snd_sb_wat",
+	"ts_recent",
+	"ts_recent_age",
 	NULL
 };
 
-static void
-exitsighand(int signo)
-{
-	done = signo;
-}
-
-static void
-alarmhandler(int signo)
-{
-	print_stats = 1;
-	signal(signo, alarmhandler);
-}
+TAILQ_HEAD(, statctx) sc_queue;
 
 static void __dead
 usage(void)
 {
 	fprintf(stderr,
-"Usage:\n"
-"    bench -l\n"
-"    bench [-v] [-p port] [-r rate] [host]\n"
-"    bench [-v] [-p port] [-r rate] -s\n"
-"Options:\n"
-"    -B buf       Set read/write buffer space (default: %u)\n"
-"    -h           Display this help\n"
-"    -l           List kernel vars and exit\n"
-"    -k var[,var] List of kernel PCB, TCB and socket variables to display\n"
-"                 (requires read access to /dev/kmem)\n"
-"    -p port      Specify port (default: %s)\n"
-"    -s           Server mode - listen for connections\n"
-"                 (default: client mode - initiate connection)\n"
-"    -r rate      Statistics display interval in milliseconds, or 0 to\n"
-"                 disable (default: %d)\n"
-"    -S space     Set socket send/receive space (default: kernel default)\n"
-"    -v           Increase verbosity\n",
-	    DEFAULT_BUF, DEFAULT_PORT, DEFAULT_STATS_INTERVAL);
+	    "usage: tcpbench -l\n"
+	    "       tcpbench [-46DRUuv] [-B buf] [-b sourceaddr] [-k kvars] [-n connections]\n"
+	    "                [-p port] [-r interval] [-S space] [-T toskeyword]\n"
+	    "                [-t secs] [-V rtable] hostname\n"
+	    "       tcpbench -s [-46DUuv] [-B buf] [-k kvars] [-p port] [-r interval]\n"
+	    "                [-S space] [-T toskeyword] [-V rtable] [hostname]\n");
 	exit(1);
+}
+
+static void
+signal_handler(int sig, short event, void *bula)
+{
+	/*
+	 * signal handler rules don't apply, libevent decouples for us
+	 */
+	switch (sig) {
+	case SIGINFO:
+		printf("\n");
+		wrapup(-1);
+		break;
+	case SIGINT:
+		printf("\n");
+		wrapup(0);
+		break;		/* NOTREACHED */
+	case SIGTERM:
+	case SIGHUP:
+		warnx("Terminated by signal %d", sig);
+		wrapup(0);
+		break;		/* NOTREACHED */
+	default:
+		errx(1, "unexpected signal %d", sig);
+		break;		/* NOTREACHED */
+	}
 }
 
 static void
@@ -138,8 +236,13 @@ saddr_ntop(const struct sockaddr *addr, socklen_t alen, char *buf, size_t len)
 	char hbuf[NI_MAXHOST], pbuf[NI_MAXSERV];
 	int herr;
 
-	if (getnameinfo(addr, alen, hbuf, sizeof(hbuf), pbuf, sizeof(pbuf),
-	    NI_NUMERICHOST|NI_NUMERICSERV) != 0) {
+	if (addr->sa_family == AF_UNIX) {
+		struct sockaddr_un *sun = (struct sockaddr_un *)addr;
+		snprintf(buf, len, "%s", sun->sun_path);
+		return;
+	}
+	if ((herr = getnameinfo(addr, alen, hbuf, sizeof(hbuf),
+	    pbuf, sizeof(pbuf), NI_NUMERICHOST|NI_NUMERICSERV)) != 0) {
 		if (herr == EAI_SYSTEM)
 			err(1, "getnameinfo");
 		else
@@ -149,138 +252,57 @@ saddr_ntop(const struct sockaddr *addr, socklen_t alen, char *buf, size_t len)
 }
 
 static void
-kget(kvm_t *kh, u_long addr, void *buf, int size)
+set_slice_timer(int on)
 {
-	if (kvm_read(kh, addr, buf, size) != size)
-		errx(1, "kvm_read: %s", kvm_geterr(kh));
+	struct timeval tv;
+
+	if (ptb->rflag == 0)
+		return;
+
+	if (on) {
+		if (evtimer_pending(&mainstats.timer, NULL))
+			return;
+		/* XXX Is there a better way to do this ? */
+		tv.tv_sec = ptb->rflag / 1000;
+		tv.tv_usec = (ptb->rflag % 1000) * 1000;
+
+		evtimer_add(&mainstats.timer, &tv);
+	} else if (evtimer_pending(&mainstats.timer, NULL))
+		evtimer_del(&mainstats.timer);
 }
 
-static u_long
-kfind_tcb(kvm_t *kh, u_long ktcbtab, int sock, int vflag)
+static int
+clock_gettime_tv(clockid_t clock_id, struct timeval *tv)
 {
-	struct inpcbtable tcbtab;
-	struct inpcb *head, *next, *prev;
-	struct inpcb inpcb;
-	struct tcpcb tcpcb;
+	struct timespec ts;
 
-	struct sockaddr_storage me, them;
-	socklen_t melen, themlen;
-	struct sockaddr_in *in4;
-	struct sockaddr_in6 *in6;
-	char tmp1[64], tmp2[64];
+	if (clock_gettime(clock_id, &ts) == -1)
+		return (-1);
 
-	melen = themlen = sizeof(struct sockaddr_storage);
-	if (getsockname(sock, (struct sockaddr *)&me, &melen) == -1)
-		err(1, "getsockname");
-	if (getpeername(sock, (struct sockaddr *)&them, &themlen) == -1)
-		err(1, "getpeername");
-	if (me.ss_family != them.ss_family)
-		errx(1, "%s: me.ss_family != them.ss_family", __func__);
-	if (me.ss_family != AF_INET && me.ss_family != AF_INET6)
-		errx(1, "%s: unknown socket family", __func__);
-	if (vflag >= 2) {
-		saddr_ntop((struct sockaddr *)&me, me.ss_len,
-		    tmp1, sizeof(tmp1));
-		saddr_ntop((struct sockaddr *)&them, them.ss_len,
-		    tmp2, sizeof(tmp2));
-		fprintf(stderr, "Our socket local %s remote %s\n", tmp1, tmp2);
-	}
-	if (vflag >= 2)
-		fprintf(stderr, "Using PCB table at %lu\n", ktcbtab);
+	TIMESPEC_TO_TIMEVAL(tv, &ts);
 
-	kget(kh, ktcbtab, &tcbtab, sizeof(tcbtab));
-	prev = head = (struct inpcb *)&CIRCLEQ_FIRST(
-	    &((struct inpcbtable *)ktcbtab)->inpt_queue);
-	next = CIRCLEQ_FIRST(&tcbtab.inpt_queue);
-
-	if (vflag >= 2)
-		fprintf(stderr, "PCB head at %p\n", head);
-	while (next != head) {
-		if (vflag >= 2)
-			fprintf(stderr, "Checking PCB %p\n", next);
-		kget(kh, (u_long)next, &inpcb, sizeof(inpcb));
-		if (CIRCLEQ_PREV(&inpcb, inp_queue) != prev)
-			errx(1, "pcb prev pointer insane");
-		prev = next;
-		next = CIRCLEQ_NEXT(&inpcb, inp_queue);
-
-		if (me.ss_family == AF_INET) {
-			if ((inpcb.inp_flags & INP_IPV6) != 0) {
-				if (vflag >= 2)
-					fprintf(stderr, "Skip: INP_IPV6");
-				continue;
-			}
-			if (vflag >= 2) {
-				inet_ntop(AF_INET, &inpcb.inp_laddr,
-				    tmp1, sizeof(tmp1));
-				inet_ntop(AF_INET, &inpcb.inp_faddr,
-				    tmp2, sizeof(tmp2));
-				fprintf(stderr, "PCB %p local: [%s]:%d "
-				    "remote: [%s]:%d\n", prev,
-				    tmp1, inpcb.inp_lport,
-				    tmp2, inpcb.inp_fport);
-			}
-			in4 = (struct sockaddr_in *)&me;
-			if (memcmp(&in4->sin_addr, &inpcb.inp_laddr,
-			    sizeof(struct in_addr)) != 0 ||
-			    in4->sin_port != inpcb.inp_lport)
-				continue;
-			in4 = (struct sockaddr_in *)&them;
-			if (memcmp(&in4->sin_addr, &inpcb.inp_faddr,
-			    sizeof(struct in_addr)) != 0 ||
-			    in4->sin_port != inpcb.inp_fport)
-				continue;
-		} else {
-			if ((inpcb.inp_flags & INP_IPV6) == 0)
-				continue;
-			if (vflag >= 2) {
-				inet_ntop(AF_INET6, &inpcb.inp_laddr6,
-				    tmp1, sizeof(tmp1));
-				inet_ntop(AF_INET6, &inpcb.inp_faddr6,
-				    tmp2, sizeof(tmp2));
-				fprintf(stderr, "PCB %p local: [%s]:%d "
-				    "remote: [%s]:%d\n", prev,
-				    tmp1, inpcb.inp_lport,
-				    tmp2, inpcb.inp_fport);
-			}
-			in6 = (struct sockaddr_in6 *)&me;
-			if (memcmp(&in6->sin6_addr, &inpcb.inp_laddr6,
-			    sizeof(struct in6_addr)) != 0 ||
-			    in6->sin6_port != inpcb.inp_lport)
-				continue;
-			in6 = (struct sockaddr_in6 *)&them;
-			if (memcmp(&in6->sin6_addr, &inpcb.inp_faddr6,
-			    sizeof(struct in6_addr)) != 0 ||
-			    in6->sin6_port != inpcb.inp_fport)
-				continue;
-		}
-		kget(kh, (u_long)inpcb.inp_ppcb, &tcpcb, sizeof(tcpcb));
-		if (tcpcb.t_state != TCPS_ESTABLISHED) {
-			if (vflag >= 2)
-				fprintf(stderr, "Not established\n");
-			continue;
-		}
-		if (vflag >= 2)
-			fprintf(stderr, "Found PCB at %p\n", prev);
-		return (u_long)prev;
-	}
-
-	errx(1, "No matching PCB found");
+	return (0);
 }
 
 static void
-kupdate_stats(kvm_t *kh, u_long tcbaddr,
-    struct inpcb *inpcb, struct tcpcb *tcpcb, struct socket *sockb)
+print_tcp_header(void)
 {
-	kget(kh, tcbaddr, inpcb, sizeof(*inpcb));
-	kget(kh, (u_long)inpcb->inp_ppcb, tcpcb, sizeof(*tcpcb));
-	kget(kh, (u_long)inpcb->inp_socket, sockb, sizeof(*sockb));
+	char **kv;
+
+	if (ptb->rflag == 0)
+		return;
+
+	printf("%12s %14s %12s %8s ", "elapsed_ms", "bytes", "mbps",
+	    "bwidth");
+	for (kv = ptb->kvars;  ptb->kvars != NULL && *kv != NULL; kv++)
+		printf("%s%s", kv != ptb->kvars ? "," : "", *kv);
+	printf("\n");
 }
 
 static void
 check_kvar(const char *var)
 {
-	size_t i;
+	u_int i;
 
 	for (i = 0; allowed_kvars[i] != NULL; i++)
 		if (strcmp(allowed_kvars[i], var) == 0)
@@ -291,226 +313,417 @@ check_kvar(const char *var)
 static void
 list_kvars(void)
 {
-	size_t i;
+	u_int i;
 
-	fprintf(stderr, "Supported kernel variables:\n");
+	printf("Supported kernel variables:\n");
 	for (i = 0; allowed_kvars[i] != NULL; i++)
-		fprintf(stderr, "\t%s\n", allowed_kvars[i]);
+		printf("\t%s\n", allowed_kvars[i]);
 }
 
 static char **
 check_prepare_kvars(char *list)
 {
 	char *item, **ret = NULL;
-	size_t n = 0;
+	u_int n = 0;
 
 	while ((item = strsep(&list, ", \t\n")) != NULL) {
 		check_kvar(item);
-		if ((ret = realloc(ret, sizeof(*ret) * (++n + 1))) == NULL)
-			errx(1, "realloc(kvars)");
+		if ((ret = reallocarray(ret, (++n + 1), sizeof(*ret))) == NULL)
+			err(1, "reallocarray(kvars)");
 		if ((ret[n - 1] = strdup(item)) == NULL)
-			errx(1, "strdup");
+			err(1, "strdup");
 		ret[n] = NULL;
 	}
-	return ret;
+	return (ret);
 }
 
 static void
-stats_prepare(struct statctx *sc, int fd, kvm_t *kh, u_long ktcbtab,
-    int rflag, int vflag, char **kflag)
+stats_prepare(struct statctx *sc)
 {
-	struct itimerval itv;
-	int i;
+	sc->buf = ptb->dummybuf;
+	sc->buflen = ptb->dummybuf_len;
 
-	if (rflag <= 0)
-		return;
-	sc->kh = kh;
-	sc->kvars = kflag;
-	if (kflag)
-		sc->tcbaddr = kfind_tcb(kh, ktcbtab, fd, vflag);
-	gettimeofday(&sc->t_start, NULL);
+	if (clock_gettime_tv(CLOCK_MONOTONIC, &sc->t_start) == -1)
+		err(1, "clock_gettime_tv");
 	sc->t_last = sc->t_start;
-	signal(SIGALRM, alarmhandler);
-	itv.it_interval.tv_sec = rflag / 1000;
-	itv.it_interval.tv_usec = (rflag % 1000) * 1000;
-	itv.it_value = itv.it_interval;
-	setitimer(ITIMER_REAL, &itv, NULL);
-	sc->bytes = 0;
-	sc->pid = getpid();
+	if (!timerisset(&mainstats.t_first))
+		mainstats.t_first = sc->t_start;
+}
 
-	printf("%8s %12s %14s %12s ", "pid", "elapsed_ms", "bytes", "Mbps");
-	if (sc->kvars != NULL) {
-		for (i = 0; sc->kvars[i] != NULL; i++)
-			printf("%s%s", i > 0 ? "," : "", sc->kvars[i]);
+static void
+summary_display(void)
+{
+	struct timeval t_cur, t_diff;
+	long double std_dev;
+	unsigned long long total_elapsed;
+	char *direction;
+
+	if (!ptb->sflag) {
+		direction = "sent";
+		printf("--- %s tcpbench statistics ---\n", mainstats.host);
+	} else {
+		direction = "received";
+		printf("--- tcpbench server statistics ---\n");
 	}
-	printf("\n");
-	fflush(stdout);
-}
 
-static void
-stats_update(struct statctx *sc, ssize_t n)
-{
-	sc->bytes += n;
-}
+	std_dev = sqrtl(mainstats.nvariance_mbps / mainstats.n_slices);
 
-static void
-stats_display(struct statctx *sc)
-{
-	struct timeval t_diff;
-	unsigned long long total_elapsed, since_last;
-	size_t i;
-	struct inpcb inpcb;
-	struct tcpcb tcpcb;
-	struct socket sockb;
-
-	gettimeofday(&sc->t_cur, NULL);
-	timersub(&sc->t_cur, &sc->t_start, &t_diff);
+	if (clock_gettime_tv(CLOCK_MONOTONIC, &t_cur) == -1)
+		err(1, "clock_gettime_tv");
+	timersub(&t_cur, &mainstats.t_first, &t_diff);
 	total_elapsed = t_diff.tv_sec * 1000 + t_diff.tv_usec / 1000;
-	timersub(&sc->t_cur, &sc->t_last, &t_diff);
-	since_last = t_diff.tv_sec * 1000 + t_diff.tv_usec / 1000;
-	printf("%8ld %12llu %14llu %12.3Lf ", (long)sc->pid,
-	    total_elapsed, sc->bytes,
-	    (long double)(sc->bytes * 8) / (since_last * 1000.0));
-	sc->t_last = sc->t_cur;
-	sc->bytes = 0;
 
-	if (sc->kvars != NULL) {
-		kupdate_stats(sc->kh, sc->tcbaddr, &inpcb, &tcpcb, &sockb);
-		for (i = 0; sc->kvars[i] != NULL; i++) {
-#define P(v, f) \
-	if (strcmp(sc->kvars[i], #v) == 0) { \
-		printf("%s"f, i > 0 ? "," : "", v); \
-		continue; \
-	}
-			P(inpcb.inp_flags, "0x%08x")
-			P(sockb.so_rcv.sb_cc, "%lu")
-			P(sockb.so_rcv.sb_hiwat, "%lu")
-			P(sockb.so_snd.sb_cc, "%lu")
-			P(sockb.so_snd.sb_hiwat, "%lu")
-			P(tcpcb.snd_una, "%u")
-			P(tcpcb.snd_nxt, "%u")
-			P(tcpcb.snd_wl1, "%u")
-			P(tcpcb.snd_wl2, "%u")
-			P(tcpcb.snd_wnd, "%lu")
-			P(tcpcb.rcv_wnd, "%lu")
-			P(tcpcb.rcv_nxt, "%u")
-			P(tcpcb.rcv_adv, "%u")
-			P(tcpcb.snd_max, "%u")
-			P(tcpcb.snd_cwnd, "%lu")
-			P(tcpcb.snd_ssthresh, "%lu")
-			P(tcpcb.t_rcvtime, "%u")
-			P(tcpcb.t_rtttime, "%u")
-			P(tcpcb.t_rtseq, "%u")
-			P(tcpcb.t_srtt, "%hu")
-			P(tcpcb.t_rttvar, "%hu")
-			P(tcpcb.t_rttmin, "%hu")
-			P(tcpcb.max_sndwnd, "%lu")
-			P(tcpcb.snd_scale, "%u")
-			P(tcpcb.rcv_scale, "%u")
-			P(tcpcb.last_ack_sent, "%u")
+	printf("%llu bytes %s over %.3Lf seconds\n",
+	    mainstats.total_bytes, direction, total_elapsed/1000.0L);
+	printf("bandwidth min/avg/max/std-dev = %.3Lf/%.3Lf/%.3Lf/%.3Lf Mbps\n",
+	    mainstats.floor_mbps, mainstats.mean_mbps, mainstats.peak_mbps,
+	    std_dev);
+}
+
+static void
+tcp_stats_display(unsigned long long total_elapsed, long double mbps,
+    float bwperc, struct statctx *sc, struct tcp_info *tcpi)
+{
+	int j;
+
+	printf("%12llu %14llu %12.3Lf %7.2f%% ", total_elapsed, sc->bytes,
+	    mbps, bwperc);
+
+	if (ptb->kvars != NULL) {
+		for (j = 0; ptb->kvars[j] != NULL; j++) {
+#define S(a) #a
+#define P(b, v, f)							\
+			if (strcmp(ptb->kvars[j], S(v)) == 0) {		\
+				printf("%s"f, j > 0 ? "," : "", b->tcpi_##v); \
+				continue;				\
+			}
+			P(tcpi, last_ack_recv, "%u")
+			P(tcpi, last_ack_sent, "%u")
+			P(tcpi, last_data_recv, "%u")
+			P(tcpi, last_data_sent, "%u")
+			P(tcpi, max_sndwnd, "%u")
+			P(tcpi, options, "%hhu")
+			P(tcpi, rcv_adv, "%u")
+			P(tcpi, rcv_mss, "%u")
+			P(tcpi, rcv_nxt, "%u")
+			P(tcpi, rcv_ooopack, "%u")
+			P(tcpi, rcv_space, "%u")
+			P(tcpi, rcv_up, "%u")
+			P(tcpi, rcv_wscale, "%hhu")
+			P(tcpi, rfbuf_cnt, "%u")
+			P(tcpi, rfbuf_ts, "%u")
+			P(tcpi, rtt, "%u")
+			P(tcpi, rttmin, "%u")
+			P(tcpi, rttvar, "%u")
+			P(tcpi, snd_cwnd, "%u")
+			P(tcpi, snd_max, "%u")
+			P(tcpi, snd_mss, "%u")
+			P(tcpi, snd_nxt, "%u")
+			P(tcpi, snd_rexmitpack, "%u")
+			P(tcpi, snd_ssthresh, "%u")
+			P(tcpi, snd_una, "%u")
+			P(tcpi, snd_wl1, "%u")
+			P(tcpi, snd_wl2, "%u")
+			P(tcpi, snd_wnd, "%u")
+			P(tcpi, snd_wscale, "%hhu")
+			P(tcpi, snd_zerowin, "%u")
+			P(tcpi, so_rcv_sb_cc, "%u")
+			P(tcpi, so_rcv_sb_hiwat, "%u")
+			P(tcpi, so_rcv_sb_lowat, "%u")
+			P(tcpi, so_rcv_sb_wat, "%u")
+			P(tcpi, so_snd_sb_cc, "%u")
+			P(tcpi, so_snd_sb_hiwat, "%u")
+			P(tcpi, so_snd_sb_lowat, "%u")
+			P(tcpi, so_snd_sb_wat, "%u")
+			P(tcpi, ts_recent, "%u")
+			P(tcpi, ts_recent_age, "%u")
+#undef S
 #undef P
 		}
 	}
 	printf("\n");
-	fflush(stdout);
 }
 
 static void
-stats_finish(struct statctx *sc)
+tcp_process_slice(int fd, short event, void *bula)
 {
-	struct itimerval itv;
+	unsigned long long total_elapsed, since_last;
+	long double mbps, old_mean_mbps, slice_mbps = 0;
+	float bwperc;
+	struct statctx *sc;
+	struct timeval t_cur, t_diff;
+	struct tcp_info tcpi;
+	socklen_t tcpilen;
 
-	signal(SIGALRM, SIG_DFL);
-	bzero(&itv, sizeof(itv));
-	setitimer(ITIMER_REAL, &itv, NULL);
-}
+	if (TAILQ_EMPTY(&sc_queue))
+		return; /* don't pollute stats */
 
-static void __dead
-handle_connection(kvm_t *kvmh, u_long ktcbtab, int sock, int vflag,
-    int rflag, char **kflag, int Bflag)
-{
-	char *buf;
-	struct pollfd pfd;
-	ssize_t n;
-	int r;
-	struct statctx sc;
+	mainstats.n_slices++;
 
-	if ((buf = malloc(Bflag)) == NULL)
-		err(1, "malloc");
-	if ((r = fcntl(sock, F_GETFL, 0)) == -1)
-		err(1, "fcntl(F_GETFL)");
-	r |= O_NONBLOCK;
-	if (fcntl(sock, F_SETFL, r) == -1)
-		err(1, "fcntl(F_SETFL, O_NONBLOCK)");
-
-	signal(SIGINT, exitsighand);
-	signal(SIGTERM, exitsighand);
-	signal(SIGHUP, exitsighand);
-	signal(SIGPIPE, SIG_IGN);
-
-	bzero(&pfd, sizeof(pfd));
-	pfd.fd = sock;
-	pfd.events = POLLIN;
-
-	stats_prepare(&sc, sock, kvmh, ktcbtab, rflag, vflag, kflag);
-
-	while (!done) {
-		if (print_stats) {
-			stats_display(&sc);
-			print_stats = 0;
+	TAILQ_FOREACH(sc, &sc_queue, entry) {
+		if (clock_gettime_tv(CLOCK_MONOTONIC, &t_cur) == -1)
+			err(1, "clock_gettime_tv");
+		if (ptb->kvars != NULL) { /* process kernel stats */
+			tcpilen = sizeof(tcpi);
+			if (getsockopt(sc->fd, IPPROTO_TCP, TCP_INFO,
+			    &tcpi, &tcpilen) == -1)
+				err(1, "get tcp_info");
 		}
-		if (poll(&pfd, 1, INFTIM) == -1) {
-			if (errno == EINTR)
-				continue;
-			err(1, "poll");
-		}
-		if ((n = read(pfd.fd, buf, Bflag)) == -1) {
-			if (errno == EINTR || errno == EAGAIN)
-				continue;
-			err(1, "read");
-		}
-		if (n == 0) {
-			fprintf(stderr, "%8ld closed by remote end\n",
-			    (long)getpid());
-			done = -1;
-			break;
-		}
-		if (vflag >= 3)
-			fprintf(stderr, "read: %zd bytes\n", n);
-		stats_update(&sc, n);
+
+		timersub(&t_cur, &sc->t_start, &t_diff);
+		total_elapsed = t_diff.tv_sec * 1000 + t_diff.tv_usec / 1000;
+		timersub(&t_cur, &sc->t_last, &t_diff);
+		since_last = t_diff.tv_sec * 1000 + t_diff.tv_usec / 1000;
+		if (since_last == 0)
+			continue;
+		bwperc = (sc->bytes * 100.0) / mainstats.slice_bytes;
+		mbps = (sc->bytes * 8) / (since_last * 1000.0);
+		slice_mbps += mbps;
+
+		tcp_stats_display(total_elapsed, mbps, bwperc, sc, &tcpi);
+
+		sc->t_last = t_cur;
+		sc->bytes = 0;
 	}
-	stats_finish(&sc);
 
-	free(buf);
-	close(sock);
-	exit(1);
+	/* process stats for this slice */
+	if (slice_mbps > mainstats.peak_mbps)
+		mainstats.peak_mbps = slice_mbps;
+	if (slice_mbps < mainstats.floor_mbps)
+		mainstats.floor_mbps = slice_mbps;
+	old_mean_mbps = mainstats.mean_mbps;
+	mainstats.mean_mbps += (slice_mbps - mainstats.mean_mbps) /
+				mainstats.n_slices;
+
+	/* "Welford's method" for online variance
+	 * see Knuth, TAoCP Volume 2, 3rd edn., p232 */
+	mainstats.nvariance_mbps += (slice_mbps - old_mean_mbps) *
+				    (slice_mbps - mainstats.mean_mbps);
+
+	printf("Conn: %3d Mbps: %12.3Lf Peak Mbps: %12.3Lf Avg Mbps: %12.3Lf\n",
+	    mainstats.nconns, slice_mbps, mainstats.peak_mbps,
+	    mainstats.nconns ? slice_mbps / mainstats.nconns : 0);
+
+	mainstats.slice_bytes = 0;
+	set_slice_timer(mainstats.nconns > 0);
 }
 
-static void __dead
-serverloop(kvm_t *kvmh, u_long ktcbtab, struct addrinfo *aitop,
-    int vflag, int rflag, char **kflag, int Sflag, int Bflag)
+static void
+udp_process_slice(int fd, short event, void *bula)
 {
-	char tmp[128];
-	int r, sock, client_id, on = 1;
-	struct addrinfo *ai;
-	struct pollfd *pfd;
+	unsigned long long total_elapsed, since_last, pps;
+	long double old_mean_mbps, slice_mbps;
+	struct timeval t_cur, t_diff;
+
+	mainstats.n_slices++;
+
+	if (clock_gettime_tv(CLOCK_MONOTONIC, &t_cur) == -1)
+		err(1, "clock_gettime_tv");
+
+	timersub(&t_cur, &udp_sc->t_start, &t_diff);
+	total_elapsed = t_diff.tv_sec * 1000 + t_diff.tv_usec / 1000;
+
+	timersub(&t_cur, &udp_sc->t_last, &t_diff);
+	since_last = t_diff.tv_sec * 1000 + t_diff.tv_usec / 1000;
+	if (since_last == 0)
+		return;
+
+	slice_mbps = (udp_sc->bytes * 8) / (since_last * 1000.0);
+	pps = (udp_sc->udp_slice_pkts * 1000) / since_last;
+
+	if (slice_mbps > mainstats.peak_mbps)
+		mainstats.peak_mbps = slice_mbps;
+	if (slice_mbps < mainstats.floor_mbps)
+		mainstats.floor_mbps = slice_mbps;
+	old_mean_mbps = mainstats.mean_mbps;
+	mainstats.mean_mbps += (slice_mbps - mainstats.mean_mbps) /
+				mainstats.n_slices;
+
+	/* "Welford's method" for online variance
+	 * see Knuth, TAoCP Volume 2, 3rd edn., p232 */
+	mainstats.nvariance_mbps += (slice_mbps - old_mean_mbps) *
+				    (slice_mbps - mainstats.mean_mbps);
+
+	printf("Elapsed: %11llu Mbps: %11.3Lf Peak Mbps: %11.3Lf %s PPS: %7llu\n",
+	    total_elapsed, slice_mbps, mainstats.peak_mbps,
+	    ptb->sflag ? "Rx" : "Tx", pps);
+
+	/* Clean up this slice time */
+	udp_sc->t_last = t_cur;
+	udp_sc->bytes = 0;
+	udp_sc->udp_slice_pkts = 0;
+
+	mainstats.slice_bytes = 0;
+	set_slice_timer(1);
+}
+
+static void
+udp_server_handle_sc(int fd, short event, void *bula)
+{
+	static int first_read = 1;
+	ssize_t n;
+
+	n = read(fd, ptb->dummybuf, ptb->dummybuf_len);
+	if (n == 0)
+		return;
+	else if (n == -1) {
+		if (errno != EINTR && errno != EWOULDBLOCK)
+			warn("fd %d read error", fd);
+		return;
+	}
+
+	if (ptb->vflag >= 3)
+		fprintf(stderr, "read: %zd bytes\n", n);
+	if (first_read) {
+		first_read = 0;
+		stats_prepare(udp_sc);
+		set_slice_timer(1);
+	}
+	/* Account packet */
+	udp_sc->udp_slice_pkts++;
+	udp_sc->bytes += n;
+	mainstats.slice_bytes += n;
+	mainstats.total_bytes += n;
+}
+
+static void
+tcp_server_handle_sc(int fd, short event, void *v_sc)
+{
+	struct statctx *sc = v_sc;
+	ssize_t n;
+
+	n = read(sc->fd, sc->buf, sc->buflen);
+	if (n == -1) {
+		if (errno != EINTR && errno != EWOULDBLOCK)
+			warn("fd %d read error", sc->fd);
+		return;
+	} else if (n == 0) {
+		if (ptb->vflag)
+			fprintf(stderr, "%8d closed by remote end\n", sc->fd);
+
+		TAILQ_REMOVE(&sc_queue, sc, entry);
+
+		event_del(&sc->ev);
+		close(sc->fd);
+
+		/* Some file descriptors are available again. */
+		if (evtimer_pending(&sc->tcp_ts->evt, NULL)) {
+			evtimer_del(&sc->tcp_ts->evt);
+			event_add(&sc->tcp_ts->ev, NULL);
+		}
+
+		free(sc);
+		mainstats.nconns--;
+		return;
+	}
+	if (ptb->vflag >= 3)
+		fprintf(stderr, "read: %zd bytes\n", n);
+	sc->bytes += n;
+	mainstats.slice_bytes += n;
+	mainstats.total_bytes += n;
+}
+
+static void
+tcp_server_accept(int fd, short event, void *arg)
+{
+	struct tcpservsock *ts = arg;
+	int sock;
+	struct statctx *sc;
 	struct sockaddr_storage ss;
 	socklen_t sslen;
-	size_t nfds, i, j;
+	char tmp[NI_MAXHOST + 2 + NI_MAXSERV];
 
-	pfd = NULL;
-	nfds = 0;
+	sslen = sizeof(ss);
+
+	event_add(&ts->ev, NULL);
+	if (event & EV_TIMEOUT)
+		return;
+	if ((sock = accept4(fd, (struct sockaddr *)&ss, &sslen, SOCK_NONBLOCK))
+	    == -1) {
+		/*
+		 * Pause accept if we are out of file descriptors, or
+		 * libevent will haunt us here too.
+		 */
+		if (errno == ENFILE || errno == EMFILE) {
+			struct timeval evtpause = { 1, 0 };
+
+			event_del(&ts->ev);
+			evtimer_add(&ts->evt, &evtpause);
+		} else if (errno != EWOULDBLOCK && errno != EINTR &&
+		    errno != ECONNABORTED)
+			warn("accept");
+		return;
+	}
+	saddr_ntop((struct sockaddr *)&ss, sslen,
+	    tmp, sizeof(tmp));
+	if (ptb->Tflag != -1 && ss.ss_family == AF_INET) {
+		if (setsockopt(sock, IPPROTO_IP, IP_TOS,
+		    &ptb->Tflag, sizeof(ptb->Tflag)))
+			err(1, "setsockopt IP_TOS");
+	}
+	if (ptb->Tflag != -1 && ss.ss_family == AF_INET6) {
+		if (setsockopt(sock, IPPROTO_IPV6, IPV6_TCLASS,
+		    &ptb->Tflag, sizeof(ptb->Tflag)))
+			err(1, "setsockopt IPV6_TCLASS");
+	}
+	/* Alloc client structure and register reading callback */
+	if ((sc = calloc(1, sizeof(*sc))) == NULL)
+		err(1, "calloc");
+	sc->tcp_ts = ts;
+	sc->fd = sock;
+	stats_prepare(sc);
+
+	event_set(&sc->ev, sc->fd, EV_READ | EV_PERSIST,
+	    tcp_server_handle_sc, sc);
+	event_add(&sc->ev, NULL);
+	TAILQ_INSERT_TAIL(&sc_queue, sc, entry);
+
+	mainstats.nconns++;
+	if (mainstats.nconns == 1)
+		set_slice_timer(1);
+	if (ptb->vflag)
+		fprintf(stderr, "Accepted connection from %s, fd = %d\n",
+		    tmp, sc->fd);
+}
+
+static void
+server_init(struct addrinfo *aitop)
+{
+	int sock, on = 1;
+	struct addrinfo *ai;
+	struct event *ev;
+	struct tcpservsock *ts;
+	nfds_t lnfds;
+
+	lnfds = 0;
 	for (ai = aitop; ai != NULL; ai = ai->ai_next) {
+		char tmp[NI_MAXHOST + 2 + NI_MAXSERV];
+
 		saddr_ntop(ai->ai_addr, ai->ai_addrlen, tmp, sizeof(tmp));
-		if (vflag)
-			fprintf(stderr, "Try listen on %s\n", tmp);
+		if (ptb->vflag)
+			fprintf(stderr, "Try to bind to %s\n", tmp);
 		if ((sock = socket(ai->ai_family, ai->ai_socktype,
 		    ai->ai_protocol)) == -1) {
 			if (ai->ai_next == NULL)
 				err(1, "socket");
-			if (vflag)
+			if (ptb->vflag)
 				warn("socket");
 			continue;
+		}
+		if (ptb->Dflag) {
+			if (setsockopt(sock, SOL_SOCKET, SO_DEBUG,
+			    &ptb->Dflag, sizeof(ptb->Dflag)))
+				err(1, "setsockopt SO_DEBUG");
+		}
+		if (ptb->Tflag != -1 && ai->ai_family == AF_INET) {
+			if (setsockopt(sock, IPPROTO_IP, IP_TOS,
+			    &ptb->Tflag, sizeof(ptb->Tflag)))
+				err(1, "setsockopt IP_TOS");
+		}
+		if (ptb->Tflag != -1 && ai->ai_family == AF_INET6) {
+			if (setsockopt(sock, IPPROTO_IPV6, IPV6_TCLASS,
+			    &ptb->Tflag, sizeof(ptb->Tflag)))
+				err(1, "setsockopt IPV6_TCLASS");
 		}
 		if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
 		    &on, sizeof(on)) == -1)
@@ -518,244 +731,313 @@ serverloop(kvm_t *kvmh, u_long ktcbtab, struct addrinfo *aitop,
 		if (bind(sock, ai->ai_addr, ai->ai_addrlen) != 0) {
 			if (ai->ai_next == NULL)
 				err(1, "bind");
-			if (vflag)
+			if (ptb->vflag)
 				warn("bind");
 			close(sock);
 			continue;
 		}
-		if (Sflag) {
+		if (ptb->Sflag) {
 			if (setsockopt(sock, SOL_SOCKET, SO_RCVBUF,
-			    &Sflag, sizeof(Sflag)) == -1)
-				warn("set TCP receive buffer size");
+			    &ptb->Sflag, sizeof(ptb->Sflag)) == -1)
+				warn("set receive socket buffer size");
 		}
-		if (listen(sock, 64) == -1) {
-			if (ai->ai_next == NULL)
-				err(1, "listen");
-			if (vflag)
-				warn("listen");
-			close(sock);
-			continue;
-		}
-		if (nfds > 128)
-			break;
-		if ((pfd = realloc(pfd, ++nfds * sizeof(*pfd))) == NULL)
-			errx(1, "realloc(pfd * %zu)", nfds);
-		pfd[nfds - 1].fd = sock;
-		pfd[nfds - 1].events = POLLIN;
-	}
-	freeaddrinfo(aitop);
-	if (nfds == 0)
-		errx(1, "No working listen addresses found");
-
-	signal(SIGINT, exitsighand);
-	signal(SIGTERM, exitsighand);
-	signal(SIGHUP, exitsighand);
-	signal(SIGPIPE, SIG_IGN);
-	signal(SIGCHLD, SIG_IGN);
-
-	if (setpgid(0, 0) == -1)
-		err(1, "setpgid");
-
-	client_id = 0;
-	while (!done) {		
-		if ((r = poll(pfd, nfds, INFTIM)) == -1) {
-			if (errno == EINTR)
-				continue;
-			warn("poll");
-			break;
-		}
-		if (vflag >= 3)
-			fprintf(stderr, "poll: %d\n", r);
-		for (i = 0 ; r > 0 && i < nfds; i++) {
-			if ((pfd[i].revents & POLLIN) == 0)
-				continue;
-			if (vflag >= 3)
-				fprintf(stderr, "fd %d active\n", pfd[i].fd);
-			r--;
-			sslen = sizeof(ss);
-			if ((sock = accept(pfd[i].fd, (struct sockaddr *)&ss,
-			    &sslen)) == -1) {
-				if (errno == EINTR)
-					continue;
-				warn("accept");
-				break;
-			}
-			saddr_ntop((struct sockaddr *)&ss, sslen,
-			    tmp, sizeof(tmp));
-			if (vflag)
-				fprintf(stderr, "Accepted connection %d from "
-				    "%s, fd = %d\n", client_id++, tmp, sock);
-			switch (fork()) {
-			case -1:
-				warn("fork");
-				done = -1;
-				break;
-			case 0:
-				for (j = 0; j < nfds; j++)
-					if (j != i)
-						close(pfd[j].fd);
-				handle_connection(kvmh, ktcbtab, sock,
-				    vflag, rflag, kflag, Bflag);
-				/* NOTREACHED */
-				_exit(1);
-			default:
+		if (TCP_MODE) {
+			if (listen(sock, 64) == -1) {
+				if (ai->ai_next == NULL)
+					err(1, "listen");
+				if (ptb->vflag)
+					warn("listen");
 				close(sock);
-				break;
+				continue;
 			}
-			if (done == -1)
-				break;
 		}
+		if (UDP_MODE) {
+			if ((ev = calloc(1, sizeof(*ev))) == NULL)
+				err(1, "calloc");
+			event_set(ev, sock, EV_READ | EV_PERSIST,
+			    udp_server_handle_sc, NULL);
+			event_add(ev, NULL);
+		} else {
+			if ((ts = calloc(1, sizeof(*ts))) == NULL)
+				err(1, "calloc");
+
+			ts->fd = sock;
+			evtimer_set(&ts->evt, tcp_server_accept, ts);
+			event_set(&ts->ev, ts->fd, EV_READ,
+			    tcp_server_accept, ts);
+			event_add(&ts->ev, NULL);
+		}
+		if (ptb->vflag >= 3)
+			fprintf(stderr, "bound to fd %d\n", sock);
+		lnfds++;
 	}
-	for (i = 0; i < nfds; i++)
-		close(pfd[i].fd);
-	if (done > 0)
-		warnx("Terminated by signal %d", done);
-	signal(SIGTERM, SIG_IGN);
-	killpg(0, SIGTERM);
-	exit(1);
-}
-
-static void __dead
-clientloop(kvm_t *kvmh, u_long ktcbtab, struct addrinfo *aitop,
-    int vflag, int rflag, char **kflag, int Sflag, int Bflag)
-{
-	char tmp[128];
-	char *buf;
-	int r, sock;
-	struct addrinfo *ai;
-	struct pollfd pfd;
-	ssize_t n;
-	struct statctx sc;
-
-	if ((buf = malloc(Bflag)) == NULL)
-		err(1, "malloc");
-	for (sock = -1, ai = aitop; ai != NULL; ai = ai->ai_next) {
-		saddr_ntop(ai->ai_addr, ai->ai_addrlen, tmp, sizeof(tmp));
-		if (vflag)
-			fprintf(stderr, "Trying %s\n", tmp);
-		if ((sock = socket(ai->ai_family, ai->ai_socktype,
-		    ai->ai_protocol)) == -1) {
-			if (ai->ai_next == NULL)
-				err(1, "socket");
-			if (vflag)
-				warn("socket");
-			continue;
-		}
-		if (Sflag) {
-			if (setsockopt(sock, SOL_SOCKET, SO_SNDBUF,
-			    &Sflag, sizeof(Sflag)) == -1)
-				warn("set TCP send buffer size");
-		}
-		if (connect(sock, ai->ai_addr, ai->ai_addrlen) != 0) {
-			if (ai->ai_next == NULL)
-				err(1, "connect");
-			if (vflag)
-				warn("connect");
-			close(sock);
-			sock = -1;
-			continue;
-		}
-		break;
-	}
-	freeaddrinfo(aitop);
-	if (sock == -1)
-		errx(1, "No host found");
-
-	arc4random_buf(buf, Bflag);
-
-	if ((r = fcntl(sock, F_GETFL, 0)) == -1)
-		err(1, "fcntl(F_GETFL)");
-	r |= O_NONBLOCK;
-	if (fcntl(sock, F_SETFL, r) == -1)
-		err(1, "fcntl(F_SETFL, O_NONBLOCK)");
-
-	signal(SIGINT, exitsighand);
-	signal(SIGTERM, exitsighand);
-	signal(SIGHUP, exitsighand);
-	signal(SIGPIPE, SIG_IGN);
-
-	bzero(&pfd, sizeof(pfd));
-	pfd.fd = sock;
-	pfd.events = POLLOUT;
-
-	stats_prepare(&sc, sock, kvmh, ktcbtab, rflag, vflag, kflag);
-
-	while (!done) {
-		if (print_stats) {
-			stats_display(&sc);
-			print_stats = 0;
-		}
-		if (poll(&pfd, 1, INFTIM) == -1) {
-			if (errno == EINTR)
-				continue;
-			err(1, "poll");
-		}
-		if ((n = write(pfd.fd, buf, Bflag)) == -1) {
-			if (errno == EINTR || errno == EAGAIN)
-				continue;
-			err(1, "write");
-		}
-		if (n == 0) {
-			warnx("Remote end closed connection");
-			done = -1;
-			break;
-		}
-		if (vflag >= 3)
-			fprintf(stderr, "write: %zd bytes\n", n);
-		stats_update(&sc, n);
-	}
-	stats_finish(&sc);
-
-	if (done > 0)
-		warnx("Terminated by signal %d", done);
-
-	free(buf);
-	close(sock);
-	exit(0);
+	if (!ptb->Uflag)
+		freeaddrinfo(aitop);
+	if (lnfds == 0)
+		errx(1, "No working listen addresses found");
 }
 
 static void
-drop_gid(void)
+client_handle_sc(int fd, short event, void *v_sc)
 {
-	gid_t gid;
+	struct statctx *sc = v_sc;
+	ssize_t n;
+	size_t blen = sc->buflen;
 
-	gid = getgid();
-	if (setresgid(gid, gid, gid) == -1)
-		err(1, "setresgid");
+	if (ptb->Rflag)
+		blen = arc4random_uniform(blen) + 1;
+	if ((n = write(sc->fd, sc->buf, blen)) == -1) {
+		if (errno == EINTR || errno == EWOULDBLOCK ||
+		    (UDP_MODE && errno == ENOBUFS))
+			return;
+		warn("write");
+		wrapup(1);
+	}
+	if (TCP_MODE && n == 0) {
+		fprintf(stderr, "Remote end closed connection");
+		wrapup(1);
+	}
+	if (ptb->vflag >= 3)
+		fprintf(stderr, "write: %zd bytes\n", n);
+	sc->bytes += n;
+	mainstats.slice_bytes += n;
+	mainstats.total_bytes += n;
+	if (UDP_MODE)
+		sc->udp_slice_pkts++;
+}
+
+static void
+client_init(struct addrinfo *aitop, int nconn, struct addrinfo *aib)
+{
+	struct statctx *sc;
+	struct addrinfo *ai;
+	int i, r, sock;
+
+	for (i = 0; i < nconn; i++) {
+		for (sock = -1, ai = aitop; ai != NULL; ai = ai->ai_next) {
+			char tmp[NI_MAXHOST + 2 + NI_MAXSERV];
+
+			saddr_ntop(ai->ai_addr, ai->ai_addrlen, tmp,
+			    sizeof(tmp));
+			if (ptb->vflag && i == 0)
+				fprintf(stderr, "Trying %s\n", tmp);
+			if ((sock = socket(ai->ai_family, ai->ai_socktype,
+			    ai->ai_protocol)) == -1) {
+				if (ai->ai_next == NULL)
+					err(1, "socket");
+				if (ptb->vflag)
+					warn("socket");
+				continue;
+			}
+			if (ptb->Dflag) {
+				if (setsockopt(sock, SOL_SOCKET, SO_DEBUG,
+				    &ptb->Dflag, sizeof(ptb->Dflag)))
+					err(1, "setsockopt SO_DEBUG");
+			}
+			if (aib != NULL) {
+				saddr_ntop(aib->ai_addr, aib->ai_addrlen,
+				    tmp, sizeof(tmp));
+				if (ptb->vflag)
+					fprintf(stderr,
+					    "Try to bind to %s\n", tmp);
+				if (bind(sock, (struct sockaddr *)aib->ai_addr,
+				    aib->ai_addrlen) == -1)
+					err(1, "bind");
+			}
+			if (ptb->Tflag != -1 && ai->ai_family == AF_INET) {
+				if (setsockopt(sock, IPPROTO_IP, IP_TOS,
+				    &ptb->Tflag, sizeof(ptb->Tflag)))
+					err(1, "setsockopt IP_TOS");
+			}
+			if (ptb->Tflag != -1 && ai->ai_family == AF_INET6) {
+				if (setsockopt(sock, IPPROTO_IPV6, IPV6_TCLASS,
+				    &ptb->Tflag, sizeof(ptb->Tflag)))
+					err(1, "setsockopt IPV6_TCLASS");
+			}
+			if (ptb->Sflag) {
+				if (setsockopt(sock, SOL_SOCKET, SO_SNDBUF,
+				    &ptb->Sflag, sizeof(ptb->Sflag)) == -1)
+					warn("set send socket buffer size");
+			}
+			if (connect(sock, ai->ai_addr, ai->ai_addrlen) != 0) {
+				if (ai->ai_next == NULL)
+					err(1, "connect");
+				if (ptb->vflag)
+					warn("connect");
+				close(sock);
+				sock = -1;
+				continue;
+			}
+			break;
+		}
+		if (sock == -1)
+			errx(1, "No host found");
+		if ((r = fcntl(sock, F_GETFL)) == -1)
+			err(1, "fcntl(F_GETFL)");
+		r |= O_NONBLOCK;
+		if (fcntl(sock, F_SETFL, r) == -1)
+			err(1, "fcntl(F_SETFL, O_NONBLOCK)");
+		/* Alloc and prepare stats */
+		if (TCP_MODE) {
+			if ((sc = calloc(1, sizeof(*sc))) == NULL)
+				err(1, "calloc");
+		} else
+			sc = udp_sc;
+
+		sc->fd = sock;
+		stats_prepare(sc);
+
+		event_set(&sc->ev, sc->fd, EV_WRITE | EV_PERSIST,
+		    client_handle_sc, sc);
+		event_add(&sc->ev, NULL);
+		TAILQ_INSERT_TAIL(&sc_queue, sc, entry);
+
+		mainstats.nconns++;
+		if (mainstats.nconns == 1)
+			set_slice_timer(1);
+	}
+	if (!ptb->Uflag)
+		freeaddrinfo(aitop);
+	if (aib != NULL)
+		freeaddrinfo(aib);
+
+	if (ptb->vflag && nconn > 1)
+		fprintf(stderr, "%d connections established\n",
+		    mainstats.nconns);
+}
+
+static int
+map_tos(char *s, int *val)
+{
+	/* DiffServ Codepoints and other TOS mappings */
+	const struct toskeywords {
+		const char	*keyword;
+		int		 val;
+	} *t, toskeywords[] = {
+		{ "af11",		IPTOS_DSCP_AF11 },
+		{ "af12",		IPTOS_DSCP_AF12 },
+		{ "af13",		IPTOS_DSCP_AF13 },
+		{ "af21",		IPTOS_DSCP_AF21 },
+		{ "af22",		IPTOS_DSCP_AF22 },
+		{ "af23",		IPTOS_DSCP_AF23 },
+		{ "af31",		IPTOS_DSCP_AF31 },
+		{ "af32",		IPTOS_DSCP_AF32 },
+		{ "af33",		IPTOS_DSCP_AF33 },
+		{ "af41",		IPTOS_DSCP_AF41 },
+		{ "af42",		IPTOS_DSCP_AF42 },
+		{ "af43",		IPTOS_DSCP_AF43 },
+		{ "critical",		IPTOS_PREC_CRITIC_ECP },
+		{ "cs0",		IPTOS_DSCP_CS0 },
+		{ "cs1",		IPTOS_DSCP_CS1 },
+		{ "cs2",		IPTOS_DSCP_CS2 },
+		{ "cs3",		IPTOS_DSCP_CS3 },
+		{ "cs4",		IPTOS_DSCP_CS4 },
+		{ "cs5",		IPTOS_DSCP_CS5 },
+		{ "cs6",		IPTOS_DSCP_CS6 },
+		{ "cs7",		IPTOS_DSCP_CS7 },
+		{ "ef",			IPTOS_DSCP_EF },
+		{ "inetcontrol",	IPTOS_PREC_INTERNETCONTROL },
+		{ "lowdelay",		IPTOS_LOWDELAY },
+		{ "netcontrol",		IPTOS_PREC_NETCONTROL },
+		{ "reliability",	IPTOS_RELIABILITY },
+		{ "throughput",		IPTOS_THROUGHPUT },
+		{ NULL,			-1 },
+	};
+
+	for (t = toskeywords; t->keyword != NULL; t++) {
+		if (strcmp(s, t->keyword) == 0) {
+			*val = t->val;
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
+static void
+quit(int sig, short event, void *arg)
+{
+	wrapup(0);
+}
+
+static void
+wrapup(int err)
+{
+	const int transfers = timerisset(&mainstats.t_first);
+	const int stats = (mainstats.floor_mbps != INFINITY);
+
+	if (transfers) {
+		if (!stats) {
+			if (UDP_MODE)
+				udp_process_slice(0, 0, NULL);
+			else
+				tcp_process_slice(0, 0, NULL);
+		}
+
+		summary_display();
+	}
+
+	if (err != -1)
+		exit(err);
 }
 
 int
 main(int argc, char **argv)
 {
-	extern int optind;
-	extern char *optarg;
-
-	char kerr[_POSIX2_LINE_MAX], *tmp;
+	struct timeval tv;
+	unsigned int secs, rtable;
+	char *tmp;
+	struct addrinfo *aitop, *aib, hints;
 	const char *errstr;
-	int ch, herr;
-	struct addrinfo *aitop, hints;
-	kvm_t *kvmh;
+	struct rlimit rl;
+	int ch, herr, nconn;
+	int family = PF_UNSPEC;
+	const char *host = NULL, *port = DEFAULT_PORT, *srcbind = NULL;
+	struct event ev_sigint, ev_sigterm, ev_sighup, ev_siginfo, ev_progtimer;
+	struct sockaddr_un sock_un;
 
-	const char *host = NULL, *port = DEFAULT_PORT;
-	char **kflag = NULL;
-	int sflag = 0, vflag = 0, rflag = DEFAULT_STATS_INTERVAL, Sflag = 0;
-	int Bflag = DEFAULT_BUF;
+	/* Init world */
+	setvbuf(stdout, NULL, _IOLBF, 0);
+	ptb = &tcpbench;
+	ptb->dummybuf_len = 0;
+	ptb->Dflag = 0;
+	ptb->Sflag = ptb->sflag = ptb->vflag = ptb->Rflag = ptb->Uflag = 0;
+	ptb->kvars = NULL;
+	ptb->rflag = DEFAULT_STATS_INTERVAL;
+	ptb->Tflag = -1;
+	nconn = 1;
+	aib = NULL;
+	secs = 0;
 
-	struct nlist nl[] = { { "_tcbtable" }, { "" } };
-
-	while ((ch = getopt(argc, argv, "B:hlk:p:r:sS:v")) != -1) {
+	while ((ch = getopt(argc, argv, "46b:B:Dhlk:n:p:Rr:sS:t:T:uUvV:"))
+	    != -1) {
 		switch (ch) {
+		case '4':
+			family = PF_INET;
+			break;
+		case '6':
+			family = PF_INET6;
+			break;
+		case 'b':
+			srcbind = optarg;
+			break;
+		case 'D':
+			ptb->Dflag = 1;
+			break;
 		case 'l':
 			list_kvars();
 			exit(0);
 		case 'k':
 			if ((tmp = strdup(optarg)) == NULL)
-				errx(1, "strdup");
-			kflag = check_prepare_kvars(tmp);
+				err(1, "strdup");
+			ptb->kvars = check_prepare_kvars(tmp);
 			free(tmp);
 			break;
+		case 'R':
+			ptb->Rflag = 1;
+			break;
 		case 'r':
-			rflag = strtonum(optarg, 0, 60 * 60 * 24 * 1000,
+			ptb->rflag = strtonum(optarg, 0, 60 * 60 * 24 * 1000,
 			    &errstr);
 			if (errstr != NULL)
 				errx(1, "statistics interval is %s: %s",
@@ -765,25 +1047,64 @@ main(int argc, char **argv)
 			port = optarg;
 			break;
 		case 's':
-			sflag = 1;
+			ptb->sflag = 1;
 			break;
 		case 'S':
-			Sflag = strtonum(optarg, 0, 1024*1024*1024,
+			ptb->Sflag = strtonum(optarg, 0, 1024*1024*1024,
 			    &errstr);
 			if (errstr != NULL)
-				errx(1, "receive space interval is %s: %s",
+				errx(1, "socket buffer size is %s: %s",
 				    errstr, optarg);
 			break;
 		case 'B':
-			Bflag = strtonum(optarg, 0, 1024*1024*1024,
+			ptb->dummybuf_len = strtonum(optarg, 0, 1024*1024*1024,
 			    &errstr);
 			if (errstr != NULL)
 				errx(1, "read/write buffer size is %s: %s",
 				    errstr, optarg);
 			break;
 		case 'v':
-			if (vflag < 2)
-				vflag++;
+			ptb->vflag++;
+			break;
+		case 'V':
+			rtable = (unsigned int)strtonum(optarg, 0,
+			    RT_TABLEID_MAX, &errstr);
+			if (errstr)
+				errx(1, "rtable value is %s: %s",
+				    errstr, optarg);
+			if (setrtable(rtable) == -1)
+				err(1, "setrtable");
+			break;
+		case 'n':
+			nconn = strtonum(optarg, 0, 65535, &errstr);
+			if (errstr != NULL)
+				errx(1, "number of connections is %s: %s",
+				    errstr, optarg);
+			break;
+		case 'u':
+			ptb->uflag = 1;
+			break;
+		case 'U':
+			ptb->Uflag = 1;
+			break;
+		case 'T':
+			if (map_tos(optarg, &ptb->Tflag))
+				break;
+			errstr = NULL;
+			if (strlen(optarg) > 1 && optarg[0] == '0' &&
+			    optarg[1] == 'x')
+				ptb->Tflag = (int)strtol(optarg, NULL, 16);
+			else
+				ptb->Tflag = (int)strtonum(optarg, 0, 255,
+				    &errstr);
+			if (ptb->Tflag == -1 || ptb->Tflag > 255 || errstr)
+				errx(1, "illegal tos value %s", optarg);
+			break;
+		case 't':
+			secs = strtonum(optarg, 1, UINT_MAX, &errstr);
+			if (errstr != NULL)
+				errx(1, "secs is %s: %s",
+				    errstr, optarg);
 			break;
 		case 'h':
 		default:
@@ -791,39 +1112,143 @@ main(int argc, char **argv)
 		}
 	}
 
+	if (pledge("stdio unveil rpath dns inet unix id", NULL) == -1)
+		err(1, "pledge");
+
 	argv += optind;
 	argc -= optind;
-	if (argc != (sflag ? 0 : 1))
+	if ((argc != (ptb->sflag && !ptb->Uflag ? 0 : 1)) ||
+	    (UDP_MODE && (ptb->kvars || nconn != 1)))
 		usage();
-	if (!sflag)
-		host = argv[0];
 
-	bzero(&hints, sizeof(hints));
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = sflag ? AI_PASSIVE : 0;
-	if ((herr = getaddrinfo(host, port, &hints, &aitop)) != 0) {
-		if (herr == EAI_SYSTEM)
-			err(1, "getaddrinfo");
+	if (!ptb->sflag || ptb->Uflag)
+		mainstats.host = host = argv[0];
+
+	if (ptb->Uflag)
+		if (unveil(host, "rwc") == -1)
+			err(1, "unveil %s", host);
+
+	if (pledge("stdio id dns inet unix", NULL) == -1)
+		err(1, "pledge");
+
+	/*
+	 * Rationale,
+	 * If TCP, use a big buffer with big reads/writes.
+	 * If UDP, use a big buffer in server and a buffer the size of a
+	 * ethernet packet.
+	 */
+	if (!ptb->dummybuf_len) {
+		if (ptb->sflag || TCP_MODE)
+			ptb->dummybuf_len = DEFAULT_BUF;
 		else
-			errx(1, "getaddrinfo: %s", gai_strerror(herr));
+			ptb->dummybuf_len = DEFAULT_UDP_PKT;
 	}
 
-	if (kflag) {
-		if ((kvmh = kvm_openfiles(NULL, NULL, NULL,
-		    O_RDONLY, kerr)) == NULL)
-			errx(1, "kvm_open: %s", kerr);
-		drop_gid();
-		if (kvm_nlist(kvmh, nl) < 0 || nl[0].n_type == 0)
-			errx(1, "kvm: no namelist");
-	} else
-		drop_gid();
+	bzero(&hints, sizeof(hints));
+	hints.ai_family = family;
+	if (UDP_MODE) {
+		hints.ai_socktype = SOCK_DGRAM;
+		hints.ai_protocol = IPPROTO_UDP;
+	} else {
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_protocol = IPPROTO_TCP;
+	}
+	if (ptb->Uflag) {
+		hints.ai_family = AF_UNIX;
+		hints.ai_protocol = 0;
+		sock_un.sun_family = AF_UNIX;
+		if (strlcpy(sock_un.sun_path, host, sizeof(sock_un.sun_path)) >=
+		    sizeof(sock_un.sun_path))
+			errx(1, "socket name '%s' too long", host);
+		hints.ai_addr = (struct sockaddr *)&sock_un;
+		hints.ai_addrlen = sizeof(sock_un);
+		aitop = &hints;
+	} else {
+		if (ptb->sflag)
+			hints.ai_flags = AI_PASSIVE;
+		if (srcbind != NULL) {
+			hints.ai_flags |= AI_NUMERICHOST;
+			herr = getaddrinfo(srcbind, NULL, &hints, &aib);
+			hints.ai_flags &= ~AI_NUMERICHOST;
+			if (herr != 0) {
+				if (herr == EAI_SYSTEM)
+					err(1, "getaddrinfo");
+				else
+					errx(1, "getaddrinfo: %s",
+					    gai_strerror(herr));
+			}
+		}
+		if ((herr = getaddrinfo(host, port, &hints, &aitop)) != 0) {
+			if (herr == EAI_SYSTEM)
+				err(1, "getaddrinfo");
+			else
+				errx(1, "getaddrinfo: %s", gai_strerror(herr));
+		}
+	}
 
-	if (sflag)
-		serverloop(kvmh, nl[0].n_value, aitop, vflag, rflag, kflag,
-		    Sflag, Bflag);
-	else
-		clientloop(kvmh, nl[0].n_value, aitop, vflag, rflag, kflag,
-		    Sflag, Bflag);
+	if (pledge("stdio id inet unix", NULL) == -1)
+		err(1, "pledge");
 
-	return 0;
+	if (getrlimit(RLIMIT_NOFILE, &rl) == -1)
+		err(1, "getrlimit");
+	if (rl.rlim_cur < MAX_FD)
+		rl.rlim_cur = MAX_FD;
+	if (setrlimit(RLIMIT_NOFILE, &rl))
+		err(1, "setrlimit");
+	if (getrlimit(RLIMIT_NOFILE, &rl) == -1)
+		err(1, "getrlimit");
+
+	if (pledge("stdio inet unix", NULL) == -1)
+		err(1, "pledge");
+
+	/* Init world */
+	TAILQ_INIT(&sc_queue);
+	if ((ptb->dummybuf = malloc(ptb->dummybuf_len)) == NULL)
+		err(1, "malloc");
+	arc4random_buf(ptb->dummybuf, ptb->dummybuf_len);
+
+	timerclear(&mainstats.t_first);
+	mainstats.floor_mbps = INFINITY;
+
+	/* Setup libevent and signals */
+	event_init();
+	signal_set(&ev_sigterm, SIGTERM, signal_handler, NULL);
+	signal_set(&ev_sighup, SIGHUP, signal_handler, NULL);
+	signal_set(&ev_sigint, SIGINT, signal_handler, NULL);
+	signal_set(&ev_siginfo, SIGINFO, signal_handler, NULL);
+	signal_add(&ev_sigint, NULL);
+	signal_add(&ev_sigterm, NULL);
+	signal_add(&ev_sighup, NULL);
+	signal_add(&ev_siginfo, NULL);
+	signal(SIGPIPE, SIG_IGN);
+
+	if (UDP_MODE) {
+		if ((udp_sc = calloc(1, sizeof(*udp_sc))) == NULL)
+			err(1, "calloc");
+		udp_sc->fd = -1;
+		evtimer_set(&mainstats.timer, udp_process_slice, NULL);
+	} else {
+		print_tcp_header();
+		evtimer_set(&mainstats.timer, tcp_process_slice, NULL);
+	}
+
+	if (ptb->sflag)
+		server_init(aitop);
+	else {
+		if (secs > 0) {
+			timerclear(&tv);
+			tv.tv_sec = secs + 1;
+			evtimer_set(&ev_progtimer, quit, NULL);
+			evtimer_add(&ev_progtimer, &tv);
+		}
+		client_init(aitop, nconn, aib);
+
+		if (pledge("stdio inet", NULL) == -1)
+			err(1, "pledge");
+	}
+
+	/* libevent main loop*/
+	event_dispatch();
+
+	return (0);
 }

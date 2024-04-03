@@ -1,4 +1,4 @@
-/* pem_x509.c */
+/* $OpenBSD: pem_x509.c,v 1.8 2016/09/04 16:10:38 jsing Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2001.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -57,12 +57,42 @@
  */
 
 #include <stdio.h>
-#include "cryptlib.h"
+
 #include <openssl/bio.h>
 #include <openssl/evp.h>
-#include <openssl/x509.h>
-#include <openssl/pkcs7.h>
 #include <openssl/pem.h>
+#include <openssl/pkcs7.h>
+#include <openssl/x509.h>
 
-IMPLEMENT_PEM_rw(X509, X509, PEM_STRING_X509, X509)
 
+X509 *
+PEM_read_X509(FILE *fp, X509 **x, pem_password_cb *cb, void *u)
+{
+	return PEM_ASN1_read((d2i_of_void *)d2i_X509, PEM_STRING_X509, fp,
+	    (void **)x, cb, u);
+}
+LCRYPTO_ALIAS(PEM_read_X509);
+
+int
+PEM_write_X509(FILE *fp, X509 *x)
+{
+	return PEM_ASN1_write((i2d_of_void *)i2d_X509, PEM_STRING_X509, fp,
+	    x, NULL, NULL, 0, NULL, NULL);
+}
+LCRYPTO_ALIAS(PEM_write_X509);
+
+X509 *
+PEM_read_bio_X509(BIO *bp, X509 **x, pem_password_cb *cb, void *u)
+{
+	return PEM_ASN1_read_bio((d2i_of_void *)d2i_X509, PEM_STRING_X509, bp,
+	    (void **)x, cb, u);
+}
+LCRYPTO_ALIAS(PEM_read_bio_X509);
+
+int
+PEM_write_bio_X509(BIO *bp, X509 *x)
+{
+	return PEM_ASN1_write_bio((i2d_of_void *)i2d_X509, PEM_STRING_X509, bp,
+	    x, NULL, NULL, 0, NULL, NULL);
+}
+LCRYPTO_ALIAS(PEM_write_bio_X509);

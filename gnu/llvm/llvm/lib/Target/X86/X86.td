@@ -491,6 +491,10 @@ def TuningLZCNTFalseDeps : SubtargetFeature<"false-deps-lzcnt-tzcnt",
                                      "HasLZCNTFalseDeps", "true",
                                      "LZCNT/TZCNT have a false dependency on dest register">;
 
+def FeatureSaveArgs
+    : SubtargetFeature<"save-args", "SaveArgs", "true",
+                       "Save register arguments on the stack.">;
+
 def TuningMULCFalseDeps : SubtargetFeature<"false-deps-mulc",
                                "HasMULCFalseDeps", "true",
                                "VF[C]MULCPH/SH has a false dependency on dest register">;

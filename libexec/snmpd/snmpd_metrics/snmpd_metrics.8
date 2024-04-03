@@ -1,4 +1,4 @@
-.\"	$OpenBSD$
+.\"	$OpenBSD: snmpd_metrics.8,v 1.3 2022/10/23 01:15:33 jsg Exp $
 .\"
 .\" Copyright (c) 2022 Martijn van Duren <martijn@openbsd.org>
 .\"
@@ -14,12 +14,12 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate$
+.Dd $Mdocdate: October 23 2022 $
 .Dt SNMPD_METRICS 8
 .Os
 .Sh NAME
 .Nm snmpd_metrics
-.Nd Export snmpd MIB data.
+.Nd export snmpd MIB data
 .Sh SYNOPSIS
 .Nm
 .Op Fl dv
@@ -36,10 +36,12 @@ daemon:
 HOST-RESOURCES-MIB, IF-MIB, OPENBSD-PF-MIB, OPENBSD-SENSORS-MIB,
 OPENBSD-CARP-MIB, OPENBSD-MEM-MIB, IP-MIB, IP-FORWARD-MIB,
 UCD-DISKIO-MIB, and BRIDGE-MIB.
+.Pp
 The options are as follows:
 .Bl -tag -width Ds
 .It Fl C Ar option
-Enable MIB-specific options. Currently only
+Enable MIB-specific options.
+Currently only
 .Ic filter-routes
 is supported.
 If set ask the kernel to filter route update messages on the routing socket.
@@ -59,8 +61,8 @@ It defaults to
 Produce more verbose output.
 .El
 .Sh SEE ALSO
+.Xr snmp 1 ,
 .Xr snmpd 8
-.Xr snmp 1
 .Sh STANDARDS
 .Rs
 .%A P. Grillo

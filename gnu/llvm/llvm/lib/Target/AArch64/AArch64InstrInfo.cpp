@@ -108,6 +108,9 @@ unsigned AArch64InstrInfo::getInstSizeInBytes(const MachineInstr &MI) const {
     // with fixed constant size but not specified in .td file) is a normal
     // 4-byte insn.
     NumBytes = 4;
+
+    if (Desc.getSize() > 0)
+      NumBytes = Desc.getSize();
     break;
   case TargetOpcode::STACKMAP:
     // The upper bound for a stackmap intrinsic is the full length of its shadow

@@ -1,6 +1,6 @@
-#	$OpenBSD$
+#	$OpenBSD: Server.pm,v 1.5 2017/12/18 17:01:27 bluhm Exp $
 
-# Copyright (c) 2010-2013 Alexander Bluhm <bluhm@openbsd.org>
+# Copyright (c) 2010-2017 Alexander Bluhm <bluhm@openbsd.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -23,24 +23,36 @@ use Carp;
 use Socket qw(IPPROTO_TCP TCP_NODELAY);
 use Socket6;
 use IO::Socket;
-use IO::Socket::INET6;
+use IO::Socket::IP -register;
 
 sub new {
 	my $class = shift;
 	my %args = @_;
+	$args{ktracefile} ||= "server.ktrace";
 	$args{logfile} ||= "server.log";
 	$args{up} ||= "Accepted";
+	$args{down} ||= "Shutdown $class";
 	my $self = Proc::new($class, %args);
-	$self->{protocol} ||= "tcp";
-	$self->{listendomain}
-	    or croak "$class listen domain not given";
-	my $ls = IO::Socket::INET6->new(
+	$self->{domain}
+	    or croak "$class domain not given";
+	$self->{protocol}
+	    or croak "$class protocol not given";
+
+	if ($self->{ktrace}) {
+		unlink $self->{ktracefile};
+		my @cmd = ("ktrace", "-f", $self->{ktracefile}, "-p", $$);
+		do { local $> = 0; system(@cmd) }
+		    and die ref($self), " system '@cmd' failed: $?";
+	}
+
+	my $ls = do { local $> = 0; IO::Socket->new(
+	    Type	=> $self->{socktype},
 	    Proto	=> $self->{protocol},
 	    ReuseAddr	=> 1,
-	    Domain	=> $self->{listendomain},
+	    Domain	=> $self->{domain},
 	    $self->{listenaddr} ? (LocalAddr => $self->{listenaddr}) : (),
 	    $self->{listenport} ? (LocalPort => $self->{listenport}) : (),
-	) or die ref($self), " socket failed: $!";
+	) } or die ref($self), " socket failed: $!";
 	if ($self->{oobinline}) {
 		setsockopt($ls, SOL_SOCKET, SO_OOBINLINE, pack('i', 1))
 		    or die ref($self), " set oobinline listen failed: $!";
@@ -66,6 +78,13 @@ sub new {
 	$self->{listenaddr} = $ls->sockhost() unless $self->{listenaddr};
 	$self->{listenport} = $ls->sockport() unless $self->{listenport};
 	$self->{ls} = $ls;
+
+	if ($self->{ktrace}) {
+		my @cmd = ("ktrace", "-c", "-f", $self->{ktracefile}, "-p", $$);
+		do { local $> = 0; system(@cmd) }
+		    and die ref($self), " system '@cmd' failed: $?";
+	}
+
 	return $self;
 }
 
@@ -81,8 +100,10 @@ sub child {
 		print STDERR "accept peer: ",$as->peerhost()," ",
 		    $as->peerport(),"\n";
 	}
-	$as->blocking($self->{nonblocking} ? 0 : 1)
-	    or die ref($self), " non-blocking accept failed: $!";
+	if ($self->{nonblocking}) {
+		$as->blocking(0)
+		    or die ref($self), " set non-blocking accept failed: $!";
+	}
 
 	open(STDIN, '<&', $as)
 	    or die ref($self), " dup STDIN failed: $!";

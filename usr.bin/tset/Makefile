@@ -1,12 +1,14 @@
-#	$NetBSD: Makefile,v 1.3 1994/12/07 05:08:04 jtc Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/9/93
+#	$OpenBSD: Makefile,v 1.12 2019/12/21 21:40:01 espie Exp $
 
 PROG=	tset
-SRCS=	map.c misc.c set.c term.c tset.c wrterm.c
-
-DPADD=	${LIBTERMCAP}
-LDADD=	-ltermcap
+SRCS=	reset_cmd.c transform.c tset.c tty_settings.c
+CURSES=	${.CURDIR}/../../lib/libcurses
+DPADD=	${LIBCURSES}
+LDADD=	-lcurses
 LINKS=	${BINDIR}/tset ${BINDIR}/reset
-MLINKS=	tset.1 reset.1
+TIC= ${.CURDIR}/../tic
+CFLAGS+= -I${CURSES} -I${TIC} -I${.CURDIR} -I.
+.PATH:  ${TIC}
+CLEANFILES+= termsort.h
 
 .include <bsd.prog.mk>

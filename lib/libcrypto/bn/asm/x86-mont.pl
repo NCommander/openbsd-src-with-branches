@@ -69,7 +69,7 @@ $frame=32;				# size of above frame rounded up to 16n
 	&lea	("esp",&DWP(-$frame,"esp","edi",4));	# alloca($frame+4*(num+2))
 	&neg	("edi");
 
-	# minimize cache contention by arraning 2K window between stack
+	# minimize cache contention by arranging 2K window between stack
 	# pointer and ap argument [np is also position sensitive vector,
 	# but it's assumed to be near ap, as it's allocated at ~same
 	# time].
@@ -113,8 +113,9 @@ $mul1="mm5";
 $temp="mm6";
 $mask="mm7";
 
-	&picmeup("eax","OPENSSL_ia32cap_P");
-	&bt	(&DWP(0,"eax"),26);
+	&picsetup("eax");
+	&picsymbol("eax", "OPENSSL_ia32cap_P", "eax");
+	&bt	(&DWP(0,"eax"),"\$IA32CAP_BIT0_SSE2");
 	&jnc	(&label("non_sse2"));
 
 	&mov	("eax",-1);
@@ -267,7 +268,7 @@ if (0) {
 	&xor	("eax","eax");	# signal "not fast enough [yet]"
 	&jmp	(&label("just_leave"));
 	# While the below code provides competitive performance for
-	# all key lengthes on modern Intel cores, it's still more
+	# all key lengths on modern Intel cores, it's still more
 	# than 10% slower for 4096-bit key elsewhere:-( "Competitive"
 	# means compared to the original integer-only assembler.
 	# 512-bit RSA sign is better by ~40%, but that's about all
@@ -587,7 +588,5 @@ $sbit=$num;
 	&mov	("eax",1);
 &set_label("just_leave");
 &function_end("bn_mul_mont");
-
-&asciz("Montgomery Multiplication for x86, CRYPTOGAMS by <appro\@openssl.org>");
 
 &asm_finish();

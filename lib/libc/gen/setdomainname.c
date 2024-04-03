@@ -1,5 +1,4 @@
-/*	$NetBSD: setdomainname.c,v 1.4 1995/06/16 07:36:18 jtc Exp $	*/
-
+/*	$OpenBSD: setdomainname.c,v 1.9 2015/01/16 16:48:51 deraadt Exp $ */
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -12,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,31 +28,15 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)sethostname.c	8.1 (Berkeley) 6/4/93";
-#else
-static char rcsid[] = "$NetBSD: setdomainname.c,v 1.4 1995/06/16 07:36:18 jtc Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/param.h>
+#include <sys/types.h>
 #include <sys/sysctl.h>
+#include <unistd.h>
 
-#if __STDC__
 int
-setdomainname(const char *name, int namelen)
-#else
-int
-setdomainname(name, namelen)
-	char *name;
-	int namelen;
-#endif
+setdomainname(const char *name, size_t namelen)
 {
-	int mib[2];
+	const int mib[2] = { CTL_KERN, KERN_DOMAINNAME };
 
-	mib[0] = CTL_KERN;
-	mib[1] = KERN_DOMAINNAME;
 	if (sysctl(mib, 2, NULL, NULL, (void *)name, namelen) == -1)
 		return (-1);
 	return (0);

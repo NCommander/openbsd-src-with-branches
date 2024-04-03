@@ -1,5 +1,8 @@
-.\" Copyright (c) 1990, 1991 The Regents of the University of California.
-.\" All rights reserved.
+.\"	$OpenBSD: strcasecmp.3,v 1.13 2015/11/24 09:14:35 daniel Exp $
+.\"
+.\" Copyright (c) 1990, 1991, 1993
+.\"	The Regents of the University of California.  All rights reserved.
+.\" Copyright (c) 2017 Ingo Schwarze <schwarze@openbsd.org>
 .\"
 .\" This code is derived from software contributed to Berkeley by
 .\" Chris Torek.
@@ -11,11 +14,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,33 +30,50 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     from: @(#)strcasecmp.3	5.4 (Berkeley) 4/19/91
-.\"	$Id: strcasecmp.3,v 1.2 1993/08/01 07:43:55 mycroft Exp $
+.\"     @(#)strcasecmp.3	8.1 (Berkeley) 6/9/93
 .\"
-.Dd April 19, 1991
+.Dd $Mdocdate: November 24 2015 $
 .Dt STRCASECMP 3
 .Os
 .Sh NAME
-.Nm strcasecmp
+.Nm strcasecmp ,
+.Nm strcasecmp_l ,
+.Nm strncasecmp ,
+.Nm strncasecmp_l
 .Nd compare strings, ignoring case
 .Sh SYNOPSIS
-.Fd #include <string.h>
+.In strings.h
 .Ft int
-.Fn strcasecmp "const char *s1" "const char *s2"
+.Fo strcasecmp
+.Fa "const char *s1"
+.Fa "const char *s2"
+.Fc
 .Ft int
-.Fn strncasecmp "const char *s1" "const char *s2" "size_t len"
+.Fo strcasecmp_l
+.Fa "const char *s1"
+.Fa "const char *s2"
+.Fa "locale_t locale"
+.Fc
+.Ft int
+.Fo strncasecmp
+.Fa "const char *s1"
+.Fa "const char *s2"
+.Fa "size_t len"
+.Fc
+.Ft int
+.Fo strncasecmp_l
+.Fa "const char *s1"
+.Fa "const char *s2"
+.Fa "size_t len"
+.Fa "locale_t locale"
+.Fc
 .Sh DESCRIPTION
-The
-.Fn strcasecmp
-and
-.Fn strncasecmp
-functions
-compare the null-terminated strings
+These functions compare the NUL-terminated strings
 .Fa s1
 and
 .Fa s2
 and return an integer greater than, equal to, or less than 0,
-according as
+according to whether
 .Fa s1
 is lexicographically greater than, equal to, or less than
 .Fa s2
@@ -68,21 +84,45 @@ The comparison is done using unsigned characters, so that
 is greater than
 .Ql \e0 .
 .Pp
-The
 .Fn strncasecmp
-compares at most
+and
+.Fn strncasecmp_l
+compare at most
 .Fa len
 characters.
+.Pp
+On
+.Ox ,
+these functions always use the C locale and ignore
+the global locale, the thread-specific locale, and the
+.Fa locale
+argument.
+.Sh ENVIRONMENT
+On other operating systems, the behaviour of
+.Fn strcasecmp
+and
+.Fn strncasecmp
+may depend on the
+.Dv LC_CTYPE
+.Xr locale 1 .
 .Sh SEE ALSO
-.Xr bcmp 3 ,
-.Xr memcmp 3 ,
 .Xr strcmp 3 ,
 .Xr strcoll 3 ,
-.Xr strxfrm 3
+.Xr strxfrm 3 ,
+.Xr wcscasecmp 3
+.Sh STANDARDS
+These functions conform to
+.St -p1003.1-2008 .
 .Sh HISTORY
 The
 .Fn strcasecmp
 and
 .Fn strncasecmp
-functions are
-.Ud .
+functions have been available since
+.Bx 4.3 Tahoe ,
+and
+.Fn strcasecmp_l
+and
+.Fn strncasecmp_l
+since
+.Ox 6.2 .

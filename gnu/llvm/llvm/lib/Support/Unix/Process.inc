@@ -346,6 +346,10 @@ bool checkTerminalEnvironmentForColors() {
 }
 
 static bool terminalHasColors(int fd) {
+#if defined(__OpenBSD__)
+  return false;
+#endif
+
 #ifdef LLVM_ENABLE_TERMINFO
   // First, acquire a global lock because these C routines are thread hostile.
   static std::mutex TermColorMutex;

@@ -1,3 +1,4 @@
+/*	$OpenBSD: logout.c,v 1.9 2015/12/28 20:11:36 guenther Exp $	*/
 /*
  * Copyright (c) 1988, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,11 +28,6 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/* from: static char sccsid[] = "@(#)logout.c	8.1 (Berkeley) 6/4/93"; */
-static char *rcsid = "$Id: logout.c,v 1.4 1994/05/04 10:56:02 cgd Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <sys/types.h>
 #include <sys/time.h>
 
@@ -45,26 +37,26 @@ static char *rcsid = "$Id: logout.c,v 1.4 1994/05/04 10:56:02 cgd Exp $";
 #include <stdlib.h>
 #include <string.h>
 
+#include "util.h"
+
 typedef struct utmp UTMP;
 
 int
-logout(line)
-	register char *line;
+logout(const char *line)
 {
-	register int fd;
+	int fd, rval;
 	UTMP ut;
-	int rval;
 
-	if ((fd = open(_PATH_UTMP, O_RDWR, 0)) < 0)
+	if ((fd = open(_PATH_UTMP, O_RDWR|O_CLOEXEC)) == -1)
 		return(0);
 	rval = 0;
 	while (read(fd, &ut, sizeof(UTMP)) == sizeof(UTMP)) {
 		if (!ut.ut_name[0] || strncmp(ut.ut_line, line, UT_LINESIZE))
 			continue;
-		bzero(ut.ut_name, UT_NAMESIZE);
-		bzero(ut.ut_host, UT_HOSTSIZE);
+		memset(ut.ut_name, 0, UT_NAMESIZE);
+		memset(ut.ut_host, 0, UT_HOSTSIZE);
 		(void)time(&ut.ut_time);
-		(void)lseek(fd, -(off_t)sizeof(UTMP), L_INCR);
+		(void)lseek(fd, -(off_t)sizeof(UTMP), SEEK_CUR);
 		(void)write(fd, &ut, sizeof(UTMP));
 		rval = 1;
 	}

@@ -1,20 +1,74 @@
+/*	$OpenBSD: hack.u_init.c,v 1.10 2015/10/24 17:40:38 mmcc Exp $	*/
+
 /*
- * Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985.
+ * Copyright (c) 1985, Stichting Centrum voor Wiskunde en Informatica,
+ * Amsterdam
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the Stichting Centrum voor Wiskunde en
+ * Informatica, nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef lint
-static char rcsid[] = "$NetBSD: hack.u_init.c,v 1.4 1995/03/23 08:31:51 cgd Exp $";
-#endif /* not lint */
+/*
+ * Copyright (c) 1982 Jay Fenlason <hack@gnu.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "hack.h"
-#include <stdio.h>
-#include <signal.h>
-#define Strcpy	(void) strcpy
-#define	Strcat	(void) strcat
+
 #define	UNDEF_TYP	0
 #define	UNDEF_SPE	'\177'
-extern struct obj *addinv();
-extern char *eos();
 extern char plname[];
 
 struct you zerou;
@@ -40,7 +94,7 @@ struct trobj Extra_objs[] = {
 	{ 0, 0, 0, 0, 0 },
 	{ 0, 0, 0, 0, 0 }
 };
-#endif WIZARD
+#endif /* WIZARD */
 
 struct trobj Cave_man[] = {
 	{ MACE, 1, WEAPON_SYM, 1, 1 },
@@ -97,19 +151,28 @@ struct trobj Wizard[] = {
 	{ 0, 0, 0, 0, 0 }
 };
 
-u_init(){
-register int i;
-char exper = 'y', pc;
-extern char readchar();
+static void ini_inv(struct trobj *);
+static int  role_index(char);
+#ifdef WIZARD
+static void wiz_inv(void);
+#endif
+
+void
+u_init(void)
+{
+	int i;
+	char exper = 'y', pc;
+
 	if(flags.female)	/* should have been set in HACKOPTIONS */
 		roles[4] = "Cave-woman";
 	for(i = 0; i < NR_OF_ROLES; i++)
 		rolesyms[i] = roles[i][0];
 	rolesyms[i] = 0;
 
-	if(pc = pl_character[0]) {
-		if(islower(pc)) pc = toupper(pc);
-		if((i = role_index(pc)) >= 0)
+	if ((pc = pl_character[0])) {
+		if (islower((unsigned char)pc))
+			pc = toupper((unsigned char)pc);
+		if ((i = role_index(pc)) >= 0)
 			goto got_suffix;	/* implies experienced */
 		printf("\nUnknown role: %c\n", pc);
 		pl_character[0] = pc = 0;
@@ -117,12 +180,12 @@ extern char readchar();
 
 	printf("\nAre you an experienced player? [ny] ");
 
-	while(!index("ynYN \n\004", (exper = readchar())))
-		bell();
+	while(!strchr("ynYN \n\004", (exper = readchar())))
+		hackbell();
 	if(exper == '\004')		/* Give him an opportunity to get out */
 		end_of_input();
 	printf("%c\n", exper);		/* echo */
-	if(index("Nn \n", exper)) {
+	if(strchr("Nn \n", exper)) {
 		exper = 0;
 		goto beginner;
 	}
@@ -140,8 +203,9 @@ extern char readchar();
 	}
 	printf("? [%s] ", rolesyms);
 
-	while(pc = readchar()) {
-		if(islower(pc)) pc = toupper(pc);
+	while ((pc = readchar())) {
+		if(islower((unsigned char)pc))
+			pc = toupper((unsigned char)pc);
 		if((i = role_index(pc)) >= 0) {
 			printf("%c\n", pc);	/* echo */
 			(void) fflush(stdout);	/* should be seen */
@@ -151,7 +215,7 @@ extern char readchar();
 			break;
 		if(pc == '\004')    /* Give him the opportunity to get out */
 			end_of_input();
-		bell();
+		hackbell();
 	}
 	if(pc == '\n')
 		pc = 0;
@@ -179,8 +243,7 @@ beginner:
 
 got_suffix:
 
-	(void) strncpy(pl_character, roles[i], PL_CSIZ-1);
-	pl_character[PL_CSIZ-1] = 0;
+	(void) strlcpy(pl_character, roles[i], sizeof pl_character);
 	flags.beginner = 1;
 	u = zerou;
 	u.usym = '@';
@@ -188,7 +251,7 @@ got_suffix:
 	init_uhunger();
 #ifdef QUEST
 	u.uhorizon = 6;
-#endif QUEST
+#endif /* QUEST */
 	uarm = uarm2 = uarmh = uarms = uarmg = uwep = uball = uchain =
 	uleft = uright = 0;
 
@@ -244,23 +307,25 @@ got_suffix:
 	}
 	find_ac();
 	if(!rn2(20)) {
-		register int d = rn2(7) - 2;	/* biased variation */
+		int d = rn2(7) - 2;	/* biased variation */
 		u.ustr += d;
 		u.ustrmax += d;
 	}
 
 #ifdef WIZARD
 	if(wizard) wiz_inv();
-#endif WIZARD
+#endif /* WIZARD */
 
 	/* make sure he can carry all he has - especially for T's */
 	while(inv_weight() > 0 && u.ustr < 118)
 		u.ustr++, u.ustrmax++;
 }
 
-ini_inv(trop) register struct trobj *trop; {
-register struct obj *obj;
-extern struct obj *mkobj();
+static void
+ini_inv(struct trobj *trop)
+{
+	struct obj *obj;
+
 	while(trop->trolet) {
 		obj = mkobj(trop->trolet);
 		obj->known = trop->trknown;
@@ -308,20 +373,22 @@ extern struct obj *mkobj();
 			if(trop->trquan)
 				continue;	/* make a similar object */
 		}
-#endif PYRAMID_BUG
+#endif /* PYRAMID_BUG */
 		trop++;
 	}
 }
 
 #ifdef WIZARD
-wiz_inv(){
-register struct trobj *trop = &Extra_objs[0];
-extern char *getenv();
-register char *ep = getenv("INVENT");
-register int type;
+static void
+wiz_inv(void)
+{
+	struct trobj *trop = &Extra_objs[0];
+	char *ep = getenv("INVENT");
+	int type;
+
 	while(ep && *ep) {
 		type = atoi(ep);
-		ep = index(ep, ',');
+		ep = strchr(ep, ',');
 		if(ep) while(*ep == ',' || *ep == ' ') ep++;
 		if(type <= 0 || type > NROFOBJECTS) continue;
 		trop->trotyp = type;
@@ -339,11 +406,14 @@ register int type;
 	trop->trquan = 1;
 	ini_inv(trop);
 }
-#endif WIZARD
+#endif /* WIZARD */
 
-plnamesuffix() {
-register char *p;
-	if(p = rindex(plname, '-')) {
+void
+plnamesuffix(void)
+{
+	char *p;
+
+	if ((p = strrchr(plname, '-'))) {
 		*p = 0;
 		pl_character[0] = p[1];
 		pl_character[1] = 0;
@@ -354,13 +424,14 @@ register char *p;
 	}
 }
 
-role_index(pc)
-char pc;
-{		/* must be called only from u_init() */
-		/* so that rolesyms[] is defined */
-	register char *cp;
+/* must be called only from u_init() */
+/* so that rolesyms[] is defined */
+static int
+role_index(char pc)
+{		
+	char *cp;
 
-	if(cp = index(rolesyms, pc))
+	if ((cp = strchr(rolesyms, pc)))
 		return(cp - rolesyms);
 	return(-1);
 }

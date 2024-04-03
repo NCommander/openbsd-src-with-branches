@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: locore_c.c,v 1.13 2020/09/25 14:42:25 deraadt Exp $	*/
 /*	$NetBSD: locore_c.c,v 1.13 2006/03/04 01:13:35 uwe Exp $	*/
 
 /*-
@@ -17,13 +17,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the NetBSD
- *	Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -113,90 +106,59 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/user.h>
-#include <sys/sched.h>
 #include <sys/proc.h>
+#include <sys/sched.h>
 
 #include <uvm/uvm_extern.h>
 
 #include <sh/locore.h>
 #include <sh/cpu.h>
+#include <sh/pcb.h>
 #include <sh/pmap.h>
 #include <sh/mmu_sh3.h>
 #include <sh/mmu_sh4.h>
+#include <sh/ubcreg.h>
 
 void (*__sh_switch_resume)(struct proc *);
-struct proc *cpu_switch_search(struct proc *);
-struct proc *cpu_switch_prepare(struct proc *, struct proc *);
-void idle(void);
-int want_resched;
-
-#ifdef LOCKDEBUG
-#define	SCHED_LOCK_IDLE()	sched_lock_idle()
-#define	SCHED_UNLOCK_IDLE()	sched_unlock_idle()
-#else
-#define	SCHED_LOCK_IDLE()	do {} while (/* CONSTCOND */ 0)
-#define	SCHED_UNLOCK_IDLE()	do {} while (/* CONSTCOND */ 0)
-#endif
-
+void cpu_switch_prepare(struct proc *, struct proc *);
 
 /*
  * Prepare context switch from oproc to nproc.
- * This code is shared by cpu_switch and cpu_switchto.
+ * This code is used by cpu_switchto.
  */
-struct proc *
+void
 cpu_switch_prepare(struct proc *oproc, struct proc *nproc)
 {
 	nproc->p_stat = SONPROC;
 
-	if (nproc != oproc) {
-		curpcb = nproc->p_md.md_pcb;
-		pmap_activate(nproc);
+	if (oproc && (oproc->p_md.md_flags & MDP_STEP))
+		_reg_write_2(SH_(BBRB), 0);
+
+	curpcb = nproc->p_md.md_pcb;
+	pmap_activate(nproc);
+
+	if (nproc->p_md.md_flags & MDP_STEP) {
+		int pm_asid = nproc->p_vmspace->vm_map.pmap->pm_asid;
+
+		_reg_write_2(SH_(BBRB), 0);
+		_reg_write_4(SH_(BARB), nproc->p_md.md_regs->tf_spc);
+		_reg_write_1(SH_(BASRB), pm_asid);
+		_reg_write_1(SH_(BAMRB), 0);
+		_reg_write_2(SH_(BRCR), 0x0040);
+		_reg_write_2(SH_(BBRB), 0x0014);
 	}
 
 	curproc = nproc;
-	return (nproc);
 }
 
-/*
- * Find the highest priority proc and prepare to switching to it.
- */
-struct proc *
-cpu_switch_search(struct proc *oproc)
-{
-	struct prochd *q;
-	struct proc *p;
-
-	curproc = NULL;
-
-	SCHED_LOCK_IDLE();
-	while (whichqs == 0) {
-		SCHED_UNLOCK_IDLE();
-		idle();
-		SCHED_LOCK_IDLE();
-	}
-
-	q = &qs[ffs(whichqs) - 1];
-	p = q->ph_link;
-	remrunqueue(p);
-	want_resched = 0;
-	SCHED_UNLOCK_IDLE();
-
-	return (cpu_switch_prepare(oproc, p));
-}
-
-/*
- * void idle(void):
- *	When no processes are on the run queue, wait for something to come
- *	ready. Separated function for profiling.
- */
 void
-idle()
+cpu_exit(struct proc *p)
 {
-	spl0();
-	uvm_pageidlezero();
-	__asm volatile("sleep");
-	splsched();
+	if (p->p_md.md_flags & MDP_STEP)
+		_reg_write_2(SH_(BBRB), 0);
+
+	pmap_deactivate(p);
+	sched_exit(p);
 }
 
 #ifndef P1_STACK
@@ -257,30 +219,3 @@ sh4_switch_setup(struct proc *p)
 }
 #endif /* SH4 */
 #endif /* !P1_STACK */
-
-/*
- * copystr(caddr_t from, caddr_t to, size_t maxlen, size_t *lencopied);
- * Copy a NUL-terminated string, at most maxlen characters long.  Return the
- * number of characters copied (including the NUL) in *lencopied.  If the
- * string is too long, return ENAMETOOLONG; else return 0.
- */
-int
-copystr(const void *kfaddr, void *kdaddr, size_t maxlen, size_t *lencopied)
-{
-	const char *from = kfaddr;
-	char *to = kdaddr;
-	int i;
-
-	for (i = 0; maxlen-- > 0; i++) {
-		if ((*to++ = *from++) == '\0') {
-			if (lencopied)
-				*lencopied = i + 1;
-			return (0);
-		}
-	}
-
-	if (lencopied)
-		*lencopied = i;
-
-	return (ENAMETOOLONG);
-}

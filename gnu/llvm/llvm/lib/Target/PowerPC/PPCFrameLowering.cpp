@@ -15,6 +15,7 @@
 #include "PPCInstrBuilder.h"
 #include "PPCInstrInfo.h"
 #include "PPCMachineFunctionInfo.h"
+#include "PPCReturnProtectorLowering.h"
 #include "PPCSubtarget.h"
 #include "PPCTargetMachine.h"
 #include "llvm/ADT/Statistic.h"
@@ -1190,12 +1191,6 @@ void PPCFrameLowering::emitPrologue(MachineFunction &MF,
         continue;
 
       if ((Reg == PPC::X2 || Reg == PPC::R2) && MustSaveTOC)
-        continue;
-
-      // For SVR4, don't emit a move for the CR spill slot if we haven't
-      // spilled CRs.
-      if (isSVR4ABI && (PPC::CR2 <= Reg && Reg <= PPC::CR4)
-          && !MustSaveCR)
         continue;
 
       // For 64-bit SVR4 when we have spilled CRs, the spill location
@@ -2711,4 +2706,8 @@ bool PPCFrameLowering::enableShrinkWrapping(const MachineFunction &MF) const {
   if (MF.getInfo<PPCFunctionInfo>()->shrinkWrapDisabled())
     return false;
   return !MF.getSubtarget<PPCSubtarget>().is32BitELFABI();
+}
+
+const ReturnProtectorLowering *PPCFrameLowering::getReturnProtector() const {
+  return &RPL;
 }

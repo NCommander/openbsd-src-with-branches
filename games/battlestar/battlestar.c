@@ -1,3 +1,4 @@
+/*	$OpenBSD: battlestar.c,v 1.22 2018/02/07 20:22:23 tedu Exp $	*/
 /*	$NetBSD: battlestar.c,v 1.3 1995/03/21 15:06:47 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,20 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1983, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)battlestar.c	8.1 (Berkeley) 5/31/93";
-#else
-static char rcsid[] = "$NetBSD: battlestar.c,v 1.3 1995/03/21 15:06:47 cgd Exp $";
-#endif
-#endif /* not lint */
-
 /*
  * Battlestar - a stellar-tropical adventure game
  *
@@ -54,44 +37,41 @@ static char rcsid[] = "$NetBSD: battlestar.c,v 1.3 1995/03/21 15:06:47 cgd Exp $
  * on the Cory PDP-11/70, University of California, Berkeley.
  */
 
-#include "externs.h"
+#include <err.h>
+#include <string.h>
+#include <unistd.h>
 
-main(argc,argv)
-int  argc;
-char **argv;
+#include "extern.h"
+#include "pathnames.h"
+
+int
+main(int argc, char *argv[])
 {
-	char mainbuf[LINELENGTH];
-	char *next;
+	char    mainbuf[LINELENGTH];
+	char   *next;
 
-	initialize(argc < 2 || strcmp(argv[1], "-r"));
-start:
-	news();
-	beenthere[position]++;
-	if (notes[LAUNCHED])
-		crash();		/* decrements fuel & crash */
-	if (matchlight) {
-		puts("Your match splutters out.");
-		matchlight = 0;
-	}
-	if (!notes[CANTSEE] || testbit(inven,LAMPON) ||
-	    testbit(location[position].objects, LAMPON)) {
-		writedes();
-		printobjs();
-	} else
-		puts("It's too dark to see anything in here!");
-	whichway(location[position]);
-run:
-	next = getcom(mainbuf, sizeof mainbuf, ">-: ",
-		"Please type in something.");
-	for (wordcount = 0; next && wordcount < 20; wordcount++)
-		next = getword(next, words[wordcount], -1);
-	parse();
-	switch (cypher()) {
-		case -1:
-			goto run;
-		case 0:
-			goto start;
-		default:
-			exit();
+	open_score_file();
+
+	if (argc < 2)
+		initialize(NULL);
+	else if (strcmp(argv[1], "-r") == 0)
+		initialize((argc > 2) ? argv[2] : DEFAULT_SAVE_FILE);
+	else
+		initialize(argv[1]);
+
+	newlocation();
+
+	if (pledge("stdio rpath wpath cpath tty", NULL) == -1)
+		err(1, "pledge");
+
+	for (;;) {
+		stop_cypher = 0;
+		next = getcom(mainbuf, sizeof mainbuf, ">-: ",
+		    "Please type in something.");
+		for (wordcount = 0; next && wordcount < NWORD - 1; wordcount++)
+			next = getword(next, words[wordcount], -1);
+		parse();
+		while (cypher())
+			continue;
 	}
 }

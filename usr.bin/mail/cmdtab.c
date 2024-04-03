@@ -1,3 +1,6 @@
+/*	$OpenBSD: cmdtab.c,v 1.12 2009/07/28 16:05:04 martynas Exp $	*/
+/*	$NetBSD: cmdtab.c,v 1.7 1996/12/28 07:10:59 tls Exp $	*/
+
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,11 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char sccsid[] = "from: @(#)cmdtab.c	8.1 (Berkeley) 6/6/93";
-static char rcsid[] = "$Id: cmdtab.c,v 1.4 1994/12/28 13:16:14 mycroft Exp $";
-#endif /* not lint */
-
 #include "def.h"
 #include "extern.h"
 
@@ -44,75 +38,83 @@ static char rcsid[] = "$Id: cmdtab.c,v 1.4 1994/12/28 13:16:14 mycroft Exp $";
  *
  * Define all of the command names and bindings.
  */
-
-struct cmd cmdtab[] = {
-	"next",		next,		NDMLIST,	0,	MMNDEL,
-	"alias",	group,		M|RAWLIST,	0,	1000,
-	"print",	type,		MSGLIST,	0,	MMNDEL,
-	"type",		type,		MSGLIST,	0,	MMNDEL,
-	"Type",		Type,		MSGLIST,	0,	MMNDEL,
-	"Print",	Type,		MSGLIST,	0,	MMNDEL,
-	"visual",	visual,		I|MSGLIST,	0,	MMNORM,
-	"top",		top,		MSGLIST,	0,	MMNDEL,
-	"touch",	stouch,		W|MSGLIST,	0,	MMNDEL,
-	"preserve",	preserve,	W|MSGLIST,	0,	MMNDEL,
-	"delete",	delete,		W|P|MSGLIST,	0,	MMNDEL,
-	"dp",		deltype,	W|MSGLIST,	0,	MMNDEL,
-	"dt",		deltype,	W|MSGLIST,	0,	MMNDEL,
-	"undelete",	undeletecmd,	P|MSGLIST,	MDELETED,MMNDEL,
-	"unset",	unset,		M|RAWLIST,	1,	1000,
-	"mail",		sendmail,	R|M|I|STRLIST,	0,	0,
-	"mbox",		mboxit,		W|MSGLIST,	0,	0,
-	"more",		more,		MSGLIST,	0,	MMNDEL,
-	"page",		more,		MSGLIST,	0,	MMNDEL,
-	"More",		More,		MSGLIST,	0,	MMNDEL,
-	"Page",		More,		MSGLIST,	0,	MMNDEL,
-	"unread",	unread,		MSGLIST,	0,	MMNDEL,
-	"!",		shell,		I|STRLIST,	0,	0,
-	"copy",		copycmd,	M|STRLIST,	0,	0,
-	"chdir",	schdir,		M|RAWLIST,	0,	1,
-	"cd",		schdir,		M|RAWLIST,	0,	1,
-	"save",		save,		STRLIST,	0,	0,
-	"source",	source,		M|RAWLIST,	1,	1,
-	"set",		set,		M|RAWLIST,	0,	1000,
-	"shell",	dosh,		I|NOLIST,	0,	0,
-	"version",	pversion,	M|NOLIST,	0,	0,
-	"group",	group,		M|RAWLIST,	0,	1000,
-	"write",	swrite,		STRLIST,	0,	0,
-	"from",		from,		MSGLIST,	0,	MMNORM,
-	"file",		file,		T|M|RAWLIST,	0,	1,
-	"folder",	file,		T|M|RAWLIST,	0,	1,
-	"folders",	folders,	T|M|NOLIST,	0,	0,
-	"?",		help,		M|NOLIST,	0,	0,
-	"z",		scroll,		M|STRLIST,	0,	0,
-	"headers",	headers,	MSGLIST,	0,	MMNDEL,
-	"help",		help,		M|NOLIST,	0,	0,
-	"=",		pdot,		NOLIST,		0,	0,
-	"Reply",	Respond,	R|I|MSGLIST,	0,	MMNDEL,
-	"Respond",	Respond,	R|I|MSGLIST,	0,	MMNDEL,
-	"reply",	respond,	R|I|MSGLIST,	0,	MMNDEL,
-	"respond",	respond,	R|I|MSGLIST,	0,	MMNDEL,
-	"edit",		editor,		I|MSGLIST,	0,	MMNORM,
-	"echo",		echo,		M|RAWLIST,	0,	1000,
-	"quit",		quitcmd,	NOLIST,		0,	0,
-	"list",		pcmdlist,	M|NOLIST,	0,	0,
-	"xit",		rexit,		M|NOLIST,	0,	0,
-	"exit",		rexit,		M|NOLIST,	0,	0,
-	"size",		messize,	MSGLIST,	0,	MMNDEL,
-	"hold",		preserve,	W|MSGLIST,	0,	MMNDEL,
-	"if",		ifcmd,		F|M|RAWLIST,	1,	1,
-	"else",		elsecmd,	F|M|RAWLIST,	0,	0,
-	"endif",	endifcmd,	F|M|RAWLIST,	0,	0,
-	"alternates",	alternates,	M|RAWLIST,	0,	1000,
-	"ignore",	igfield,	M|RAWLIST,	0,	1000,
-	"discard",	igfield,	M|RAWLIST,	0,	1000,
-	"retain",	retfield,	M|RAWLIST,	0,	1000,
-	"saveignore",	saveigfield,	M|RAWLIST,	0,	1000,
-	"savediscard",	saveigfield,	M|RAWLIST,	0,	1000,
-	"saveretain",	saveretfield,	M|RAWLIST,	0,	1000,
-/*	"Header",	Header,		STRLIST,	0,	1000,	*/
-	"core",		core,		M|NOLIST,	0,	0,
-	"#",		null,		M|NOLIST,	0,	0,
-	"clobber",	clobber,	M|RAWLIST,	0,	1,
-	0,		0,		0,		0,	0
+typedef int (*cfunc_t)(void *);
+const struct cmd cmdtab[] = {
+	/* 						msgmask	msgflag	 */
+	/* command	function	argtype		result	& mask	 */
+	/* -------	--------	-------		-------	-------- */
+	{ "next",	{ next },	NDMLIST,	0,	MMNDEL },
+	{ "alias",	{ group },	M|RAWLIST,	0,	1000 },
+	{ "print",	{ type },	MSGLIST,	0,	MMNDEL },
+	{ "type",	{ type },	MSGLIST,	0,	MMNDEL },
+	{ "Type",	{ Type },	MSGLIST,	0,	MMNDEL },
+	{ "Print",	{ Type },	MSGLIST,	0,	MMNDEL },
+	{ "visual",	{ visual },	I|MSGLIST,	0,	MMNORM },
+	{ "top",	{ top },	MSGLIST,	0,	MMNDEL },
+	{ "touch",	{ stouch },	W|MSGLIST,	0,	MMNDEL },
+	{ "preserve",	{ preserve },	W|MSGLIST,	0,	MMNDEL },
+	{ "delete",	{ deletecmd },	W|P|MSGLIST,	0,	MMNDEL },
+	{ "dp",		{ deltype },	W|MSGLIST,	0,	MMNDEL },
+	{ "dt",		{ deltype },	W|MSGLIST,	0,	MMNDEL },
+	{ "undelete",	{ undeletecmd }, P|MSGLIST,	MDELETED,MMNDEL },
+	{ "unset",	{ unset },	M|RAWLIST,	1,	1000 },
+	{ "mail",	{ sendmail },	R|M|I|STRLIST,	0,	0 },
+	{ "mbox",	{ mboxit },	W|MSGLIST,	0,	0 },
+	{ "pipe",	{ (cfunc_t)pipeit }, MSGLIST|STRLIST,0,	MMNDEL },
+	{ "|",	  	{ (cfunc_t)pipeit }, MSGLIST|STRLIST,0,	MMNDEL },
+	{ "more",	{ more },	MSGLIST,	0,	MMNDEL },
+	{ "page",	{ more },	MSGLIST,	0,	MMNDEL },
+	{ "More",	{ More },	MSGLIST,	0,	MMNDEL },
+	{ "Page",	{ More },	MSGLIST,	0,	MMNDEL },
+	{ "unread",	{ unread },	MSGLIST,	0,	MMNDEL },
+	{ "Unread",	{ unread },	MSGLIST,	0,	MMNDEL },
+	{ "!",		{ shell },	I|STRLIST,	0,	0 },
+	{ "copy",	{ copycmd },	M|STRLIST,	0,	0 },
+	{ "chdir",	{ schdir },	M|RAWLIST,	0,	1 },
+	{ "cd",		{ schdir },	M|RAWLIST,	0,	1 },
+	{ "save",	{ save },	STRLIST,	0,	0 },
+	{ "source",	{ source },	M|RAWLIST,	1,	1 },
+	{ "set",	{ set },	M|RAWLIST,	0,	1000 },
+	{ "shell",	{ dosh },	I|NOLIST,	0,	0 },
+	{ "version",	{ pversion },	M|NOLIST,	0,	0 },
+	{ "group",	{ group },	M|RAWLIST,	0,	1000 },
+	{ "write",	{ swrite },	STRLIST,	0,	0 },
+	{ "from",	{ from },	MSGLIST,	0,	MMNORM },
+	{ "file",	{ file },	T|M|RAWLIST,	0,	1 },
+	{ "folder",	{ file },	T|M|RAWLIST,	0,	1 },
+	{ "folders",	{ folders },	T|M|STRLIST,	0,	0 },
+	{ "?",		{ help },	M|NOLIST,	0,	0 },
+	{ "z",		{ scroll },	M|STRLIST,	0,	0 },
+	{ "headers",	{ headers },	MSGLIST,	0,	MMNDEL },
+	{ "help",	{ help },	M|NOLIST,	0,	0 },
+	{ "=",		{ pdot },	NOLIST,		0,	0 },
+	{ "Reply",	{ Respond },	R|I|MSGLIST,	0,	MMNDEL },
+	{ "Respond",	{ Respond },	R|I|MSGLIST,	0,	MMNDEL },
+	{ "reply",	{ respond },	R|I|MSGLIST,	0,	MMNDEL },
+	{ "respond",	{ respond },	R|I|MSGLIST,	0,	MMNDEL },
+	{ "edit",	{ editor },	I|MSGLIST,	0,	MMNORM },
+	{ "echo",	{ echo },	M|RAWLIST,	0,	1000 },
+	{ "quit",	{ quitcmd },	NOLIST,		0,	0 },
+	{ "list",	{ pcmdlist },	M|NOLIST,	0,	0 },
+	{ "xit",	{ rexit },	M|NOLIST,	0,	0 },
+	{ "exit",	{ rexit },	M|NOLIST,	0,	0 },
+	{ "size",	{ messize },	MSGLIST,	0,	MMNDEL },
+	{ "hold",	{ preserve },	W|MSGLIST,	0,	MMNDEL },
+	{ "if",		{ ifcmd },	F|M|RAWLIST,	1,	1 },
+	{ "else",	{ elsecmd },	F|M|RAWLIST,	0,	0 },
+	{ "endif",	{ endifcmd },	F|M|RAWLIST,	0,	0 },
+	{ "alternates",	{ alternates },	M|RAWLIST,	0,	1000 },
+	{ "ignore",	{ igfield },	M|RAWLIST,	0,	1000 },
+	{ "discard",	{ igfield },	M|RAWLIST,	0,	1000 },
+	{ "retain",	{ retfield },	M|RAWLIST,	0,	1000 },
+	{ "saveignore",	{ saveigfield }, M|RAWLIST,	0,	1000 },
+	{ "savediscard",{ saveigfield }, M|RAWLIST,	0,	1000 },
+	{ "saveretain",	{ saveretfield }, M|RAWLIST,	0,	1000 },
+#if 0
+	{ "Header",	{ Header },	STRLIST,	0,	1000 },
+#endif
+	{ "#",		{ null },	M|NOLIST,	0,	0 },
+	{ "inc",	{ inc },	T|NOLIST,	0,	0 },
+	{ "new",	{ marknew },	MSGLIST,	0,	MMNDEL },
+	{ 0,		{ 0 },		0,		0,	0 }
 };

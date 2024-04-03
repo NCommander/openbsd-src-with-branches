@@ -1,5 +1,4 @@
-/*	$NetBSD: funopen.c,v 1.4 1995/02/02 02:09:44 jtc Exp $	*/
-
+/*	$OpenBSD: funopen.c,v 1.9 2015/08/31 02:53:57 guenther Exp $ */
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -15,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,29 +31,16 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)funopen.c	8.1 (Berkeley) 6/4/93";
-#endif
-static char rcsid[] = "$NetBSD: funopen.c,v 1.4 1995/02/02 02:09:44 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"
 
 FILE *
-funopen(cookie, readfn, writefn, seekfn, closefn)
-	const void *cookie;
-	int (*readfn)(), (*writefn)();
-#if __STDC__
-	fpos_t (*seekfn)(void *cookie, fpos_t off, int whence);
-#else
-	fpos_t (*seekfn)();
-#endif
-	int (*closefn)();
+funopen(const void *cookie, int (*readfn)(void *, char *, int),
+	int (*writefn)(void *, const char *, int),
+	off_t (*seekfn)(void *, off_t, int), int (*closefn)(void *))
 {
-	register FILE *fp;
+	FILE *fp;
 	int flags;
 
 	if (readfn == NULL) {
@@ -77,10 +59,11 @@ funopen(cookie, readfn, writefn, seekfn, closefn)
 		return (NULL);
 	fp->_flags = flags;
 	fp->_file = -1;
-	fp->_cookie = (void *)cookie;
+	fp->_cookie = (void *)cookie;		/* SAFE: cookie not modified */
 	fp->_read = readfn;
 	fp->_write = writefn;
 	fp->_seek = seekfn;
 	fp->_close = closefn;
 	return (fp);
 }
+DEF_WEAK(funopen);

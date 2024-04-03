@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: intr.c,v 1.9 2014/07/12 18:44:42 tedu Exp $	*/
 /*	$NetBSD: intr.c,v 1.1 2006/09/01 21:26:18 uwe Exp $	*/
 
 /*-
@@ -50,7 +50,8 @@ struct intrhand {
 	int	ih_enable;
 	int	ih_level;
 	int	ih_irq;
-	struct evcount ih_cnt;
+	struct evcount	ih_count;
+	const char	*ih_name;
 };
 
 struct extintr_handler {
@@ -93,14 +94,16 @@ intc_intr(int ssr, int spc, int ssp)
 		if (level < ssr)
 			level = ssr;
 		(void)_cpu_intr_resume(level);
-		(*ih->ih_func)(ih->ih_arg);
+		if ((*ih->ih_func)(ih->ih_arg) != 0)
+			ih->ih_count.ec_count++;
 		_reg_write_1(LANDISK_INTEN, inten);
 		break;
 	}
 #endif
 	default:
 		(void)_cpu_intr_resume(ih->ih_level);
-		(*ih->ih_func)(ih->ih_arg);
+		if ((*ih->ih_func)(ih->ih_arg) != 0)
+			ih->ih_count.ec_count++;
 		break;
 
 	case SH_INTEVT_TMU0_TUNI0:
@@ -108,7 +111,8 @@ intc_intr(int ssr, int spc, int ssp)
 		cf.spc = spc;
 		cf.ssr = ssr;
 		cf.ssp = ssp;
-		(*ih->ih_func)(&cf);
+		if ((*ih->ih_func)(&cf) != 0)
+			ih->ih_count.ec_count++;
 		break;
 
 	case SH_INTEVT_NMI:
@@ -133,7 +137,7 @@ extintr_establish(int irq, int level, int (*ih_fun)(void *), void *ih_arg,
 	int evtcode;
 	int s;
 
-	KDASSERT(irq >= 5 && irq <= 12);
+	KDASSERT(irq >= 5 && irq < 13);
 
 	ih = malloc(sizeof(*ih), M_DEVBUF, cold ? M_NOWAIT : M_WAITOK);
 	if (ih == NULL)
@@ -157,7 +161,7 @@ extintr_establish(int irq, int level, int (*ih_fun)(void *), void *ih_arg,
 	if (eih->eih_func == NULL) {
 		evtcode = 0x200 + (irq << 5);
 		eih->eih_func = intc_intr_establish(evtcode, IST_LEVEL, level,
-		    extintr_intr_handler, eih, ih_name);
+		    extintr_intr_handler, eih, NULL);
 	}
 
 	/*
@@ -185,11 +189,11 @@ extintr_establish(int irq, int level, int (*ih_fun)(void *), void *ih_arg,
 	ih->ih_next = NULL;
 	ih->ih_enable = 1;
 	ih->ih_level = level;
-	ih->ih_irq = irq - 5;
-#if 0
-	evcnt_attach_dynamic(&ih->ih_evcnt, EVCNT_TYPE_INTR,
-	    NULL, "ext", name);
-#endif
+	ih->ih_irq = irq;
+	ih->ih_name = ih_name;
+
+	if (ih_name != NULL)
+		evcount_attach(&ih->ih_count, ih_name, &ih->ih_irq);
 	*p = ih;
 
 	if (++eih->eih_nih == 1) {
@@ -197,7 +201,7 @@ extintr_establish(int irq, int level, int (*ih_fun)(void *), void *ih_arg,
 		_reg_bset_1(LANDISK_INTEN, (1 << (irq - 5)));
 	}
 
-	splx(s);
+	_cpu_intr_resume(s);
 
 	return (ih);
 }
@@ -215,9 +219,8 @@ extintr_disestablish(void *aux)
 
 	s = _cpu_intr_suspend();
 
-	irq = ih->ih_irq;
+	irq = ih->ih_irq - 5;
 	eih = &extintr_handler[irq];
-
 	/*
 	 * Remove the handler from the chain.
 	 * This is O(n^2), too.
@@ -230,10 +233,11 @@ extintr_disestablish(void *aux)
 	*p = q->ih_next;
 
 #if 0
-	evcnt_detach(&ih->ih_evcnt);
+	if (ih->ih_name != NULL)
+		evcount_detach(&ih->ih_count);
 #endif
 
-	free((void *)ih, M_DEVBUF);
+	free(ih, M_DEVBUF, sizeof *ih);
 
 	if (--eih->eih_nih == 0) {
 		intc_intr_disestablish(eih->eih_func);
@@ -242,7 +246,7 @@ extintr_disestablish(void *aux)
 		_reg_bclr_1(LANDISK_INTEN, (1 << irq));
 	}
 
-	splx(s);
+	_cpu_intr_resume(s);
 }
 
 void
@@ -259,7 +263,7 @@ extintr_enable(void *aux)
 
 	s = _cpu_intr_suspend();
 
-	irq = ih->ih_irq;
+	irq = ih->ih_irq - 5;
 	KDASSERT(irq >= 0 && irq < 8);
 	eih = &extintr_handler[irq];
 	for (cnt = 0, p = eih->eih_ih, q = NULL; p != NULL; p = p->ih_next) {
@@ -278,7 +282,7 @@ extintr_enable(void *aux)
 		_reg_bset_1(LANDISK_INTEN, (1 << irq));
 	}
 
-	splx(s);
+	_cpu_intr_resume(s);
 }
 
 void
@@ -295,7 +299,7 @@ extintr_disable(void *aux)
 
 	s = _cpu_intr_suspend();
 
-	irq = ih->ih_irq;
+	irq = ih->ih_irq - 5;
 	KDASSERT(irq >= 0 && irq < 8);
 	eih = &extintr_handler[irq];
 	for (cnt = 0, p = eih->eih_ih, q = NULL; p != NULL; p = p->ih_next) {
@@ -314,7 +318,7 @@ extintr_disable(void *aux)
 		_reg_bclr_1(LANDISK_INTEN, (1 << irq));
 	}
 
-	splx(s);
+	_cpu_intr_resume(s);
 }
 
 void
@@ -324,16 +328,17 @@ extintr_disable_by_num(int irq)
 	struct intrhand *ih;
 	int s;
 
-	KDASSERT(irq >= 5 && irq <= 12);
+	irq -= 5;
+	KDASSERT(irq >= 0 && irq < 8);
 
 	s = _cpu_intr_suspend();
-	eih = &extintr_handler[irq - 5];
+	eih = &extintr_handler[irq];
 	for (ih = eih->eih_ih; ih != NULL; ih = ih->ih_next) {
 		ih->ih_enable = 0;
 	}
 	/* Mask interrupt */
 	_reg_bclr_1(LANDISK_INTEN, (1 << irq));
-	splx(s);
+	_cpu_intr_resume(s);
 }
 
 static int
@@ -354,7 +359,9 @@ extintr_intr_handler(void *arg)
 			if (__predict_true(ih->ih_enable)) {
 				r = (*ih->ih_fun)(ih->ih_arg);
 				if (__predict_true(r != 0)) {
-					ih->ih_cnt.ec_count++;
+					ih->ih_count.ec_count++;
+					if (r == 1)
+						break;
 				}
 			}
 		}
@@ -362,3 +369,24 @@ extintr_intr_handler(void *arg)
 	}
 	return 0;
 }
+
+#ifdef DIAGNOSTIC
+void
+splassert_check(int wantipl, const char *func)
+{
+	register_t sr;
+        int oldipl;
+
+	__asm__ volatile ("stc sr,%0" : "=r" (sr));
+
+	oldipl = (sr & 0xf0) >> 4;
+        if (oldipl < wantipl) {
+                splassert_fail(wantipl, oldipl, func);
+                /*
+                 * If the splassert_ctl is set to not panic, raise the ipl
+                 * in a feeble attempt to reduce damage.
+                 */
+		_cpu_intr_raise(wantipl << 4);
+        }
+}
+#endif

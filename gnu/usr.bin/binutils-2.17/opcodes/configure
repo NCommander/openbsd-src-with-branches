@@ -8801,6 +8801,7 @@ if test x${all_targets} = xfalse ; then
 	ad=`echo $arch | sed -e s/bfd_//g -e s/_arch//g`
 	archdefs="$archdefs -DARCH_$ad"
 	case "$arch" in
+	bfd_aarch64_arch)	;;
 	bfd_alpha_arch)		ta="$ta alpha-dis.lo alpha-opc.lo" ;;
 	bfd_arc_arch)		ta="$ta arc-dis.lo arc-opc.lo arc-ext.lo" ;;
 	bfd_arm_arch)		ta="$ta arm-dis.lo" ;;
@@ -8845,6 +8846,7 @@ if test x${all_targets} = xfalse ; then
 	bfd_powerpc_arch)	ta="$ta ppc-dis.lo ppc-opc.lo" ;;
 	bfd_powerpc_64_arch)	ta="$ta ppc-dis.lo ppc-opc.lo" ;;
 	bfd_pyramid_arch)	;;
+	bfd_riscv64_arch)	;;
 	bfd_romp_arch)		;;
 	bfd_rs6000_arch)	ta="$ta ppc-dis.lo ppc-opc.lo" ;;
 	bfd_s390_arch)		ta="$ta s390-dis.lo s390-opc.lo" ;;

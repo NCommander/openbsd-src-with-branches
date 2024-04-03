@@ -1,33 +1,32 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: tree.c,v 1.33 2018/03/15 16:51:29 anton Exp $	*/
 
 /*
  * command tree climbing
  */
+
+#include <string.h>
 
 #include "sh.h"
 
 #define INDENT	4
 
 #define tputc(c, shf)	shf_putchar(c, shf);
-static void 	ptree ARGS((struct op *t, int indent, struct shf *f));
-static void 	pioact ARGS((struct shf *f, int indent, struct ioword *iop));
-static void	tputC ARGS((int c, struct shf *shf));
-static void	tputS ARGS((char *wp, struct shf *shf));
-static void	vfptreef ARGS((struct shf *shf, int indent, const char *fmt, va_list va));
-static struct ioword **iocopy ARGS((struct ioword **iow, Area *ap));
-static void     iofree ARGS((struct ioword **iow, Area *ap));
+static void	ptree(struct op *, int, struct shf *);
+static void	pioact(struct shf *, int, struct ioword *);
+static void	tputC(int, struct shf *);
+static void	tputS(char *, struct shf *);
+static void	vfptreef(struct shf *, int, const char *, va_list);
+static struct ioword **iocopy(struct ioword **, Area *);
+static void     iofree(struct ioword **, Area *);
 
 /*
  * print a command tree
  */
 
 static void
-ptree(t, indent, shf)
-	register struct op *t;
-	int indent;
-	register struct shf *shf;
+ptree(struct op *t, int indent, struct shf *shf)
 {
-	register char **w;
+	char **w;
 	struct ioword **ioact;
 	struct op *t1;
 
@@ -35,7 +34,7 @@ ptree(t, indent, shf)
 	if (t == NULL)
 		return;
 	switch (t->type) {
-	  case TCOM:
+	case TCOM:
 		if (t->vars)
 			for (w = t->vars; *w != NULL; )
 				fptreef(shf, indent, "%S ", *w++);
@@ -47,30 +46,30 @@ ptree(t, indent, shf)
 		else
 			fptreef(shf, indent, "#no-args# ");
 		break;
-	  case TEXEC:
+	case TEXEC:
 		t = t->left;
 		goto Chain;
-	  case TPAREN:
+	case TPAREN:
 		fptreef(shf, indent + 2, "( %T) ", t->left);
 		break;
-	  case TPIPE:
+	case TPIPE:
 		fptreef(shf, indent, "%T| ", t->left);
 		t = t->right;
 		goto Chain;
-	  case TLIST:
+	case TLIST:
 		fptreef(shf, indent, "%T%;", t->left);
 		t = t->right;
 		goto Chain;
-	  case TOR:
-	  case TAND:
+	case TOR:
+	case TAND:
 		fptreef(shf, indent, "%T%s %T",
-			t->left, (t->type==TOR) ? "||" : "&&", t->right);
+		    t->left, (t->type==TOR) ? "||" : "&&", t->right);
 		break;
-	  case TBANG:
+	case TBANG:
 		fptreef(shf, indent, "! ");
 		t = t->right;
 		goto Chain;
-	  case TDBRACKET:
+	case TDBRACKET:
 	  {
 		int i;
 
@@ -80,12 +79,10 @@ ptree(t, indent, shf)
 		fptreef(shf, indent, " ]] ");
 		break;
 	  }
-#ifdef KSH
-	  case TSELECT:
+	case TSELECT:
 		fptreef(shf, indent, "select %s ", t->str);
-		/* fall through */
-#endif /* KSH */
-	  case TFOR:
+		/* FALLTHROUGH */
+	case TFOR:
 		if (t->type == TFOR)
 			fptreef(shf, indent, "for %s ", t->str);
 		if (t->vars != NULL) {
@@ -97,19 +94,19 @@ ptree(t, indent, shf)
 		fptreef(shf, indent + INDENT, "do%N%T", t->left);
 		fptreef(shf, indent, "%;done ");
 		break;
-	  case TCASE:
+	case TCASE:
 		fptreef(shf, indent, "case %S in", t->str);
 		for (t1 = t->left; t1 != NULL; t1 = t1->right) {
 			fptreef(shf, indent, "%N(");
 			for (w = t1->vars; *w != NULL; w++)
 				fptreef(shf, indent, "%S%c", *w,
-					(w[1] != NULL) ? '|' : ')');
+				    (w[1] != NULL) ? '|' : ')');
 			fptreef(shf, indent + INDENT, "%;%T%N;;", t1->left);
 		}
 		fptreef(shf, indent, "%Nesac ");
 		break;
-	  case TIF:
-	  case TELIF:
+	case TIF:
+	case TELIF:
 		/* 3 == strlen("if ") */
 		fptreef(shf, indent + 3, "if %T", t->left);
 		for (;;) {
@@ -117,7 +114,7 @@ ptree(t, indent, shf)
 			if (t->left != NULL) {
 				fptreef(shf, indent, "%;");
 				fptreef(shf, indent + INDENT, "then%N%T",
-					t->left);
+				    t->left);
 			}
 			if (t->right == NULL || t->right->type != TELIF)
 				break;
@@ -132,33 +129,35 @@ ptree(t, indent, shf)
 		}
 		fptreef(shf, indent, "%;fi ");
 		break;
-	  case TWHILE:
-	  case TUNTIL:
+	case TWHILE:
+	case TUNTIL:
 		/* 6 == strlen("while"/"until") */
 		fptreef(shf, indent + 6, "%s %T",
-			(t->type==TWHILE) ? "while" : "until",
-			t->left);
+		    (t->type==TWHILE) ? "while" : "until",
+		    t->left);
 		fptreef(shf, indent, "%;do");
 		fptreef(shf, indent + INDENT, "%;%T", t->right);
 		fptreef(shf, indent, "%;done ");
 		break;
-	  case TBRACE:
+	case TBRACE:
 		fptreef(shf, indent + INDENT, "{%;%T", t->left);
 		fptreef(shf, indent, "%;} ");
 		break;
-	  case TCOPROC:
+	case TCOPROC:
 		fptreef(shf, indent, "%T|& ", t->left);
 		break;
-	  case TASYNC:
+	case TASYNC:
 		fptreef(shf, indent, "%T& ", t->left);
 		break;
-	  case TFUNCT:
-		fptreef(shf, indent, "function %s %T", t->str, t->left);
+	case TFUNCT:
+		fptreef(shf, indent,
+		    t->u.ksh_func ? "function %s %T" : "%s() %T",
+		    t->str, t->left);
 		break;
-	  case TTIME:
+	case TTIME:
 		fptreef(shf, indent, "time %T", t->left);
 		break;
-	  default:
+	default:
 		fptreef(shf, indent, "<botch>");
 		break;
 	}
@@ -171,22 +170,12 @@ ptree(t, indent, shf)
 		for (ioact = t->ioact; *ioact != NULL; ) {
 			struct ioword *iop = *ioact++;
 
-			/* name is 0 when tracing (set -x) */
-			if ((iop->flag & IOTYPE) == IOHERE && iop->name) {
-				struct shf *rshf;
-				char buf[1024];
-				int n;
-
+			/* heredoc is 0 when tracing (set -x) */
+			if ((iop->flag & IOTYPE) == IOHERE && iop->heredoc) {
 				tputc('\n', shf);
-				if ((rshf = shf_open(iop->name, O_RDONLY, 0, 0))) {
-					while ((n = shf_read(buf, sizeof(buf), rshf))
-										> 0)
-						shf_write(buf, n, shf);
-					shf_close(rshf);
-				} else
-					errorf("can't open %s - %s",
-						iop->name, strerror(errno));
-				fptreef(shf, indent, "%s", evalstr(iop->delim, 0));
+				shf_puts(iop->heredoc, shf);
+				fptreef(shf, indent, "%s",
+				    evalstr(iop->delim, 0));
 				need_nl = 1;
 			}
 		}
@@ -200,20 +189,16 @@ ptree(t, indent, shf)
 }
 
 static void
-pioact(shf, indent, iop)
-	register struct shf *shf;
-	int indent;
-	register struct ioword *iop;
+pioact(struct shf *shf, int indent, struct ioword *iop)
 {
 	int flag = iop->flag;
 	int type = flag & IOTYPE;
 	int expected;
 
-	expected = (type == IOREAD || type == IORDWR || type == IOHERE) ? 0
-		    : (type == IOCAT || type == IOWRITE) ? 1
-		    : (type == IODUP && (iop->unit == !(flag & IORDUP))) ?
-			iop->unit
-		    : iop->unit + 1;
+	expected = (type == IOREAD || type == IORDWR || type == IOHERE) ? 0 :
+	    (type == IOCAT || type == IOWRITE) ? 1 :
+	    (type == IODUP && (iop->unit == !(flag & IORDUP))) ? iop->unit :
+	    iop->unit + 1;
 	if (iop->unit != expected)
 		tputc('0' + iop->unit, shf);
 
@@ -252,7 +237,7 @@ pioact(shf, indent, iop)
 			fptreef(shf, indent, "%S ", iop->delim);
 	} else if (iop->name)
 		fptreef(shf, indent, (iop->flag & IONAMEXP) ? "%s " : "%S ",
-			iop->name);
+		    iop->name);
 }
 
 
@@ -261,9 +246,7 @@ pioact(shf, indent, iop)
  */
 
 static void
-tputC(c, shf)
-	register int c;
-	register struct shf *shf;
+tputC(int c, struct shf *shf)
 {
 	if ((c&0x60) == 0) {		/* C0|C1 */
 		tputc((c&0x80) ? '$' : '^', shf);
@@ -276,33 +259,39 @@ tputC(c, shf)
 }
 
 static void
-tputS(wp, shf)
-	register char *wp;
-	register struct shf *shf;
+tputS(char *wp, struct shf *shf)
 {
-	register int c, quoted=0;
+	int c, quoted=0;
 
+	/* problems:
+	 *	`...` -> $(...)
+	 *	'foo' -> "foo"
+	 * could change encoding to:
+	 *	OQUOTE ["'] ... CQUOTE ["']
+	 *	COMSUB [(`] ...\0	(handle $ ` \ and maybe " in `...` case)
+	 */
 	while (1)
 		switch ((c = *wp++)) {
-		  case EOS:
+		case EOS:
 			return;
-		  case CHAR:
+		case CHAR:
 			tputC(*wp++, shf);
 			break;
-		  case QCHAR:
+		case QCHAR:
 			c = *wp++;
 			if (!quoted || (c == '"' || c == '`' || c == '$'))
 				tputc('\\', shf);
 			tputC(c, shf);
 			break;
-		  case COMSUB:
+		case COMSUB:
 			tputc('$', shf);
 			tputc('(', shf);
 			while (*wp != 0)
 				tputC(*wp++, shf);
 			tputc(')', shf);
+			wp++;
 			break;
-		  case EXPRSUB:
+		case EXPRSUB:
 			tputc('$', shf);
 			tputc('(', shf);
 			tputc('(', shf);
@@ -310,82 +299,59 @@ tputS(wp, shf)
 				tputC(*wp++, shf);
 			tputc(')', shf);
 			tputc(')', shf);
+			wp++;
 			break;
-		  case OQUOTE:
-		  	quoted = 1;
+		case OQUOTE:
+			quoted = 1;
 			tputc('"', shf);
 			break;
-		  case CQUOTE:
+		case CQUOTE:
 			quoted = 0;
 			tputc('"', shf);
 			break;
-		  case OSUBST:
+		case OSUBST:
 			tputc('$', shf);
-			tputc('{', shf);
+			if (*wp++ == '{')
+				tputc('{', shf);
 			while ((c = *wp++) != 0)
 				tputC(c, shf);
 			break;
-		  case CSUBST:
-			tputc('}', shf);
+		case CSUBST:
+			if (*wp++ == '}')
+				tputc('}', shf);
 			break;
-#ifdef KSH
-		  case OPAT:
+		case OPAT:
 			tputc(*wp++, shf);
 			tputc('(', shf);
 			break;
-		  case SPAT:
+		case SPAT:
 			tputc('|', shf);
 			break;
-		  case CPAT:
+		case CPAT:
 			tputc(')', shf);
 			break;
-#endif /* KSH */
 		}
 }
 
-/*
- * this is the _only_ way to reliably handle
- * variable args with an ANSI compiler
- */
-/* VARARGS */
-int
-#ifdef HAVE_PROTOTYPES
+void
 fptreef(struct shf *shf, int indent, const char *fmt, ...)
-#else
-fptreef(shf, indent, fmt, va_alist) 
-  struct shf *shf;
-  int indent;
-  const char *fmt;
-  va_dcl
-#endif
 {
   va_list	va;
 
-  SH_VA_START(va, fmt);
-  
+  va_start(va, fmt);
   vfptreef(shf, indent, fmt, va);
   va_end(va);
-  return 0;
 }
 
-/* VARARGS */
 char *
-#ifdef HAVE_PROTOTYPES
 snptreef(char *s, int n, const char *fmt, ...)
-#else
-snptreef(s, n, fmt, va_alist)
-  char *s;
-  int n;
-  const char *fmt;
-  va_dcl
-#endif
 {
   va_list va;
   struct shf shf;
 
   shf_sopen(s, n, SHF_WR | (s ? 0 : SHF_DYNAMIC), &shf);
 
-  SH_VA_START(va, fmt);
+  va_start(va, fmt);
   vfptreef(&shf, 0, fmt, va);
   va_end(va);
 
@@ -393,71 +359,72 @@ snptreef(s, n, fmt, va_alist)
 }
 
 static void
-vfptreef(shf, indent, fmt, va)
-	register struct shf *shf;
-	int indent;
-	const char *fmt;
-	register va_list va;
+vfptreef(struct shf *shf, int indent, const char *fmt, va_list va)
 {
-	register int c;
+	int c;
 
-	while ((c = *fmt++))
-	    if (c == '%') {
-		register long n;
-		register char *p;
-		int neg;
+	while ((c = *fmt++)) {
+		if (c == '%') {
+			int64_t n;
+			char *p;
+			int neg;
 
-		switch ((c = *fmt++)) {
-		  case 'c':
-			tputc(va_arg(va, int), shf);
-			break;
-		  case 's':
-			p = va_arg(va, char *);
-			while (*p)
-				tputc(*p++, shf);
-			break;
-		  case 'S':	/* word */
-			p = va_arg(va, char *);
-			tputS(p, shf);
-			break;
-		  case 'd': case 'u': /* decimal */
-			n = (c == 'd') ? va_arg(va, int)
-				       : va_arg(va, unsigned int);
-			neg = c=='d' && n<0;
-			p = ulton((neg) ? -n : n, 10);
-			if (neg)
-				*--p = '-';
-			while (*p)
-				tputc(*p++, shf);
-			break;
-		  case 'T':	/* format tree */
-			ptree(va_arg(va, struct op *), indent, shf);
-			break;
-		  case ';':	/* newline or ; */
-		  case 'N':	/* newline or space */
-			if (shf->flags & SHF_STRING) {
-				if (c == ';')
-					tputc(';', shf);
-				tputc(' ', shf);
-			} else {
-				int i;
-
-				tputc('\n', shf);
-				for (i = indent; i >= 8; i -= 8)
-					tputc('\t', shf);
-				for (; i > 0; --i)
+			switch ((c = *fmt++)) {
+			case 'c':
+				tputc(va_arg(va, int), shf);
+				break;
+			case 'd': /* decimal */
+				n = va_arg(va, int);
+				neg = n < 0;
+				p = u64ton(neg ? -n : n, 10);
+				if (neg)
+					*--p = '-';
+				while (*p)
+					tputc(*p++, shf);
+				break;
+			case 's':
+				p = va_arg(va, char *);
+				while (*p)
+					tputc(*p++, shf);
+				break;
+			case 'S':	/* word */
+				p = va_arg(va, char *);
+				tputS(p, shf);
+				break;
+			case 'u': /* unsigned decimal */
+				p = u64ton(va_arg(va, unsigned int), 10);
+				while (*p)
+					tputc(*p++, shf);
+				break;
+			case 'T':	/* format tree */
+				ptree(va_arg(va, struct op *), indent, shf);
+				break;
+			case ';':	/* newline or ; */
+			case 'N':	/* newline or space */
+				if (shf->flags & SHF_STRING) {
+					if (c == ';')
+						tputc(';', shf);
 					tputc(' ', shf);
+				} else {
+					int i;
+
+					tputc('\n', shf);
+					for (i = indent; i >= 8; i -= 8)
+						tputc('\t', shf);
+					for (; i > 0; --i)
+						tputc(' ', shf);
+				}
+				break;
+			case 'R':
+				pioact(shf, indent, va_arg(va, struct ioword *));
+				break;
+			default:
+				tputc(c, shf);
+				break;
 			}
-			break;
-		  case 'R':
-			pioact(shf, indent, va_arg(va, struct ioword *));
-			break;
-		  default:
+		} else
 			tputc(c, shf);
-			break;
-		}
-	    } else
-		tputc(c, shf);
+	}
 }
 
 /*
@@ -465,20 +432,18 @@ vfptreef(shf, indent, fmt, va)
  */
 
 struct op *
-tcopy(t, ap)
-	register struct op *t;
-	Area *ap;
+tcopy(struct op *t, Area *ap)
 {
-	register struct op *r;
-	register char **tw, **rw;
+	struct op *r;
+	char **tw, **rw;
 
 	if (t == NULL)
 		return NULL;
 
-	r = (struct op *) alloc(sizeof(struct op), ap);
+	r = alloc(sizeof(struct op), ap);
 
 	r->type = t->type;
-	r->evalflags = t->evalflags;
+	r->u.evalflags = t->u.evalflags;
 
 	r->str = t->type == TCASE ? wdcopy(t->str, ap) : str_save(t->str, ap);
 
@@ -487,8 +452,8 @@ tcopy(t, ap)
 	else {
 		for (tw = t->vars; *tw++ != NULL; )
 			;
-		rw = r->vars = (char **)
-			alloc((int)(tw - t->vars) * sizeof(*tw), ap);
+		rw = r->vars = areallocarray(NULL, tw - t->vars + 1,
+		    sizeof(*tw), ap);
 		for (tw = t->vars; *tw != NULL; )
 			*rw++ = wdcopy(*tw++, ap);
 		*rw = NULL;
@@ -499,8 +464,8 @@ tcopy(t, ap)
 	else {
 		for (tw = t->args; *tw++ != NULL; )
 			;
-		rw = r->args = (char **)
-			alloc((int)(tw - t->args) * sizeof(*tw), ap);
+		rw = r->args = areallocarray(NULL, tw - t->args + 1,
+		    sizeof(*tw), ap);
 		for (tw = t->args; *tw != NULL; )
 			*rw++ = wdcopy(*tw++, ap);
 		*rw = NULL;
@@ -510,14 +475,13 @@ tcopy(t, ap)
 
 	r->left = tcopy(t->left, ap);
 	r->right = tcopy(t->right, ap);
+	r->lineno = t->lineno;
 
 	return r;
 }
 
 char *
-wdcopy(wp, ap)
-	const char *wp;
-	Area *ap;
+wdcopy(const char *wp, Area *ap)
 {
 	size_t len = wdscan(wp, EOS) - wp;
 	return memcpy(alloc(len, ap), wp, len);
@@ -525,77 +489,147 @@ wdcopy(wp, ap)
 
 /* return the position of prefix c in wp plus 1 */
 char *
-wdscan(wp, c)
-	register const char *wp;
-	register int c;
+wdscan(const char *wp, int c)
 {
-	register int nest = 0;
+	int nest = 0;
 
 	while (1)
 		switch (*wp++) {
-		  case EOS:
+		case EOS:
 			return (char *) wp;
-		  case CHAR:
-		  case QCHAR:
+		case CHAR:
+		case QCHAR:
 			wp++;
 			break;
-		  case COMSUB:
-		  case EXPRSUB:
+		case COMSUB:
+		case EXPRSUB:
 			while (*wp++ != 0)
 				;
 			break;
-		  case OQUOTE:
-		  case CQUOTE:
+		case OQUOTE:
+		case CQUOTE:
 			break;
-		  case OSUBST:
+		case OSUBST:
 			nest++;
 			while (*wp++ != '\0')
 				;
 			break;
-		  case CSUBST:
+		case CSUBST:
+			wp++;
 			if (c == CSUBST && nest == 0)
 				return (char *) wp;
 			nest--;
 			break;
-#ifdef KSH
-		  case OPAT:
+		case OPAT:
 			nest++;
 			wp++;
 			break;
-		  case SPAT:
-		  case CPAT:
+		case SPAT:
+		case CPAT:
 			if (c == wp[-1] && nest == 0)
 				return (char *) wp;
 			if (wp[-1] == CPAT)
 				nest--;
 			break;
-#endif /* KSH */
+		default:
+			internal_warningf(
+			    "%s: unknown char 0x%x (carrying on)",
+			    __func__, wp[-1]);
+		}
+}
+
+/* return a copy of wp without any of the mark up characters and
+ * with quote characters (" ' \) stripped.
+ * (string is allocated from ATEMP)
+ */
+char *
+wdstrip(const char *wp)
+{
+	struct shf shf;
+	int c;
+
+	shf_sopen(NULL, 32, SHF_WR | SHF_DYNAMIC, &shf);
+
+	/* problems:
+	 *	`...` -> $(...)
+	 *	x${foo:-"hi"} -> x${foo:-hi}
+	 *	x${foo:-'hi'} -> x${foo:-hi}
+	 */
+	while (1)
+		switch ((c = *wp++)) {
+		case EOS:
+			return shf_sclose(&shf); /* null terminates */
+		case CHAR:
+		case QCHAR:
+			shf_putchar(*wp++, &shf);
+			break;
+		case COMSUB:
+			shf_putchar('$', &shf);
+			shf_putchar('(', &shf);
+			while (*wp != 0)
+				shf_putchar(*wp++, &shf);
+			shf_putchar(')', &shf);
+			break;
+		case EXPRSUB:
+			shf_putchar('$', &shf);
+			shf_putchar('(', &shf);
+			shf_putchar('(', &shf);
+			while (*wp != 0)
+				shf_putchar(*wp++, &shf);
+			shf_putchar(')', &shf);
+			shf_putchar(')', &shf);
+			break;
+		case OQUOTE:
+			break;
+		case CQUOTE:
+			break;
+		case OSUBST:
+			shf_putchar('$', &shf);
+			if (*wp++ == '{')
+			    shf_putchar('{', &shf);
+			while ((c = *wp++) != 0)
+				shf_putchar(c, &shf);
+			break;
+		case CSUBST:
+			if (*wp++ == '}')
+				shf_putchar('}', &shf);
+			break;
+		case OPAT:
+			shf_putchar(*wp++, &shf);
+			shf_putchar('(', &shf);
+			break;
+		case SPAT:
+			shf_putchar('|', &shf);
+			break;
+		case CPAT:
+			shf_putchar(')', &shf);
+			break;
 		}
 }
 
 static	struct ioword **
-iocopy(iow, ap)
-	register struct ioword **iow;
-	Area *ap;
+iocopy(struct ioword **iow, Area *ap)
 {
-	register struct ioword **ior;
-	register int i;
+	struct ioword **ior;
+	int i;
 
 	for (ior = iow; *ior++ != NULL; )
 		;
-	ior = (struct ioword **) alloc((int)(ior - iow) * sizeof(*ior), ap);
+	ior = areallocarray(NULL, ior - iow + 1, sizeof(*ior), ap);
 
 	for (i = 0; iow[i] != NULL; i++) {
-		register struct ioword *p, *q;
+		struct ioword *p, *q;
 
 		p = iow[i];
-		q = (struct ioword *) alloc(sizeof(*p), ap);
+		q = alloc(sizeof(*p), ap);
 		ior[i] = q;
 		*q = *p;
-		if (p->name != (char *) 0)
+		if (p->name != NULL)
 			q->name = wdcopy(p->name, ap);
-		if (p->delim != (char *) 0)
+		if (p->delim != NULL)
 			q->delim = wdcopy(p->delim, ap);
+		if (p->heredoc != NULL)
+			q->heredoc = str_save(p->heredoc, ap);
 	}
 	ior[i] = NULL;
 
@@ -607,28 +641,25 @@ iocopy(iow, ap)
  */
 
 void
-tfree(t, ap)
-	register struct op *t;
-	Area *ap;
+tfree(struct op *t, Area *ap)
 {
-	register char **w;
+	char **w;
 
 	if (t == NULL)
 		return;
 
-	if (t->str != NULL)
-		afree((void*)t->str, ap);
+	afree(t->str, ap);
 
 	if (t->vars != NULL) {
 		for (w = t->vars; *w != NULL; w++)
-			afree((void*)*w, ap);
-		afree((void*)t->vars, ap);
+			afree(*w, ap);
+		afree(t->vars, ap);
 	}
 
 	if (t->args != NULL) {
 		for (w = t->args; *w != NULL; w++)
-			afree((void*)*w, ap);
-		afree((void*)t->args, ap);
+			afree(*w, ap);
+		afree(t->args, ap);
 	}
 
 	if (t->ioact != NULL)
@@ -637,20 +668,20 @@ tfree(t, ap)
 	tfree(t->left, ap);
 	tfree(t->right, ap);
 
-	afree((void*)t, ap);
+	afree(t, ap);
 }
 
 static	void
-iofree(iow, ap)
-	struct ioword **iow;
-	Area *ap;
+iofree(struct ioword **iow, Area *ap)
 {
-	register struct ioword **iop;
-	register struct ioword *p;
+	struct ioword **iop;
+	struct ioword *p;
 
 	for (iop = iow; (p = *iop++) != NULL; ) {
-		if (p->name != NULL)
-			afree((void*)p->name, ap);
-		afree((void*)p, ap);
+		afree(p->name, ap);
+		afree(p->delim, ap);
+		afree(p->heredoc, ap);
+		afree(p, ap);
 	}
+	afree(iow, ap);
 }

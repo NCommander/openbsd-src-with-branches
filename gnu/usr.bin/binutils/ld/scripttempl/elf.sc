@@ -116,6 +116,17 @@ if test -z "${NO_SMALL_DATA}"; then
   REL_SBSS2=".rel.sbss2    ${RELOCATING-0} : { *(.rel.sbss2${RELOCATING+ .rel.sbss2.* .rel.gnu.linkonce.sb2.*}) }
   .rela.sbss2   ${RELOCATING-0} : { *(.rela.sbss2${RELOCATING+ .rela.sbss2.* .rela.gnu.linkonce.sb2.*}) }"
 fi
+RODATA_ALIGN_ADD_VAL="${CREATE_SHLIB-${RODATA_ALIGN_ADD:-0}} ${CREATE_SHLIB+0}"
+test "$LD_FLAG" = "n" || test "$LD_FLAG" = "N" || test "${LD_FLAG%%(cpie|pie)}" = "Z" || NO_PAD="y"
+if test "$NO_PAD" = "y" ; then
+  PAD_RO0="${RELOCATING+${RODATA_ALIGN} + ${RODATA_ALIGN_ADD_VAL};}"
+  PAD_PLT0="${RELOCATING+. = ALIGN(${MAXPAGESIZE}) + (. & (${MAXPAGESIZE} - 1));} .pltpad0 ${RELOCATING-0} : { ${RELOCATING+__plt_start = .;} }"
+  PAD_PLT1=".pltpad1 ${RELOCATING-0} : { ${RELOCATING+__plt_end = .;}} ${RELOCATING+. = ALIGN(${MAXPAGESIZE}) + (. & (${MAXPAGESIZE} - 1));}"
+  PAD_GOT0="${RELOCATING+. = ALIGN(${MAXPAGESIZE}) + (. & (${MAXPAGESIZE} - 1));} .gotpad0 ${RELOCATING-0} : { ${RELOCATING+__got_start = .;} }"
+  PAD_GOT1=".gotpad1 ${RELOCATING-0} : { ${RELOCATING+__got_end = .;}} ${RELOCATING+. = ALIGN(${MAXPAGESIZE}) + (. & (${MAXPAGESIZE} - 1));}"
+  test "$NO_PAD_CDTOR" = "y" || PAD_CDTOR=
+fi
+
 CTOR=".ctors        ${CONSTRUCTING-0} : 
   {
     ${CONSTRUCTING+${CTOR_START}}
@@ -170,8 +181,6 @@ OUTPUT_ARCH(${OUTPUT_ARCH})
 ENTRY(${ENTRY})
 
 ${RELOCATING+${LIB_SEARCH_DIRS}}
-${RELOCATING+/* Do we need any of these for elf?
-   __DYNAMIC = 0; ${STACKZERO+${STACKZERO}} ${SHLIB_PATH+${SHLIB_PATH}}  */}
 ${RELOCATING+${EXECUTABLE_SYMBOLS}}
 ${RELOCATING+${INPUT_FILES}}
 ${RELOCATING- /* For some reason, the Solaris linker makes bad executables
@@ -259,7 +268,7 @@ cat <<EOF
     ${RELOCATING+${INIT_END}}
   } =${NOP-0}
 
-  ${DATA_PLT-${BSS_PLT-${PLT}}}
+  ${DATA_PLT-${DATA_NONEXEC_PLT-${BSS_PLT-${PLT}}}}
   .text         ${RELOCATING-0} :
   {
     ${RELOCATING+${TEXT_START_SYMBOLS}}
@@ -277,6 +286,7 @@ cat <<EOF
   ${RELOCATING+PROVIDE (__etext = .);}
   ${RELOCATING+PROVIDE (_etext = .);}
   ${RELOCATING+PROVIDE (etext = .);}
+  ${PAD_RO+${PAD_RO0}}
   ${WRITABLE_RODATA-${RODATA}}
   .rodata1      ${RELOCATING-0} : { *(.rodata1) }
   ${CREATE_SHLIB-${SDATA2}}
@@ -307,6 +317,11 @@ cat <<EOF
   .fini_array   ${RELOCATING-0} : { *(.fini_array) }
   ${RELOCATING+${CREATE_SHLIB-PROVIDE (__fini_array_end = .);}}
 
+  .openbsd.randomdata   ${RELOCATING-0} :
+  {
+    *(.openbsd.randomdata${RELOCATING+ .openbsd.randomdata.*})
+  }
+
   .data         ${RELOCATING-0} :
   {
     ${RELOCATING+${DATA_START_SYMBOLS}}
@@ -321,13 +336,24 @@ cat <<EOF
   ${WRITABLE_RODATA+${RODATA}}
   ${OTHER_READWRITE_SECTIONS}
   ${TEXT_DYNAMIC-${DYNAMIC}}
-  ${RELOCATING+${CTOR}}
-  ${RELOCATING+${DTOR}}
+  ${PAD_CDTOR-${RELOCATING+${CTOR}}}
+  ${PAD_CDTOR-${RELOCATING+${DTOR}}}
   .jcr          ${RELOCATING-0} : { KEEP (*(.jcr)) }
+
+  /* pad CTOR/DTOR, GOT (and PLT if DATA_PLT) to page aligned if PAD_GOT */
+  ${DATA_PLT+${PAD_PLT+${PAD_PLT0}}}
   ${DATA_PLT+${PLT}}
+  ${DATA_PLT+${PAD_PLT+${PAD_PLT1}}}
+  ${PAD_GOT+${PAD_GOT0}}
+  ${DATA_NONEXEC_PLT+${PLT}}
   ${RELOCATING+${OTHER_GOT_SYMBOLS}}
   ${GOT}
+  /* If PAD_CDTOR, CTOR and DTOR relocated here to receive mprotect
+     protection after relocation are finished same as GOT  */
+  ${PAD_CDTOR+${RELOCATING+${CTOR}}}
+  ${PAD_CDTOR+${RELOCATING+${DTOR}}}
   ${OTHER_GOT_SECTIONS}
+  ${PAD_GOT+${PAD_GOT1}}
   ${CREATE_SHLIB+${SDATA2}}
   ${CREATE_SHLIB+${SBSS2}}
   ${SDATA}
@@ -337,7 +363,9 @@ cat <<EOF
   ${RELOCATING+__bss_start = .;}
   ${RELOCATING+${OTHER_BSS_SYMBOLS}}
   ${SBSS}
+  ${BSS_PLT+${PAD_PLT+${PAD_PLT0}}}
   ${BSS_PLT+${PLT}}
+  ${BSS_PLT+${PAD_PLT+${PAD_PLT1}}}
   .bss          ${RELOCATING-0} :
   {
    *(.dynbss)

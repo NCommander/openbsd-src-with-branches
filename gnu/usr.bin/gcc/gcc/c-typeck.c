@@ -3232,18 +3232,19 @@ static void
 pedantic_lvalue_warning (code)
      enum tree_code code;
 {
-  switch (code)
-    {
-    case COND_EXPR:
-      pedwarn ("use of conditional expressions as lvalues is deprecated");
-      break;
-    case COMPOUND_EXPR:
-      pedwarn ("use of compound expressions as lvalues is deprecated");
-      break;
-    default:
-      pedwarn ("use of cast expressions as lvalues is deprecated");
-      break;
-    }
+  if (pedantic)
+    switch (code)
+      {
+      case COND_EXPR:
+	pedwarn ("use of conditional expressions as lvalues is deprecated");
+	break;
+      case COMPOUND_EXPR:
+	pedwarn ("use of compound expressions as lvalues is deprecated");
+	break;
+      default:
+	pedwarn ("use of cast expressions as lvalues is deprecated");
+	break;
+      }
 }
 
 /* Warn about storing in something that is `const'.  */
@@ -4944,6 +4945,9 @@ static int constructor_erroneous;
 /* 1 if have called defer_addressed_constants.  */
 static int constructor_subconstants_deferred;
 
+/* 1 if this constructor is a zero init. */
+static int constructor_zeroinit;
+
 /* Structure for managing pending initializer elements, organized as an
    AVL tree.  */
 
@@ -5402,12 +5406,6 @@ push_init_level (implicit)
 	set_nonincremental_init ();
     }
 
-  if (implicit == 1 && warn_missing_braces && !missing_braces_mentioned)
-    {
-      missing_braces_mentioned = 1;
-      warning_init ("missing braces around initializer");
-    }
-
   if (TREE_CODE (constructor_type) == RECORD_TYPE
 	   || TREE_CODE (constructor_type) == UNION_TYPE)
     {
@@ -5531,6 +5529,24 @@ pop_init_level (implicit)
 	/* Zero-length arrays are no longer special, so we should no longer
 	   get here.  */
 	abort ();
+    }
+
+  if (constructor_elements == 0)
+    constructor_zeroinit = 1;
+  else if (TREE_CHAIN (constructor_elements) == 0 &&
+	   initializer_zerop (TREE_VALUE (constructor_elements)))
+    {
+      constructor_zeroinit = 1;
+    }
+  else
+    constructor_zeroinit = 0;
+
+  /* only warn for missing braces unless it is { 0 } */
+  if (implicit == 1 && warn_missing_braces && !missing_braces_mentioned &&
+      !constructor_zeroinit)
+    {
+      missing_braces_mentioned = 1;
+      warning_init ("missing braces around initializer");
     }
 
   /* Warn when some struct elements are implicitly initialized to zero.  */

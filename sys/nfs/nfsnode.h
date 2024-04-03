@@ -1,4 +1,5 @@
-/*	$NetBSD: nfsnode.h,v 1.14 1995/03/26 20:37:32 jtc Exp $	*/
+/*	$OpenBSD: nfsnode.h,v 1.41 2019/01/21 18:09:21 anton Exp $	*/
+/*	$NetBSD: nfsnode.h,v 1.16 1996/02/18 11:54:04 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,8 +32,18 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)nfsnode.h	8.6 (Berkeley) 8/18/94
+ *	@(#)nfsnode.h	8.9 (Berkeley) 5/14/95
  */
+
+
+#ifndef _NFS_NFSNODE_H_
+#define _NFS_NFSNODE_H_
+
+#ifndef _NFS_NFS_H_
+#include <nfs/nfs.h>
+#endif
+
+#include <sys/lock.h>
 
 /*
  * Silly rename structure that hangs off the nfsnode until the name
@@ -46,7 +53,7 @@ struct sillyrename {
 	struct	ucred *s_cred;
 	struct	vnode *s_dvp;
 	long	s_namlen;
-	char	s_name[20];
+	char	s_name[24];
 };
 
 /*
@@ -55,30 +62,62 @@ struct sillyrename {
  * There is a unique nfsnode allocated for each active file,
  * each current directory, each mounted-on file, text file, and the root.
  * An nfsnode is 'named' by its file handle. (nget/nfs_node.c)
+ * If this structure exceeds 256 bytes (it is currently 256 using 4.4BSD-Lite
+ * type definitions), file handles of > 32 bytes should probably be split out
+ * into a separate malloc()'d data structure. (Reduce the size of nfsfh_t by
+ * changing the definition in sys/mount.h of NFS_SMALLFH.)
+ * NB: Hopefully the current order of the fields is such that everything will
+ *     be well aligned and, therefore, tightly packed.
  */
-
 struct nfsnode {
-	LIST_ENTRY(nfsnode) n_hash;	/* Hash chain */
-	CIRCLEQ_ENTRY(nfsnode) n_timer;	/* Nqnfs timer chain */
-	nfsv2fh_t n_fh;			/* NFS File Handle */
-	long	n_flag;			/* Flag for locking.. */
-	struct	vnode *n_vnode;		/* vnode associated with this node */
-	struct	vattr n_vattr;		/* Vnode attribute cache */
-	time_t	n_attrstamp;		/* Time stamp for cached attributes */
-	struct	sillyrename *n_sillyrename; /* Ptr to silly rename struct */
-	u_quad_t n_size;		/* Current size of file */
-	int	n_error;		/* Save write error value */
-	u_long	n_direofoffset;		/* Dir. EOF offset cache */
-	time_t	n_mtime;		 /* Prev modify time. */
-	time_t	n_ctime;		 /* Prev create time. */
-	u_quad_t n_brev;		 /* Modify rev when cached */
-	u_quad_t n_lrev;		 /* Modify rev for lease */
-	time_t	n_expiry;		 /* Lease expiry time */
-	struct	lockf *n_lockf;		/* Advisory lock records */
-	struct	sillyrename n_silly;	/* Silly rename struct */
-	struct	timeval n_atim;		/* Special file times */
-	struct	timeval n_mtim;
+	RB_ENTRY(nfsnode)	n_entry;	/* filehandle/node tree. */
+	u_quad_t		n_size;		/* Current size of file */
+	struct vattr		n_vattr;	/* Vnode attribute cache */
+	time_t			n_attrstamp;	/* Attr. cache timestamp */
+	struct timespec 	n_mtime;	/* Prev modify time. */
+	time_t			n_ctime;	/* Prev create time. */
+	nfsfh_t			*n_fhp;		/* NFS File Handle */
+	struct vnode		*n_vnode;	/* associated vnode */
+	struct lockf_state	*n_lockf;	/* Locking record of file */
+	struct rrwlock		n_lock;		/* NFSnode lock */
+	int			n_error;	/* Save write error value */
+	union {
+		struct timespec	nf_atim;	/* Special file times */
+		nfsuint64	nd_cookieverf;	/* Cookie verifier (dir only) */
+	} n_un1;
+	union {
+		struct timespec	nf_mtim;
+		off_t		nd_direof;	/* Dir. EOF offset cache */
+	} n_un2;
+	struct sillyrename	*n_sillyrename;	/* Ptr to silly rename struct */
+	short			n_fhsize;	/* size in bytes, of fh */
+	short			n_flag;		/* Flag for locking.. */
+	nfsfh_t			n_fh;		/* Small File Handle */
+	time_t			n_accstamp;	/* Access cache timestamp */
+	uid_t			n_accuid;	/* Last access requester */
+	int			n_accmode;	/* Last mode requested */
+	int			n_accerror;	/* Last returned error */
+	struct ucred		*n_rcred;
+	struct ucred		*n_wcred;
+
+	off_t			n_pushedlo;	/* 1st blk in committed range */
+	off_t			n_pushedhi;	/* Last block in range */
+	off_t			n_pushlo;	/* 1st block in commit range */
+	off_t			n_pushhi;	/* Last block in range */
+	struct rwlock		n_commitlock;	/* Serialize commits */
+	int			n_commitflags;
 };
+
+/*
+ * Values for n_commitflags
+ */
+#define NFS_COMMIT_PUSH_VALID   0x0001          /* push range valid */
+#define NFS_COMMIT_PUSHED_VALID 0x0002          /* pushed range valid */
+
+#define n_atim		n_un1.nf_atim
+#define n_mtim		n_un2.nf_mtim
+#define n_cookieverf	n_un1.nd_cookieverf
+#define n_direofoffset	n_un2.nd_direof
 
 /*
  * Flags for n_flag
@@ -87,81 +126,22 @@ struct nfsnode {
 #define	NFLUSHINPROG	0x0002	/* Avoid multiple calls to vinvalbuf() */
 #define	NMODIFIED	0x0004	/* Might have a modified buffer in bio */
 #define	NWRITEERR	0x0008	/* Flag write errors so close will know */
-#define	NQNFSNONCACHE	0x0020	/* Non-cachable lease */
-#define	NQNFSWRITE	0x0040	/* Write lease */
-#define	NQNFSEVICTED	0x0080	/* Has been evicted */
 #define	NACC		0x0100	/* Special file accessed */
 #define	NUPD		0x0200	/* Special file updated */
 #define	NCHG		0x0400	/* Special file times changed */
+
+#define NFS_INVALIDATE_ATTRCACHE(np)	((np)->n_attrstamp = 0)
 
 /*
  * Convert between nfsnode pointers and vnode pointers
  */
 #define VTONFS(vp)	((struct nfsnode *)(vp)->v_data)
-#define NFSTOV(np)	((struct vnode *)(np)->n_vnode)
+#define NFSTOV(np)	((np)->n_vnode)
 
 /*
  * Queue head for nfsiod's
  */
-TAILQ_HEAD(, buf) nfs_bufq;
+extern TAILQ_HEAD(nfs_bufqhead, buf) nfs_bufq;
+extern uint32_t nfs_bufqlen, nfs_bufqmax;
 
-#ifdef _KERNEL
-/*
- * Prototypes for NFS vnode operations
- */
-int	nfs_lookup __P((struct vop_lookup_args *));
-int	nfs_create __P((struct vop_create_args *));
-int	nfs_mknod __P((struct vop_mknod_args *));
-int	nfs_open __P((struct vop_open_args *));
-int	nfs_close __P((struct vop_close_args *));
-int	nfsspec_close __P((struct vop_close_args *));
-#ifdef FIFO
-int	nfsfifo_close __P((struct vop_close_args *));
-#endif
-int	nfs_access __P((struct vop_access_args *));
-int	nfsspec_access __P((struct vop_access_args *));
-int	nfs_getattr __P((struct vop_getattr_args *));
-int	nfs_setattr __P((struct vop_setattr_args *));
-int	nfs_read __P((struct vop_read_args *));
-int	nfs_write __P((struct vop_write_args *));
-#define	nfs_lease_check ((int (*) __P((struct  vop_lease_args *)))nullop)
-int	nfsspec_read __P((struct vop_read_args *));
-int	nfsspec_write __P((struct vop_write_args *));
-#ifdef FIFO
-int	nfsfifo_read __P((struct vop_read_args *));
-int	nfsfifo_write __P((struct vop_write_args *));
-#endif
-#define nfs_ioctl ((int (*) __P((struct  vop_ioctl_args *)))enoioctl)
-#define nfs_select ((int (*) __P((struct  vop_select_args *)))seltrue)
-int	nfs_mmap __P((struct vop_mmap_args *));
-int	nfs_fsync __P((struct vop_fsync_args *));
-#define nfs_seek ((int (*) __P((struct  vop_seek_args *)))nullop)
-int	nfs_remove __P((struct vop_remove_args *));
-int	nfs_link __P((struct vop_link_args *));
-int	nfs_rename __P((struct vop_rename_args *));
-int	nfs_mkdir __P((struct vop_mkdir_args *));
-int	nfs_rmdir __P((struct vop_rmdir_args *));
-int	nfs_symlink __P((struct vop_symlink_args *));
-int	nfs_readdir __P((struct vop_readdir_args *));
-int	nfs_readlink __P((struct vop_readlink_args *));
-int	nfs_abortop __P((struct vop_abortop_args *));
-int	nfs_inactive __P((struct vop_inactive_args *));
-int	nfs_reclaim __P((struct vop_reclaim_args *));
-int	nfs_lock __P((struct vop_lock_args *));
-int	nfs_unlock __P((struct vop_unlock_args *));
-int	nfs_bmap __P((struct vop_bmap_args *));
-int	nfs_strategy __P((struct vop_strategy_args *));
-int	nfs_print __P((struct vop_print_args *));
-int	nfs_islocked __P((struct vop_islocked_args *));
-int	nfs_pathconf __P((struct vop_pathconf_args *));
-int	nfs_advlock __P((struct vop_advlock_args *));
-int	nfs_blkatoff __P((struct vop_blkatoff_args *));
-int	nfs_vget __P((struct mount *, ino_t, struct vnode **));
-int	nfs_valloc __P((struct vop_valloc_args *));
-#define nfs_reallocblks \
-	((int (*) __P((struct  vop_reallocblks_args *)))eopnotsupp)
-int	nfs_vfree __P((struct vop_vfree_args *));
-int	nfs_truncate __P((struct vop_truncate_args *));
-int	nfs_update __P((struct vop_update_args *));
-int	nfs_bwrite __P((struct vop_bwrite_args *));
-#endif /* _KERNEL */
+#endif		/* _NFS_NFSNODE_H_ */

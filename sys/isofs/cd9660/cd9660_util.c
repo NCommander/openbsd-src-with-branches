@@ -1,4 +1,5 @@
-/*	$NetBSD: cd9660_util.c,v 1.8 1994/12/13 22:33:25 mycroft Exp $	*/
+/*	$OpenBSD: cd9660_util.c,v 1.10 2017/12/30 20:47:00 guenther Exp $	*/
+/*	$NetBSD: cd9660_util.c,v 1.12 1997/01/24 00:27:33 cgd Exp $	*/
 
 /*-
  * Copyright (c) 1994
@@ -7,7 +8,8 @@
  * This code is derived from software contributed to Berkeley
  * by Pace Willisson (pace@blitz.com).  The Rock Ridge Extension
  * Support code is derived from software contributed to Berkeley
- * by Atsushi Murai (amurai@spec.co.jp).
+ * by Atsushi Murai (amurai@spec.co.jp). Joliet support was added by
+ * Joachim Kuebart (joki@kuebart.stuttgart.netsurf.de).
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -17,11 +19,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -45,53 +43,85 @@
 #include <sys/namei.h>
 #include <sys/resourcevar.h>
 #include <sys/kernel.h>
-#include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/buf.h>
-#include <sys/proc.h>
 #include <sys/conf.h>
 #include <sys/mount.h>
 #include <sys/vnode.h>
-#include <miscfs/specfs/specdev.h> /* XXX */
-#include <miscfs/fifofs/fifo.h> /* XXX */
 #include <sys/malloc.h>
-#include <sys/dir.h>
+#include <sys/dirent.h>
 
 #include <isofs/cd9660/iso.h>
 
 /*
+ * XXX: limited support for loading of Unicode
+ * conversion routine as a kld at a run-time.
+ * Should be removed when native Unicode kernel
+ * interfaces have been introduced.
+ */
+u_char (*cd9660_wchar2char)(u_int32_t wchar) = NULL;
+
+/*
+ * Get one character out of an iso filename
+ * Obey joliet_level
+ * Return number of bytes consumed
+ */
+int
+isochar(const u_char *isofn, const u_char *isoend, int joliet_level, u_char *c)
+{
+      *c = *isofn++;
+      if (joliet_level == 0 || isofn == isoend)
+              /* (00) and (01) are one byte in Joliet, too */
+              return 1;
+
+      /* No Unicode support yet :-( */
+      switch (*c) {
+      default:
+              *c = '?';
+              break;
+      case '\0':
+              *c = *isofn;
+              break;
+      }
+
+      /* XXX: if Unicode conversion routine is loaded then use it */
+      if (cd9660_wchar2char != NULL)
+	      *c = cd9660_wchar2char((*(isofn - 1) << 8) | *isofn);
+
+      return 2;
+}
+
+/*
  * translate and compare a filename
+ * returns (fn - isofn)
  * Note: Version number plus ';' may be omitted.
  */
 int
-isofncmp(fn, fnlen, isofn, isolen)
-	u_char *fn, *isofn;
-	int fnlen, isolen;
+isofncmp(const u_char *fn, int fnlen, const u_char *isofn, int isolen,
+    int joliet_level)
 {
 	int i, j;
-	char c;
+	u_char c;
+	const u_char *fnend = fn + fnlen, *isoend = isofn + isolen;
 	
-	while (--fnlen >= 0) {
-		if (--isolen < 0)
+	for (; fn != fnend; fn++) {
+		if (isofn == isoend)
 			return *fn;
-		if ((c = *isofn++) == ';') {
-			switch (*fn++) {
-			default:
-				return *--fn;
-			case 0:
-				return 0;
-			case ';':
-				break;
-			}
-			for (i = 0; --fnlen >= 0; i = i * 10 + *fn++ - '0') {
+		isofn += isochar(isofn, isoend, joliet_level, &c);
+		if (c == ';') {
+			if (*fn++ != ';')
+				return fn[-1];
+			for (i = 0; fn != fnend; i = i * 10 + *fn++ - '0') {
 				if (*fn < '0' || *fn > '9') {
 					return -1;
 				}
 			}
-			for (j = 0; --isolen >= 0; j = j * 10 + *isofn++ - '0');
+			for (j = 0; isofn != isoend; j = j * 10 + c - '0')
+				isofn += isochar(isofn, isoend,
+				    joliet_level, &c);
 			return i - j;
 		}
-		if (c != *fn) {
+		if (((u_char) c) != *fn) {
 			if (c >= 'A' && c <= 'Z') {
 				if (c + ('a' - 'A') != *fn) {
 					if (*fn >= 'a' && *fn <= 'z')
@@ -102,15 +132,19 @@ isofncmp(fn, fnlen, isofn, isolen)
 			} else
 				return *fn - c;
 		}
-		fn++;
 	}
-	if (isolen > 0) {
-		switch (*isofn) {
+	if (isofn != isoend) {
+		isofn += isochar(isofn, isoend, joliet_level, &c);
+		switch (c) {
 		default:
-			return -1;
+			return -c;
 		case '.':
-			if (isofn[1] != ';')
-				return -1;
+			if (isofn != isoend) {
+				isochar(isofn, isoend, joliet_level, &c);
+				if (c == ';')
+					return 0;
+			}
+			return -1;
 		case ';':
 			return 0;
 		}
@@ -119,34 +153,28 @@ isofncmp(fn, fnlen, isofn, isolen)
 }
 
 /*
- * translate a filename
+ * translate a filename of length > 0
  */
 void
-isofntrans(infn, infnlen, outfn, outfnlen, original, assoc)
-	u_char *infn, *outfn;
-	int infnlen;
-	u_short *outfnlen;
-	int original;
-	int assoc;
+isofntrans(u_char *infn, int infnlen, u_char *outfn, u_short *outfnlen,
+    int original, int assoc, int joliet_level)
 {
 	int fnidx = 0;
+	u_char c, d = '\0', *infnend = infn + infnlen;
 	
 	if (assoc) {
 		*outfn++ = ASSOCCHAR;
 		fnidx++;
-		infnlen++;
 	}
-	for (; fnidx < infnlen; fnidx++) {
-		char c = *infn++;
+	for (; infn != infnend; fnidx++) {
+		infn += isochar(infn, infnend, joliet_level, &c);
 		
-		if (!original && c >= 'A' && c <= 'Z')
-			*outfn++ = c + ('a' - 'A');
-		else if (!original && c == '.' && *infn == ';')
+		if (!original && c == ';') {
+			fnidx -= (d == '.');
 			break;
-		else if (!original && c == ';')
-			break;
-		else
+		} else
 			*outfn++ = c;
+		d = c;
 	}
 	*outfnlen = fnidx;
 }

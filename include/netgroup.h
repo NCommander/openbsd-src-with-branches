@@ -1,3 +1,4 @@
+/*	$OpenBSD: netgroup.h,v 1.8 2015/09/10 18:59:34 deraadt Exp $ */
 /*
  * Copyright (c) 1994 Christos Zoulas
  * All rights reserved.
@@ -10,11 +11,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Christos Zoulas.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -28,7 +24,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $Id: netgroup.h,v 1.1 1994/12/03 00:00:58 christos Exp $
  */
 #ifndef _NETGROUP_H_
 #define	_NETGROUP_H_
@@ -58,11 +53,10 @@ struct netgroup {
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-void	setnetgrent	__P((const char *));
-int	getnetgrent	__P((const char **, const char **, const char **));
-void	endnetgrent	__P((void));
-int	innetgr		__P((const char *, const char *, const char *,
-			     const char *));
+void	setnetgrent(const char *);
+int	getnetgrent(const char **, const char **, const char **);
+void	endnetgrent(void);
+int	innetgr(const char *, const char *, const char *, const char *);
 __END_DECLS
 
 #endif /* !_NETGROUP_H_ */

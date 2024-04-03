@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: shpcic.c,v 1.13 2017/06/22 11:34:51 tom Exp $	*/
 /*	$NetBSD: shpcic.c,v 1.10 2005/12/24 20:07:32 perry Exp $	*/
 
 /*
@@ -42,6 +42,7 @@
 #include <sh/trap.h>
 #include <sh/dev/pcicreg.h>
 
+#include <machine/autoconf.h>
 #include <machine/bus.h>
 #include <machine/intr.h>
 
@@ -67,8 +68,8 @@ static const struct shpcic_product {
 int	shpcic_match(struct device *, void *, void *);
 void	shpcic_attach(struct device *, struct device *, void *);
 
-struct cfattach shpcic_ca = {
-	sizeof(struct device), shpcic_match, shpcic_attach
+const struct cfattach shpcic_ca = {
+	sizeof(struct shpcic_softc), shpcic_match, shpcic_attach
 };
 
 struct cfdriver shpcic_cd = {
@@ -77,9 +78,6 @@ struct cfdriver shpcic_cd = {
 
 /* There can be only one. */
 int shpcic_found = 0;
-
-/* PCIC intr priotiry */
-static int shpcic_intr_priority[2] = { IPL_BIO, IPL_BIO };
 
 static const struct shpcic_product *shpcic_lookup(void);
 
@@ -109,6 +107,11 @@ shpcic_lookup(void)
 int
 shpcic_match(struct device *parent, void *vcf, void *aux)
 {
+	struct mainbus_attach_args *ma = aux;
+
+	if (strcmp(ma->ma_name, shpcic_cd.cd_name) != 0)
+		return (0);
+
 	if (!CPU_IS_SH4)
 		return (0);
 
@@ -137,7 +140,10 @@ void
 shpcic_attach(struct device *parent, struct device *self, void *aux)
 {
 	const struct shpcic_product *spp;
+	struct shpcic_softc *sc = (struct shpcic_softc *)self;
 	struct pcibus_attach_args pba;
+	struct extent *io_ex;
+	struct extent *mem_ex;
 
 	shpcic_found = 1;
 
@@ -234,15 +240,37 @@ shpcic_attach(struct device *parent, struct device *self, void *aux)
 	_reg_write_4(SH4_PCICR, PCICR_BASE | PCICR_CFINIT);
 
 	/* set PCI controller interrupt priority */
-	intpri_intr_priority(SH4_INTEVT_PCIERR, shpcic_intr_priority[0]);
-	intpri_intr_priority(SH4_INTEVT_PCISERR, shpcic_intr_priority[1]);
+	intpri_intr_priority(SH4_INTEVT_PCIERR, IPL_BIO);	/* IPL_HIGH? */
+	intpri_intr_priority(SH4_INTEVT_PCISERR, IPL_BIO);	/* IPL_HIGH? */
+
+	sc->sc_membus_space.bus_base = SH4_PCIC_MEM;
+	sc->sc_membus_space.bus_size = SH4_PCIC_MEM_SIZE;
+	sc->sc_membus_space.bus_io = 0;
+	sc->sc_iobus_space.bus_base = SH4_PCIC_IO; /* XXX */
+	sc->sc_iobus_space.bus_size =  SH4_PCIC_IO_SIZE;
+	sc->sc_iobus_space.bus_io = 1;
+
+	io_ex = extent_create("pciio", 0, 0xffffffff, M_DEVBUF, NULL, 0,
+	    EX_NOWAIT | EX_FILLED);
+	if (io_ex != NULL)
+		extent_free(io_ex, SH4_PCIC_IO, SH4_PCIC_IO_SIZE, EX_NOWAIT);
+	mem_ex = extent_create("pcimem", 0, 0xffffffff, M_DEVBUF, NULL, 0,
+	    EX_NOWAIT | EX_FILLED);
+	if (mem_ex != NULL)
+		extent_free(mem_ex, SH4_PCIC_MEM, SH4_PCIC_MEM_SIZE, EX_NOWAIT);
+
+	sc->sc_pci_chipset = shpcic_get_bus_mem_tag();
 
 	/* PCI bus */
 	memset(&pba, 0, sizeof(pba));
+	pba.pba_busname = "pci";
 	pba.pba_iot = shpcic_get_bus_io_tag();
 	pba.pba_memt = shpcic_get_bus_mem_tag();
 	pba.pba_dmat = shpcic_get_bus_dma_tag();
+	pba.pba_ioex = io_ex;
+	pba.pba_memex = mem_ex;
 	pba.pba_pc = NULL;
+	pba.pba_domain = pci_ndomains++;
 	pba.pba_bus = 0;
 	pba.pba_bridgetag = NULL;
 	config_found(self, &pba, NULL);
@@ -283,6 +311,12 @@ shpcic_decompose_tag(void *v, pcitag_t tag, int *bp, int *dp, int *fp)
 		*fp = (tag >> 8) & 0x7;
 }
 
+int
+shpcic_conf_size(void *v, pcitag_t tag)
+{
+	return PCI_CONFIG_SPACE_SIZE;
+}
+
 pcireg_t
 shpcic_conf_read(void *v, pcitag_t tag, int reg)
 {
@@ -308,67 +342,6 @@ shpcic_conf_write(void *v, pcitag_t tag, int reg, pcireg_t data)
 	_reg_write_4(SH4_PCIPDR, data);
 	_reg_write_4(SH4_PCIPAR, 0);
 	splx(s);
-}
-
-int
-shpcic_set_intr_priority(int intr, int level)
-{
-	int evtcode;
-
-	if ((intr != 0) && (intr != 1)) {
-		return (-1);
-	}
-	if ((level < IPL_NONE) || (level > IPL_HIGH)) {
-		return (-1);
-	}
-
-	if (intr == 0) {
-		evtcode = SH4_INTEVT_PCIERR;
-	} else {
-		evtcode = SH4_INTEVT_PCISERR;
-	}
-
-	intpri_intr_priority(evtcode, shpcic_intr_priority[intr]);
-	shpcic_intr_priority[intr] = level;
-
-	return (0);
-}
-
-void *
-shpcic_intr_establish(int evtcode, int (*ih_func)(void *), void *ih_arg,
-    const char *ih_name)
-{
-	int level;
-
-	switch (evtcode) {
-	case SH4_INTEVT_PCISERR:
-		level = shpcic_intr_priority[1];
-		break;
-
-	case SH4_INTEVT_PCIDMA3:
-	case SH4_INTEVT_PCIDMA2:
-	case SH4_INTEVT_PCIDMA1:
-	case SH4_INTEVT_PCIDMA0:
-	case SH4_INTEVT_PCIPWON:
-	case SH4_INTEVT_PCIPWDWN:
-	case SH4_INTEVT_PCIERR:
-		level = shpcic_intr_priority[0];
-		break;
-
-	default:
-		printf("shpcic_intr_establish: unknown evtcode = 0x%08x\n",
-		    evtcode);
-		return NULL;
-	}
-
-	return intc_intr_establish(evtcode, IST_LEVEL, level, ih_func, ih_arg,
-	    ih_name);
-}
-
-void
-shpcic_intr_disestablish(void *ih)
-{
-	intc_intr_disestablish(ih);
 }
 
 /*
@@ -412,6 +385,12 @@ void
 shpcic_iomem_free(void *v, bus_space_handle_t bsh, bus_size_t size)
 {
 	/* Nothing to do */
+}
+
+void *
+shpcic_iomem_vaddr(void *v, bus_space_handle_t bsh)
+{
+	return ((void *)bsh);
 }
 
 /*
@@ -600,7 +579,54 @@ shpcic_mem_read_multi_4(void *v, bus_space_handle_t bsh,
 }
 
 /*
- *
+ * read raw multi
+ */
+
+void
+shpcic_io_read_raw_multi_2(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, uint8_t *addr, bus_size_t count)
+{
+	count >>= 1;
+	while (count--) {
+		*(uint16_t *)addr = __shpcic_io_read_2(bsh, offset);
+		addr += 2;
+	}
+}
+
+void
+shpcic_io_read_raw_multi_4(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, uint8_t *addr, bus_size_t count)
+{
+	count >>= 2;
+	while (count--) {
+		*(uint32_t *)addr = __shpcic_io_read_4(bsh, offset);
+		addr += 4;
+	}
+}
+
+void
+shpcic_mem_read_raw_multi_2(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, uint8_t *addr, bus_size_t count)
+{
+	count >>= 1;
+	while (count--) {
+		*(uint16_t *)addr = __shpcic_mem_read_2(bsh, offset);
+		addr += 2;
+	}
+}
+
+void
+shpcic_mem_read_raw_multi_4(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, uint8_t *addr, bus_size_t count)
+{
+	count >>= 2;
+	while (count--) {
+		*(uint32_t *)addr = __shpcic_mem_read_4(bsh, offset);
+		addr += 4;
+	}
+}
+
+/*
  * read region
  */
 void
@@ -659,6 +685,58 @@ shpcic_mem_read_region_4(void *v, bus_space_handle_t bsh,
 {
 	while (count--) {
 		*addr++ = __shpcic_mem_read_4(bsh, offset);
+		offset += 4;
+	}
+}
+
+/*
+ * read raw region
+ */
+
+void
+shpcic_io_read_raw_region_2(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, uint8_t *addr, bus_size_t count)
+{
+	count >>= 1;
+	while (count--) {
+		*(uint16_t *)addr = __shpcic_io_read_2(bsh, offset);
+		addr += 2;
+		offset += 2;
+	}
+}
+
+void
+shpcic_io_read_raw_region_4(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, uint8_t *addr, bus_size_t count)
+{
+	count >>= 2;
+	while (count--) {
+		*(uint32_t *)addr = __shpcic_io_read_4(bsh, offset);
+		addr += 4;
+		offset += 4;
+	}
+}
+
+void
+shpcic_mem_read_raw_region_2(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, uint8_t *addr, bus_size_t count)
+{
+	count >>= 1;
+	while (count--) {
+		*(uint16_t *)addr = __shpcic_mem_read_2(bsh, offset);
+		addr += 2;
+		offset += 2;
+	}
+}
+
+void
+shpcic_mem_read_raw_region_4(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, uint8_t *addr, bus_size_t count)
+{
+	count >>= 2;
+	while (count--) {
+		*(uint32_t *)addr = __shpcic_mem_read_4(bsh, offset);
+		addr += 4;
 		offset += 4;
 	}
 }
@@ -834,6 +912,54 @@ shpcic_mem_write_multi_4(void *v, bus_space_handle_t bsh,
 }
 
 /*
+ * write raw multi
+ */
+
+void
+shpcic_io_write_raw_multi_2(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, const uint8_t *addr, bus_size_t count)
+{
+	count >>= 1;
+	while (count--) {
+		__shpcic_io_write_2(bsh, offset, *(uint16_t *)addr);
+		addr += 2;
+	}
+}
+
+void
+shpcic_io_write_raw_multi_4(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, const uint8_t *addr, bus_size_t count)
+{
+	count >>= 2;
+	while (count--) {
+		__shpcic_io_write_4(bsh, offset, *(uint32_t *)addr);
+		addr += 4;
+	}
+}
+
+void
+shpcic_mem_write_raw_multi_2(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, const uint8_t *addr, bus_size_t count)
+{
+	count >>= 1;
+	while (count--) {
+		__shpcic_mem_write_2(bsh, offset, *(uint16_t *)addr);
+		addr += 2;
+	}
+}
+
+void
+shpcic_mem_write_raw_multi_4(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, const uint8_t *addr, bus_size_t count)
+{
+	count >>= 2;
+	while (count--) {
+		__shpcic_mem_write_4(bsh, offset, *(uint32_t *)addr);
+		addr += 4;
+	}
+}
+
+/*
  * write region
  */
 void
@@ -892,6 +1018,58 @@ shpcic_mem_write_region_4(void *v, bus_space_handle_t bsh,
 {
 	while (count--) {
 		__shpcic_mem_write_4(bsh, offset, *addr++);
+		offset += 4;
+	}
+}
+
+/*
+ * write raw region
+ */
+
+void
+shpcic_io_write_raw_region_2(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, const uint8_t *addr, bus_size_t count)
+{
+	count >>= 1;
+	while (count--) {
+		__shpcic_io_write_2(bsh, offset, *(uint16_t *)addr);
+		addr += 2;
+		offset += 2;
+	}
+}
+
+void
+shpcic_io_write_raw_region_4(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, const uint8_t *addr, bus_size_t count)
+{
+	count >>= 1;
+	while (count--) {
+		__shpcic_io_write_4(bsh, offset, *(uint32_t *)addr);
+		addr += 4;
+		offset += 4;
+	}
+}
+
+void
+shpcic_mem_write_raw_region_2(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, const uint8_t *addr, bus_size_t count)
+{
+	count >>= 1;
+	while (count--) {
+		__shpcic_mem_write_2(bsh, offset, *(uint16_t *)addr);
+		addr += 2;
+		offset += 2;
+	}
+}
+
+void
+shpcic_mem_write_raw_region_4(void *v, bus_space_handle_t bsh,
+    bus_size_t offset, const uint8_t *addr, bus_size_t count)
+{
+	count >>= 2;
+	while (count--) {
+		__shpcic_mem_write_4(bsh, offset, *(uint32_t *)addr);
+		addr += 4;
 		offset += 4;
 	}
 }
@@ -1020,7 +1198,7 @@ shpcic_mem_set_region_4(void *v, bus_space_handle_t bsh,
  * copy region
  */
 void
-shpcic_io_copy_region_1(void *v, bus_space_handle_t bsh1,
+shpcic_io_copy_1(void *v, bus_space_handle_t bsh1,
     bus_size_t off1, bus_space_handle_t bsh2, bus_size_t off2, bus_size_t count)
 {
 	u_long addr1 = bsh1 + off1;
@@ -1047,7 +1225,7 @@ shpcic_io_copy_region_1(void *v, bus_space_handle_t bsh1,
 }
 
 void
-shpcic_io_copy_region_2(void *v, bus_space_handle_t bsh1,
+shpcic_io_copy_2(void *v, bus_space_handle_t bsh1,
     bus_size_t off1, bus_space_handle_t bsh2, bus_size_t off2, bus_size_t count)
 {
 	u_long addr1 = bsh1 + off1;
@@ -1074,7 +1252,7 @@ shpcic_io_copy_region_2(void *v, bus_space_handle_t bsh1,
 }
 
 void
-shpcic_io_copy_region_4(void *v, bus_space_handle_t bsh1,
+shpcic_io_copy_4(void *v, bus_space_handle_t bsh1,
     bus_size_t off1, bus_space_handle_t bsh2, bus_size_t off2, bus_size_t count)
 {
 	u_long addr1 = bsh1 + off1;
@@ -1101,7 +1279,7 @@ shpcic_io_copy_region_4(void *v, bus_space_handle_t bsh1,
 }
 
 void
-shpcic_mem_copy_region_1(void *v, bus_space_handle_t bsh1,
+shpcic_mem_copy_1(void *v, bus_space_handle_t bsh1,
     bus_size_t off1, bus_space_handle_t bsh2, bus_size_t off2, bus_size_t count)
 {
 	u_long addr1 = bsh1 + off1;
@@ -1128,7 +1306,7 @@ shpcic_mem_copy_region_1(void *v, bus_space_handle_t bsh1,
 }
 
 void
-shpcic_mem_copy_region_2(void *v, bus_space_handle_t bsh1,
+shpcic_mem_copy_2(void *v, bus_space_handle_t bsh1,
     bus_size_t off1, bus_space_handle_t bsh2, bus_size_t off2, bus_size_t count)
 {
 	u_long addr1 = bsh1 + off1;
@@ -1155,7 +1333,7 @@ shpcic_mem_copy_region_2(void *v, bus_space_handle_t bsh1,
 }
 
 void
-shpcic_mem_copy_region_4(void *v, bus_space_handle_t bsh1,
+shpcic_mem_copy_4(void *v, bus_space_handle_t bsh1,
     bus_size_t off1, bus_space_handle_t bsh2, bus_size_t off2, bus_size_t count)
 {
 	u_long addr1 = bsh1 + off1;

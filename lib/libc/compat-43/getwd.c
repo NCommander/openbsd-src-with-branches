@@ -1,3 +1,4 @@
+/*	$OpenBSD: getwd.c,v 1.13 2021/12/16 19:12:43 millert Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
  * All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,25 +28,21 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)getwd.c	5.1 (Berkeley) 2/20/91";*/
-static char *rcsid = "$Id: getwd.c,v 1.3 1993/08/26 00:43:05 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/param.h>
-#include <unistd.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 char *
-getwd(buf)
-	char *buf;
+getwd(char *buf)
 {
-	char *p;
-
-	if (p = getcwd(buf, MAXPATHLEN))
-		return(p);
-	(void)strcpy(buf, strerror(errno));
-	return((char *)NULL);
+	if (__getcwd(buf, PATH_MAX) == -1) {
+		strlcpy(buf, strerror(errno), PATH_MAX);
+		return NULL;
+	}
+	return buf;
 }
+
+__warn_references(getwd,
+    "getwd() possibly used unsafely; consider using getcwd()");

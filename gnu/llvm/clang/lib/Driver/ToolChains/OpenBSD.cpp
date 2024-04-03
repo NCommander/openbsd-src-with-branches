@@ -276,6 +276,10 @@ SanitizerMask OpenBSD::getSupportedSanitizers() const {
     Res |= SanitizerKind::FuzzerNoLink;
   }
 
+  if (IsX86_64) {
+    Res |= SanitizerKind::KernelAddress;
+  }
+
   return Res;
 }
 

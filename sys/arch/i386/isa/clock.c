@@ -1,4 +1,5 @@
-/*	$NetBSD: clock.c,v 1.34 1995/08/13 04:06:29 mycroft Exp $	*/
+/*	$OpenBSD: clock.c,v 1.67 2023/08/23 01:55:46 cheloha Exp $	*/
+/*	$NetBSD: clock.c,v 1.39 1996/05/12 23:11:54 mycroft Exp $	*/
 
 /*-
  * Copyright (c) 1993, 1994 Charles Hannum.
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,28 +35,28 @@
  *
  *	@(#)clock.c	7.2 (Berkeley) 5/12/91
  */
-/* 
+/*
  * Mach Operating System
  * Copyright (c) 1991,1990,1989 Carnegie Mellon University
  * All Rights Reserved.
- * 
+ *
  * Permission to use, copy, modify and distribute this software and its
  * documentation is hereby granted, provided that both the copyright
  * notice and this permission notice appear in all copies of the
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
- * 
+ *
  * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
- * 
+ *
  * Carnegie Mellon requests users of this software to return to
- * 
+ *
  *  Software Distribution Coordinator  or  Software.Distribution@CS.CMU.EDU
  *  School of Computer Science
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
- * 
+ *
  * any improvements or extensions that they make and grant Carnegie Mellon
  * the rights to redistribute these changes.
  */
@@ -92,88 +89,220 @@ WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <sys/systm.h>
 #include <sys/time.h>
 #include <sys/kernel.h>
-#include <sys/device.h>
+#include <sys/clockintr.h>
+#include <sys/timeout.h>
+#include <sys/timetc.h>
+#include <sys/mutex.h>
 
-#include <machine/cpu.h>
+#include <machine/intr.h>
 #include <machine/pio.h>
 #include <machine/cpufunc.h>
 
+#include <dev/clock_subr.h>
 #include <dev/isa/isareg.h>
 #include <dev/isa/isavar.h>
 #include <dev/ic/mc146818reg.h>
+#include <dev/ic/i8253reg.h>
 #include <i386/isa/nvram.h>
-#include <i386/isa/timerreg.h>
-#include <i386/isa/spkrreg.h>
 
-void spinwait __P((int));
+void	spinwait(int);
+int	clockintr(void *);
+int	gettick(void);
+int	rtcget(mc_todregs *);
+void	rtcput(mc_todregs *);
+int	rtcintr(void *);
+void	rtcdrain(void *);
+int	calibrate_cyclecounter_ctr(void);
+
+u_int mc146818_read(void *, u_int);
+void mc146818_write(void *, u_int, u_int);
+
+int cpuspeed;
+int clock_broken_latch;
+
+/* Timecounter on the i8254 */
+uint32_t i8254_lastcount;
+uint32_t i8254_offset;
+int i8254_ticked;
+u_int i8254_get_timecount(struct timecounter *tc);
+u_int i8254_simple_get_timecount(struct timecounter *tc);
+
+static struct timecounter i8254_timecounter = {
+	.tc_get_timecount = i8254_get_timecount,
+	.tc_counter_mask = ~0u,
+	.tc_frequency = TIMER_FREQ,
+	.tc_name = "i8254",
+	.tc_quality = 0,
+	.tc_priv = NULL,
+	.tc_user = 0,
+};
+struct mutex timer_mutex = MUTEX_INITIALIZER(IPL_HIGH);
+u_long rtclock_tval;
 
 #define	SECMIN	((unsigned)60)			/* seconds per minute */
 #define	SECHOUR	((unsigned)(60*SECMIN))		/* seconds per hour */
-#define	SECDAY	((unsigned)(24*SECHOUR))	/* seconds per day */
-#define	SECYR	((unsigned)(365*SECDAY))	/* seconds per common year */
 
-__inline u_int
-mc146818_read(sc, reg)
-	void *sc;					/* XXX use it? */
-	u_int reg;
+u_int
+mc146818_read(void *sc, u_int reg)
 {
+	int s;
+	u_char v;
 
+	s = splhigh();
 	outb(IO_RTC, reg);
-	return (inb(IO_RTC+1));
-}
-
-__inline void
-mc146818_write(sc, reg, datum)
-	void *sc;					/* XXX use it? */
-	u_int reg, datum;
-{
-
-	outb(IO_RTC, reg);
-	outb(IO_RTC+1, datum);
+	DELAY(1);
+	v = inb(IO_RTC+1);
+	DELAY(1);
+	splx(s);
+	return (v);
 }
 
 void
-startrtclock()
+mc146818_write(void *sc, u_int reg, u_int datum)
 {
 	int s;
 
-	findcpuspeed();		/* use the clock (while it's free)
-					to find the cpu speed */
-	/* initialize 8253 clock */
-	outb(TIMER_MODE, TIMER_SEL0|TIMER_RATEGEN|TIMER_16BIT);
+	s = splhigh();
+	outb(IO_RTC, reg);
+	DELAY(1);
+	outb(IO_RTC+1, datum);
+	DELAY(1);
+	splx(s);
+}
 
-	/* Correct rounding will buy us a better precision in timekeeping */
-	outb(IO_TIMER1, TIMER_DIV(hz) % 256);
-	outb(IO_TIMER1, TIMER_DIV(hz) / 256);
+void
+startclocks(void)
+{
+	int s;
+
+	mtx_enter(&timer_mutex);
+	rtclock_tval = TIMER_DIV(hz);
+	i8254_startclock();
+	mtx_leave(&timer_mutex);
 
 	/* Check diagnostic status */
-	if (s = mc146818_read(NULL, NVRAM_DIAG))	/* XXX softc */
-		printf("RTC BIOS diagnostic error %b\n", s, NVRAM_DIAG_BITS);
+	if ((s = mc146818_read(NULL, NVRAM_DIAG)) != 0)	/* XXX softc */
+		printf("RTC BIOS diagnostic error %b\n", (unsigned int) s, 
+		    NVRAM_DIAG_BITS);
+}
+
+void
+rtcdrain(void *v)
+{
+	struct timeout *to = (struct timeout *)v;
+
+	if (to != NULL)
+		timeout_del(to);
+
+	/* Drain any un-acknowledged RTC interrupts. */
+	while (mc146818_read(NULL, MC_REGC) & MC_REGC_PF)
+		; /* Nothing. */
 }
 
 int
-clockintr(arg)
-	void *arg;
+clockintr(void *frame)
 {
-	struct clockframe *frame = arg;		/* not strictly necessary */
-
-	hardclock(frame);
-	return -1;
+	if (timecounter->tc_get_timecount == i8254_get_timecount) {
+		if (i8254_ticked) {
+			i8254_ticked = 0;
+		} else {
+			i8254_offset += rtclock_tval;
+			i8254_lastcount = 0;
+		}
+	}
+	clockintr_dispatch(frame);
+	return (1);
 }
 
 int
-gettick()
+rtcintr(void *frame)
 {
-	u_char lo, hi;
+	u_int stat = 0;
 
-	/* Don't want someone screwing with the counter while we're here. */
-	disable_intr();
-	/* Select counter 0 and latch it. */
-	outb(TIMER_MODE, TIMER_SEL0 | TIMER_LATCH);
-	lo = inb(TIMER_CNTR0);
-	hi = inb(TIMER_CNTR0);
-	enable_intr();
-	return ((hi << 8) | lo);
+	/*
+	 * If rtcintr is 'late', next intr may happen immediately.
+	 * Get them all. (Also, see comment in cpu_initclocks().)
+	 */
+	while (mc146818_read(NULL, MC_REGC) & MC_REGC_PF)
+		stat = 1;
+
+	/* XXX Can rtcintr() run before i8254_initclocks() is complete? */
+	if (stathz != 0 && stat)
+		clockintr_dispatch(frame);
+
+	return (stat);
+}
+
+int
+gettick(void)
+{
+	u_long s;
+
+	if (clock_broken_latch) {
+		int v1, v2, v3;
+		int w1, w2, w3;
+
+		/*
+		 * Don't lock the mutex in this case, clock_broken_latch
+		 * CPUs don't do MP anyway.
+		 */
+
+		s = intr_disable();
+
+		v1 = inb(IO_TIMER1 + TIMER_CNTR0);
+		v1 |= inb(IO_TIMER1 + TIMER_CNTR0) << 8;
+		v2 = inb(IO_TIMER1 + TIMER_CNTR0);
+		v2 |= inb(IO_TIMER1 + TIMER_CNTR0) << 8;
+		v3 = inb(IO_TIMER1 + TIMER_CNTR0);
+		v3 |= inb(IO_TIMER1 + TIMER_CNTR0) << 8;
+
+		intr_restore(s);
+
+		if (v1 >= v2 && v2 >= v3 && v1 - v3 < 0x200)
+			return (v2);
+
+#define _swap_val(a, b) do { \
+	int c = a; \
+	a = b; \
+	b = c; \
+} while (0)
+
+		/* sort v1 v2 v3 */
+		if (v1 < v2)
+			_swap_val(v1, v2);
+		if (v2 < v3)
+			_swap_val(v2, v3);
+		if (v1 < v2)
+			_swap_val(v1, v2);
+
+		/* compute the middle value */
+		if (v1 - v3 < 0x200)
+			return (v2);
+		w1 = v2 - v3;
+		w2 = v3 - v1 + TIMER_DIV(hz);
+		w3 = v1 - v2;
+		if (w1 >= w2) {
+			if (w1 >= w3)
+				return (v1);
+		} else {
+			if (w2 >= w3)
+				return (v2);
+		}
+		return (v3);
+	} else {
+		u_char lo, hi;
+
+		mtx_enter(&timer_mutex);
+		s = intr_disable();
+		/* Select counter 0 and latch it. */
+		outb(IO_TIMER1 + TIMER_MODE, TIMER_SEL0 | TIMER_LATCH);
+		lo = inb(IO_TIMER1 + TIMER_CNTR0);
+		hi = inb(IO_TIMER1 + TIMER_CNTR0);
+
+		intr_restore(s);
+		mtx_leave(&timer_mutex);
+		return ((hi << 8) | lo);
+	}
 }
 
 /*
@@ -184,8 +313,7 @@ gettick()
  * wave' mode counts at 2:1).
  */
 void
-delay(n)
-	int n;
+i8254_delay(int n)
 {
 	int limit, tick, otick;
 
@@ -204,14 +332,10 @@ delay(n)
 	n -= 5;
 	if (n < 0)
 		return;
-	{register int m;
-	__asm __volatile("mul %3"
-			 : "=a" (n), "=d" (m)
-			 : "0" (n), "r" (TIMER_FREQ));
-	__asm __volatile("div %3"
+	__asm volatile("mul %2\n\tdiv %3"
 			 : "=a" (n)
-			 : "0" (n), "d" (m), "r" (1000000)
-			 : "%edx");}
+			 : "0" (n), "r" (TIMER_FREQ), "r" (1000000)
+			 : "%edx", "cc");
 #else
 	/*
 	 * Calculate ((n * TIMER_FREQ) / 1e6) without using floating point and
@@ -240,280 +364,380 @@ delay(n)
 	}
 }
 
-static int beeping;
-
-void
-sysbeepstop(arg)
-	void *arg;
+int
+calibrate_cyclecounter_ctr(void)
 {
+	struct cpu_info *ci = curcpu();
+	unsigned long long count, last_count, msr;
 
-	/* disable counter 2 */
-	disable_intr();
-	outb(PITAUX_PORT, inb(PITAUX_PORT) & ~PIT_SPKR);
-	enable_intr();
-	beeping = 0;
-}
+	if ((ci->ci_flags & CPUF_CONST_TSC) == 0 ||
+	    (cpu_perf_eax & CPUIDEAX_VERID) <= 1 ||
+	    CPUIDEDX_NUM_FC(cpu_perf_edx) <= 1)
+		return (-1);
 
-void
-sysbeep(pitch, period)
-	int pitch, period;
-{
-	static int last_pitch;
-
-	if (beeping)
-		untimeout(sysbeepstop, 0);
-	if (pitch == 0 || period == 0) {
-		sysbeepstop(0);
-		last_pitch = 0;
-		return;
+	msr = rdmsr(MSR_PERF_FIXED_CTR_CTRL);
+	if (msr & MSR_PERF_FIXED_CTR_FC(1, MSR_PERF_FIXED_CTR_FC_MASK)) {
+		/* some hypervisor is dicking us around */
+		return (-1);
 	}
-	if (!beeping || last_pitch != pitch) {
-		disable_intr();
-		outb(TIMER_MODE, TIMER_SEL2 | TIMER_16BIT | TIMER_SQWAVE);
-		outb(TIMER_CNTR2, TIMER_DIV(pitch) % 256);
-		outb(TIMER_CNTR2, TIMER_DIV(pitch) / 256);
-		outb(PITAUX_PORT, inb(PITAUX_PORT) | PIT_SPKR);	/* enable counter 2 */
-		enable_intr();
-	}
-	last_pitch = pitch;
-	beeping = 1;
-	timeout(sysbeepstop, 0, period);
-}
 
-unsigned int delaycount;	/* calibrated loop variable (1 millisecond) */
+	msr |= MSR_PERF_FIXED_CTR_FC(1, MSR_PERF_FIXED_CTR_FC_1);
+	wrmsr(MSR_PERF_FIXED_CTR_CTRL, msr);
 
-#define FIRST_GUESS	0x2000
-findcpuspeed()
-{
-	int i;
-	int remainder;
+	msr = rdmsr(MSR_PERF_GLOBAL_CTRL) | MSR_PERF_GLOBAL_CTR1_EN;
+	wrmsr(MSR_PERF_GLOBAL_CTRL, msr);
 
-	/* Put counter in count down mode */
-	outb(TIMER_MODE, TIMER_SEL0 | TIMER_16BIT | TIMER_RATEGEN);
-	outb(TIMER_CNTR0, 0xff);
-	outb(TIMER_CNTR0, 0xff);
-	for (i = FIRST_GUESS; i; i--)
-		;
-	/* Read the value left in the counter */
-	remainder = gettick();
-	/*
-	 * Formula for delaycount is:
-	 *  (loopcount * timer clock speed) / (counter ticks * 1000)
-	 */
-	delaycount = (FIRST_GUESS * TIMER_DIV(1000)) / (0xffff-remainder);
+	last_count = rdmsr(MSR_PERF_FIXED_CTR1);
+	delay(1000000);
+	count = rdmsr(MSR_PERF_FIXED_CTR1);
+
+	msr = rdmsr(MSR_PERF_FIXED_CTR_CTRL);
+	msr &= MSR_PERF_FIXED_CTR_FC(1, MSR_PERF_FIXED_CTR_FC_MASK);
+	wrmsr(MSR_PERF_FIXED_CTR_CTRL, msr);
+
+	msr = rdmsr(MSR_PERF_GLOBAL_CTRL);
+	msr &= ~MSR_PERF_GLOBAL_CTR1_EN;
+	wrmsr(MSR_PERF_GLOBAL_CTRL, msr);
+
+	cpuspeed = ((count - last_count) + 999999) / 1000000;
+
+	return (cpuspeed == 0 ? -1 : 0);
 }
 
 void
-cpu_initclocks()
+calibrate_cyclecounter(void)
 {
+	unsigned long long count, last_count;
 
-	/*
-	 * XXX If you're doing strange things with multiple clocks, you might
-	 * want to keep track of clock handlers.
-	 */
-	(void)isa_intr_establish(0, ISA_IST_PULSE, ISA_IPL_CLOCK,
-	    clockintr, 0);
-}
-
-void
-rtcinit()
-{
-	static int first_rtcopen_ever = 1;
-
-	if (!first_rtcopen_ever)
+	if (calibrate_cyclecounter_ctr() == 0)
 		return;
-	first_rtcopen_ever = 0;
 
-	mc146818_write(NULL, MC_REGA,			/* XXX softc */
-	    MC_BASE_32_KHz | MC_RATE_1024_Hz);
-	mc146818_write(NULL, MC_REGB, MC_REGB_24HR);	/* XXX softc */
+	__asm volatile("rdtsc" : "=A" (last_count));
+	delay(1000000);
+	__asm volatile("rdtsc" : "=A" (count));
+
+	cpuspeed = ((count - last_count) + 999999) / 1000000;
+}
+
+void
+i8254_initclocks(void)
+{
+	i8254_inittimecounter();	/* hook the interrupt-based i8254 tc */
+
+	stathz = 128;
+	profhz = 1024;		/* XXX does not divide into 1 billion */
+}
+
+void
+i8254_start_both_clocks(void)
+{
+	clockintr_cpu_init(NULL);
+
+	/*
+	 * When using i8254 for clock, we also use the rtc for profclock.
+	 *
+	 * These IRQs are not MP-safe, but it is harmless to lie about it
+	 * because we cannot reach this point unless we are only booting
+	 * a single CPU.
+	 */
+	(void)isa_intr_establish(NULL, 0, IST_PULSE, IPL_CLOCK | IPL_MPSAFE,
+	    clockintr, 0, "clock");
+	(void)isa_intr_establish(NULL, 8, IST_PULSE, IPL_STATCLOCK | IPL_MPSAFE,
+	    rtcintr, 0, "rtc");
+
+	rtcstart();			/* start the mc146818 clock */
+}
+
+void
+rtcstart(void)
+{
+	static struct timeout rtcdrain_timeout;
+
+	mc146818_write(NULL, MC_REGA, MC_BASE_32_KHz | MC_RATE_128_Hz);
+	mc146818_write(NULL, MC_REGB, MC_REGB_24HR | MC_REGB_PIE);
+
+	/*
+	 * On a number of i386 systems, the rtc will fail to start when booting
+	 * the system. This is due to us missing to acknowledge an interrupt
+	 * during early stages of the boot process. If we do not acknowledge
+	 * the interrupt, the rtc clock will not generate further interrupts.
+	 * To solve this, once interrupts are enabled, use a timeout (once)
+	 * to drain any un-acknowledged rtc interrupt(s).
+	 */
+
+	timeout_set(&rtcdrain_timeout, rtcdrain, (void *)&rtcdrain_timeout);
+	timeout_add(&rtcdrain_timeout, 1);
+}
+
+void
+rtcstop(void)
+{
+	mc146818_write(NULL, MC_REGB, MC_REGB_24HR);
 }
 
 int
-rtcget(regs)
-	mc_todregs *regs;
+rtcget(mc_todregs *regs)
 {
-
-	rtcinit();
-	if (mc146818_read(NULL, MC_REGD) & MC_REGD_VRT == 0) /* XXX softc */
+	if ((mc146818_read(NULL, MC_REGD) & MC_REGD_VRT) == 0) /* XXX softc */
 		return (-1);
 	MC146818_GETTOD(NULL, regs);			/* XXX softc */
 	return (0);
-}	
+}
 
 void
-rtcput(regs)
-	mc_todregs *regs;
+rtcput(mc_todregs *regs)
 {
-
-	rtcinit();
 	MC146818_PUTTOD(NULL, regs);			/* XXX softc */
 }
 
-static int month[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-static int
-yeartoday(year)
-	int year;
-{
-
-	return ((year % 4) ? 365 : 366);
-}
-
 int
-hexdectodec(n)
-	char n;
+bcdtobin(int n)
 {
-
 	return (((n >> 4) & 0x0f) * 10 + (n & 0x0f));
 }
 
-char
-dectohexdec(n)
-	int n;
+int
+bintobcd(int n)
 {
-
-	return ((char)(((n / 10) << 4) & 0xf0) | ((n % 10) & 0x0f));
+	return ((u_char)(((n / 10) << 4) & 0xf0) | ((n % 10) & 0x0f));
 }
 
-static int timeset;
+/*
+ * check whether the CMOS layout is "standard"-like (ie, not PS/2-like),
+ * to be called at splclock()
+ */
+int cmoscheck(void);
+int
+cmoscheck(void)
+{
+	int i;
+	unsigned short cksum = 0;
+
+	for (i = 0x10; i <= 0x2d; i++)
+		cksum += mc146818_read(NULL, i); /* XXX softc */
+
+	return (cksum == (mc146818_read(NULL, 0x2e) << 8)
+			  + mc146818_read(NULL, 0x2f));
+}
 
 /*
- * Initialize the time of day register, based on the time base which is, e.g.
- * from a filesystem.
+ * patchable to control century byte handling:
+ * 1: always update
+ * -1: never touch
+ * 0: try to figure out itself
  */
-void
-inittodr(base)
-	time_t base;
+int rtc_update_century = 0;
+
+/*
+ * Expand a two-digit year as read from the clock chip
+ * into full width.
+ * Being here, deal with the CMOS century byte.
+ */
+int clock_expandyear(int);
+int
+clock_expandyear(int clockyear)
+{
+	int s, clockcentury, cmoscentury;
+
+	clockcentury = (clockyear < 70) ? 20 : 19;
+	clockyear += 100 * clockcentury;
+
+	if (rtc_update_century < 0)
+		return (clockyear);
+
+	s = splclock();
+	if (cmoscheck())
+		cmoscentury = mc146818_read(NULL, NVRAM_CENTURY);
+	else
+		cmoscentury = 0;
+	splx(s);
+	if (!cmoscentury) {
+#ifdef DIAGNOSTIC
+		printf("clock: unknown CMOS layout\n");
+#endif
+		return (clockyear);
+	}
+	cmoscentury = bcdtobin(cmoscentury);
+
+	if (cmoscentury != clockcentury) {
+		/* XXX note: saying "century is 20" might confuse the naive. */
+		printf("WARNING: NVRAM century is %d but RTC year is %d\n",
+		       cmoscentury, clockyear);
+
+		/* Kludge to roll over century. */
+		if ((rtc_update_century > 0) ||
+		    ((cmoscentury == 19) && (clockcentury == 20) &&
+		     (clockyear == 2000))) {
+			printf("WARNING: Setting NVRAM century to %d\n",
+			       clockcentury);
+			s = splclock();
+			mc146818_write(NULL, NVRAM_CENTURY,
+				       bintobcd(clockcentury));
+			splx(s);
+		}
+	} else if (cmoscentury == 19 && rtc_update_century == 0)
+		rtc_update_century = 1; /* will update later in resettodr() */
+
+	return (clockyear);
+}
+
+int
+rtcgettime(struct todr_chip_handle *handle, struct timeval *tv)
 {
 	mc_todregs rtclk;
-	time_t n;
-	int sec, min, hr, dom, mon, yr;
-	int i, days = 0;
+	struct clock_ymdhms dt;
 	int s;
-
-	/*
-	 * We mostly ignore the suggested time and go for the RTC clock time
-	 * stored in the CMOS RAM.  If the time can't be obtained from the
-	 * CMOS, or if the time obtained from the CMOS is 5 or more years
-	 * less than the suggested time, we used the suggested time.  (In
-	 * the latter case, it's likely that the CMOS battery has died.)
-	 */
-
-	if (base < 15*SECYR) {	/* if before 1985, something's odd... */
-		printf("WARNING: preposterous time in file system\n");
-		/* read the system clock anyway */
-		base = 17*SECYR + 186*SECDAY + SECDAY/2;
-	}
-
+	
 	s = splclock();
 	if (rtcget(&rtclk)) {
 		splx(s);
-		printf("WARNING: invalid time in clock chip\n");
-		goto fstime;
+		return EINVAL;
 	}
 	splx(s);
 
-	sec = hexdectodec(rtclk[MC_SEC]);
-	min = hexdectodec(rtclk[MC_MIN]);
-	hr = hexdectodec(rtclk[MC_HOUR]);
-	dom = hexdectodec(rtclk[MC_DOM]);
-	mon = hexdectodec(rtclk[MC_MONTH]);
-	yr = hexdectodec(rtclk[MC_YEAR]);
-	yr = (yr < 70) ? yr+100 : yr;
+#ifdef CLOCK_DEBUG
+	printf("readclock: %x/%x/%x %x:%x:%x\n", rtclk[MC_YEAR],
+	    rtclk[MC_MONTH], rtclk[MC_DOM], rtclk[MC_HOUR], rtclk[MC_MIN],
+	    rtclk[MC_SEC]);
+#endif
 
-	n = sec + 60 * min + 3600 * hr;
-	n += (dom - 1) * 3600 * 24;
+	dt.dt_sec = bcdtobin(rtclk[MC_SEC]);
+	dt.dt_min = bcdtobin(rtclk[MC_MIN]);
+	dt.dt_hour = bcdtobin(rtclk[MC_HOUR]);
+	dt.dt_day = bcdtobin(rtclk[MC_DOM]);
+	dt.dt_mon = bcdtobin(rtclk[MC_MONTH]);
+	dt.dt_year = clock_expandyear(bcdtobin(rtclk[MC_YEAR]));
 
-	if (yeartoday(yr) == 366)
-		month[1] = 29;
-	for (i = mon - 2; i >= 0; i--)
-		days += month[i];
-	month[1] = 28;
-	for (i = 70; i < yr; i++)
-		days += yeartoday(i);
-	n += days * 3600 * 24;
-
-	n += tz.tz_minuteswest * 60;
-	if (tz.tz_dsttime)
-		n -= 3600;
-
-	if (base < n - 5*SECYR)
-		printf("WARNING: file system time much less than clock time\n");
-	else if (base > n + 5*SECYR) {
-		printf("WARNING: clock time much less than file system time\n");
-		printf("WARNING: using file system time\n");
-		goto fstime;
-	}
-
-	timeset = 1;
-	time.tv_sec = n;
-	time.tv_usec = 0;
-	return;
-
-fstime:
-	timeset = 1;
-	time.tv_sec = base;
-	time.tv_usec = 0;
-	printf("WARNING: CHECK AND RESET THE DATE!\n");
+	tv->tv_sec = clock_ymdhms_to_secs(&dt) - utc_offset;
+	tv->tv_usec = 0;
+	return 0;
 }
 
-/*
- * Reset the clock.
- */
-void
-resettodr()
+int
+rtcsettime(struct todr_chip_handle *handle, struct timeval *tv)
 {
 	mc_todregs rtclk;
-	time_t n;
-	int diff, i, j;
-	int s;
-
-	/*
-	 * We might have been called by boot() due to a crash early
-	 * on.  Don't reset the clock chip in this case.
-	 */
-	if (!timeset)
-		return;
+	struct clock_ymdhms dt;
+	int century, s;
 
 	s = splclock();
 	if (rtcget(&rtclk))
-		bzero(&rtclk, sizeof(rtclk));
+		memset(&rtclk, 0, sizeof(rtclk));
 	splx(s);
 
-	diff = tz.tz_minuteswest * 60;
-	if (tz.tz_dsttime)
-		diff -= 3600;
-	n = (time.tv_sec - diff) % (3600 * 24);   /* hrs+mins+secs */
-	rtclk[MC_SEC] = dectohexdec(n % 60);
-	n /= 60;
-	rtclk[MC_MIN] = dectohexdec(n % 60);
-	rtclk[MC_HOUR] = dectohexdec(n / 60);
+	clock_secs_to_ymdhms(tv->tv_sec + utc_offset, &dt);
 
-	n = (time.tv_sec - diff) / (3600 * 24);	/* days */
-	rtclk[MC_DOW] = (n + 4) % 7;  /* 1/1/70 is Thursday */
+	rtclk[MC_SEC] = bintobcd(dt.dt_sec);
+	rtclk[MC_MIN] = bintobcd(dt.dt_min);
+	rtclk[MC_HOUR] = bintobcd(dt.dt_hour);
+	rtclk[MC_DOW] = dt.dt_wday + 1;
+	rtclk[MC_YEAR] = bintobcd(dt.dt_year % 100);
+	rtclk[MC_MONTH] = bintobcd(dt.dt_mon);
+	rtclk[MC_DOM] = bintobcd(dt.dt_day);
 
-	for (j = 1970, i = yeartoday(j); n >= i; j++, i = yeartoday(j))
-		n -= i;
-
-	rtclk[MC_YEAR] = dectohexdec(j - 1900);
-
-	if (i == 366)
-		month[1] = 29;
-	for (i = 0; n >= month[i]; i++)
-		n -= month[i];
-	month[1] = 28;
-	rtclk[MC_MONTH] = dectohexdec(++i);
-
-	rtclk[MC_DOM] = dectohexdec(++n);
+#ifdef CLOCK_DEBUG
+	printf("setclock: %x/%x/%x %x:%x:%x\n", rtclk[MC_YEAR], rtclk[MC_MONTH],
+	   rtclk[MC_DOM], rtclk[MC_HOUR], rtclk[MC_MIN], rtclk[MC_SEC]);
+#endif
 
 	s = splclock();
 	rtcput(&rtclk);
+	if (rtc_update_century > 0) {
+		century = bintobcd(dt.dt_year / 100);
+		mc146818_write(NULL, NVRAM_CENTURY, century); /* XXX softc */
+	}
 	splx(s);
+	return 0;
+}
+
+struct todr_chip_handle rtc_todr;
+
+void
+rtcinit(void)
+{
+	rtc_todr.todr_gettime = rtcgettime;
+	rtc_todr.todr_settime = rtcsettime;
+	rtc_todr.todr_quality = 0;
+	todr_attach(&rtc_todr);
 }
 
 void
-setstatclockrate(arg)
-	int arg;
+setstatclockrate(int arg)
 {
+	if (initclock_func == i8254_initclocks) {
+		if (arg == stathz)
+			mc146818_write(NULL, MC_REGA,
+			    MC_BASE_32_KHz | MC_RATE_128_Hz);
+		else
+			mc146818_write(NULL, MC_REGA,
+			    MC_BASE_32_KHz | MC_RATE_1024_Hz);
+	}
+}
+
+void
+i8254_inittimecounter(void)
+{
+	tc_init(&i8254_timecounter);
+}
+
+/*
+ * If we're using lapic to drive hardclock, we can use a simpler
+ * algorithm for the i8254 timecounters.
+ */
+void
+i8254_inittimecounter_simple(void)
+{
+	i8254_timecounter.tc_get_timecount = i8254_simple_get_timecount;
+	i8254_timecounter.tc_counter_mask = 0x7fff;
+	i8254_timecounter.tc_frequency = TIMER_FREQ;
+
+	mtx_enter(&timer_mutex);
+	rtclock_tval = 0x8000;
+	i8254_startclock();
+	mtx_leave(&timer_mutex);
+
+	tc_init(&i8254_timecounter);
+}
+
+void
+i8254_startclock(void)
+{
+	u_long tval = rtclock_tval;
+
+	outb(IO_TIMER1 + TIMER_MODE, TIMER_SEL0 | TIMER_RATEGEN | TIMER_16BIT);
+	outb(IO_TIMER1 + TIMER_CNTR0, tval & 0xff);
+	outb(IO_TIMER1 + TIMER_CNTR0, tval >> 8);
+}
+
+u_int
+i8254_simple_get_timecount(struct timecounter *tc)
+{
+	return (rtclock_tval - gettick());
+}
+
+u_int
+i8254_get_timecount(struct timecounter *tc)
+{
+	u_char hi, lo;
+	u_int count;
+	u_long s;
+
+	s = intr_disable();
+
+	outb(IO_TIMER1 + TIMER_MODE, TIMER_SEL0 | TIMER_LATCH);
+	lo = inb(IO_TIMER1 + TIMER_CNTR0);
+	hi = inb(IO_TIMER1 + TIMER_CNTR0);
+
+	count = rtclock_tval - ((hi << 8) | lo);
+
+	if (count < i8254_lastcount) {
+		i8254_ticked = 1;
+		i8254_offset += rtclock_tval;
+	}
+	i8254_lastcount = count;
+	count += i8254_offset;
+
+	intr_restore(s);
+
+	return (count);
 }

@@ -1,3 +1,4 @@
+/*	$OpenBSD: ttymsg.c,v 1.20 2021/10/24 21:24:17 deraadt Exp $	*/
 /*	$NetBSD: ttymsg.c,v 1.3 1994/11/17 07:17:55 jtc Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,14 +30,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)ttymsg.c	8.2 (Berkeley) 11/16/93";
-#endif
-static char rcsid[] = "$NetBSD: ttymsg.c,v 1.3 1994/11/17 07:17:55 jtc Exp $";
-#endif /* not lint */
-
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/uio.h>
 #include <signal.h>
 #include <fcntl.h>
@@ -51,31 +42,40 @@ static char rcsid[] = "$NetBSD: ttymsg.c,v 1.3 1994/11/17 07:17:55 jtc Exp $";
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <err.h>
+
+char *ttymsg(struct iovec *, int, char *, int);
 
 /*
- * Display the contents of a uio structure on a terminal.  Used by wall(1),
- * syslogd(8), and talkd(8).  Forks and finishes in child if write would block,
+ * Display the contents of a uio structure on a terminal.  Used by wall(1)
+ * and talkd(8).  Forks and finishes in child if write would block,
  * waiting up to tmout seconds.  Returns pointer to error string on unexpected
  * error; string is not newline-terminated.  Various "normal" errors are
  * ignored (exclusive-use, lack of permission, etc.).
  */
 char *
-ttymsg(iov, iovcnt, line, tmout)
-	struct iovec *iov;
-	int iovcnt;
-	char *line;
-	int tmout;
+ttymsg(struct iovec *iov, int iovcnt, char *line, int tmout)
 {
 	static char device[MAXNAMLEN] = _PATH_DEV;
 	static char errbuf[1024];
-	register int cnt, fd, left, wret;
+	int cnt, fd, left, wret;
 	struct iovec localiov[6];
 	int forked = 0;
+	struct stat st;
+	sigset_t mask;
 
 	if (iovcnt > sizeof(localiov) / sizeof(localiov[0]))
 		return ("too many iov's (change code in wall/ttymsg.c)");
 
-	(void) strcpy(device + sizeof(_PATH_DEV) - 1, line);
+	/*
+	 * Ignore lines that start with "ftp" or "uucp".
+	 */
+	if ((strncmp(line, "ftp", 3) == 0) ||
+	    (strncmp(line, "uucp", 4) == 0))
+		return (NULL);
+
+	(void) strlcpy(device + sizeof(_PATH_DEV) - 1, line,
+	    sizeof(device) - (sizeof(_PATH_DEV) - 1));
 	if (strchr(device + sizeof(_PATH_DEV) - 1, '/')) {
 		/* A slash is an attempt to break security... */
 		(void) snprintf(errbuf, sizeof(errbuf), "'/' in \"%s\"",
@@ -87,12 +87,20 @@ ttymsg(iov, iovcnt, line, tmout)
 	 * open will fail on slip lines or exclusive-use lines
 	 * if not running as root; not an error.
 	 */
-	if ((fd = open(device, O_WRONLY|O_NONBLOCK, 0)) < 0) {
+	if ((fd = open(device, O_WRONLY|O_NONBLOCK)) == -1) {
 		if (errno == EBUSY || errno == EACCES)
 			return (NULL);
 		(void) snprintf(errbuf, sizeof(errbuf),
 		    "%s: %s", device, strerror(errno));
 		return (errbuf);
+	}
+
+	if (getuid()) {
+		if (fstat(fd, &st) == -1 ||
+		    (st.st_mode & S_IWGRP) == 0) {
+			close(fd);
+			return (NULL);
+		}
 	}
 
 	for (cnt = left = 0; cnt < iovcnt; ++cnt)
@@ -115,20 +123,23 @@ ttymsg(iov, iovcnt, line, tmout)
 				--iovcnt;
 			}
 			if (wret) {
-				iov->iov_base += wret;
+				char *base = iov->iov_base;
+
+				iov->iov_base = base + wret;
 				iov->iov_len -= wret;
 			}
 			continue;
 		}
 		if (errno == EWOULDBLOCK) {
-			int cpid, off = 0;
+			int off = 0;
+			pid_t cpid;
 
 			if (forked) {
 				(void) close(fd);
 				_exit(1);
 			}
 			cpid = fork();
-			if (cpid < 0) {
+			if (cpid == -1) {
 				(void) snprintf(errbuf, sizeof(errbuf),
 				    "fork: %s", strerror(errno));
 				(void) close(fd);
@@ -138,11 +149,16 @@ ttymsg(iov, iovcnt, line, tmout)
 				(void) close(fd);
 				return (NULL);
 			}
+
+			if (pledge("stdio", NULL) == -1)
+				err(1, "pledge");
+
 			forked++;
 			/* wait at most tmout seconds */
 			(void) signal(SIGALRM, SIG_DFL);
 			(void) signal(SIGTERM, SIG_DFL); /* XXX */
-			(void) sigsetmask(0);
+			(void) sigemptyset(&mask);
+			(void) sigprocmask(SIG_SETMASK, &mask, NULL);
 			(void) alarm((u_int)tmout);
 			(void) fcntl(fd, O_NONBLOCK, &off);
 			continue;

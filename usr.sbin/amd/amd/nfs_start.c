@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,13 +32,15 @@
  * SUCH DAMAGE.
  *
  *	from: @(#)nfs_start.c	8.1 (Berkeley) 6/6/93
- *	$Id: nfs_start.c,v 1.3 1994/06/13 20:47:46 mycroft Exp $
+ *	$Id: nfs_start.c,v 1.19 2015/01/21 09:50:25 guenther Exp $
  */
 
 #include "am.h"
 #include "amq.h"
-#include <sys/signal.h>
+#include <signal.h>
+#include <unistd.h>
 #include <setjmp.h>
+
 extern jmp_buf select_intr;
 extern int select_intr_valid;
 
@@ -52,32 +50,28 @@ extern int select_intr_valid;
  * so that we do NFS gatewaying.
  */
 #define	svcudp_create svcudp2_create
-extern SVCXPRT *svcudp2_create P((int));
+extern SVCXPRT *svcudp2_create(int);
 #endif /* HAS_TFS */
 
-extern void nfs_program_2();
-extern void amq_program_1();
-
 unsigned short nfs_port;
-SVCXPRT *nfsxprt;
+SVCXPRT *nfsxprt, *lnfsxprt;
+SVCXPRT *amqp, *lamqp;
 
 extern int fwd_sock;
 int max_fds = -1;
-
-#define	MASKED_SIGS	(sigmask(SIGINT)|sigmask(SIGTERM)|sigmask(SIGCHLD)|sigmask(SIGHUP))
 
 #ifdef DEBUG
 /*
  * Check that we are not burning resources
  */
-static void checkup(P_void)
+static void
+checkup(void)
 {
-
-static int max_fd = 0;
-static char *max_mem = 0;
+	static int max_fd = 0;
+	static char *max_mem = 0;
 
 	int next_fd = dup(0);
-	extern caddr_t sbrk P((int));
+	extern caddr_t sbrk(int);
 	caddr_t next_mem = sbrk(0);
 	close(next_fd);
 
@@ -92,24 +86,23 @@ static char *max_mem = 0;
 	/*if (max_mem == 0) {
 		max_mem = next_mem;
 	} else*/ if (max_mem < next_mem) {
-		dlog("%#x bytes of memory allocated; total is %#x (%d pages)",
-			next_mem - max_mem,
-			next_mem,
-			((int)next_mem+getpagesize()-1)/getpagesize());
+		dlog("%#lx bytes of memory allocated; total is %#lx (%ld pages)",
+			(unsigned long)(next_mem - max_mem),
+			(unsigned long)next_mem,
+			((unsigned long)next_mem+getpagesize()-1)/getpagesize());
 		max_mem = next_mem;
 	}
 }
 #endif /* DEBUG */
 
-static int do_select(smask, fds, fdp, tvp)
-int smask;
-int fds;
-int *fdp;
-struct timeval *tvp;
+static int
+do_select(sigset_t *mask, sigset_t *omask, int fds, fd_set *fdp,
+    struct timeval *tvp)
 {
 	int sig;
 	int nsel;
-	if (sig = setjmp(select_intr)) {
+
+	if ((sig = setjmp(select_intr))) {
 		select_intr_valid = 0;
 		/* Got a signal */
 		switch (sig) {
@@ -132,16 +125,16 @@ struct timeval *tvp;
 		 * occurs, then it will cause a longjmp
 		 * up above.
 		 */
-		(void) sigsetmask(smask);
+		sigprocmask(SIG_SETMASK, omask, NULL);
 		/*
 		 * Wait for input
 		 */
-		nsel = select(fds, fdp, (int *) 0, (int *) 0,
-				tvp->tv_sec ? tvp : (struct timeval *) 0);
+		nsel = select(fds, fdp, NULL, NULL,
+		    tvp->tv_sec ? tvp : (struct timeval *) 0);
 
 	}
 
-	(void) sigblock(MASKED_SIGS);
+	sigprocmask(SIG_BLOCK, mask, NULL);
 
 	/*
 	 * Perhaps reload the cache?
@@ -157,37 +150,45 @@ struct timeval *tvp;
  * Determine whether anything is left in
  * the RPC input queue.
  */
-static int rpc_pending_now()
+static int
+rpc_pending_now(void)
 {
 	struct timeval tvv;
 	int nsel;
-#ifdef FD_SET
-	fd_set readfds;
+	fd_set *fdsp;
+	int fdsn;
 
-	FD_ZERO(&readfds);
-	FD_SET(fwd_sock, &readfds);
-#else
-	int readfds = (1 << fwd_sock);
-#endif /* FD_SET */
+	fdsn = howmany(max_fds+1, NFDBITS) * sizeof(fd_mask);
+	if ((fdsp = malloc(fdsn)) == NULL)
+		return(0);
+	memset(fdsp, 0, fdsn);
+	FD_SET(fwd_sock, fdsp);
 
 	tvv.tv_sec = tvv.tv_usec = 0;
-	nsel = select(max_fds+1, &readfds, (int *) 0, (int *) 0, &tvv);
-	if (nsel < 1)
+	nsel = select(max_fds+1, fdsp, NULL, NULL, &tvv);
+	if (nsel < 1) {
+		free(fdsp);
 		return(0);
-#ifdef FD_SET
-	if (FD_ISSET(fwd_sock, &readfds))
+	}
+	if (FD_ISSET(fwd_sock, fdsp)) {
+		free(fdsp);
 		return(1);
-#else
-	if (readfds & (1 << fwd_sock))
-		return(1);
-#endif
+	}
+	free(fdsp);
 	return(0);
 }
 
-static serv_state run_rpc(P_void)
+static serv_state
+run_rpc(void)
 {
-	int dtbsz = max_fds + 1;
-	int smask = sigblock(MASKED_SIGS);
+	sigset_t mask, omask;
+
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGINT);
+	sigaddset(&mask, SIGTERM);
+	sigaddset(&mask, SIGCHLD);
+	sigaddset(&mask, SIGHUP);
+	sigprocmask(SIG_BLOCK, &mask, &omask);
 
 	next_softclock = clocktime();
 
@@ -202,20 +203,29 @@ static serv_state run_rpc(P_void)
 		struct timeval tvv;
 		int nsel;
 		time_t now;
-#ifdef RPC_4
-		fd_set readfds;
-		readfds = svc_fdset;
-		FD_SET(fwd_sock, &readfds);
+#ifdef __OpenBSD__
+		extern int __svc_fdsetsize;
+		extern fd_set *__svc_fdset;
+		fd_set *fdsp;
+		int fdsn = __svc_fdsetsize;
+		int bytes;
+
+		if (fwd_sock > fdsn)
+			fdsn = fwd_sock;
+		bytes = howmany(fdsn, NFDBITS) * sizeof(fd_mask);
+
+		fdsp = malloc(bytes);
+		memset(fdsp, 0, bytes);
+		memcpy(fdsp, __svc_fdset, bytes);
+		FD_SET(fwd_sock, fdsp);
 #else
-#ifdef FD_SET
-		fd_set readfds;
-		FD_ZERO(&readfds);
-		readfds.fds_bits[0] = svc_fds;
-		FD_SET(fwd_sock, &readfds);
-#else
-		int readfds = svc_fds | (1 << fwd_sock);
-#endif /* FD_SET */
-#endif /* RPC_4 */
+		fd_set *fdsp;
+		int fdsn = FDSETSIZE;
+		bytes = howmany(fdsn, NFDBITS) * sizeof(fd_mask);
+		fdsp = malloc(bytes);
+		memcpy(fdsp, &svc_fdset, bytes);
+		FD_SET(fwd_sock, fdsp);
+#endif
 
 #ifdef DEBUG
 		checkup();
@@ -244,12 +254,12 @@ static serv_state run_rpc(P_void)
 
 #ifdef DEBUG
 		if (tvv.tv_sec)
-			dlog("Select waits for %ds", tvv.tv_sec);
+			dlog("Select waits for %llds", (long long)tvv.tv_sec);
 		else
 			dlog("Select waits for Godot");
 #endif /* DEBUG */
 
-		nsel = do_select(smask, dtbsz, &readfds, &tvv);
+		nsel = do_select(&mask, &omask, fdsn + 1, fdsp, &tvv);
 
 
 		switch (nsel) {
@@ -273,14 +283,9 @@ static serv_state run_rpc(P_void)
 			/* Read all pending NFS responses at once to avoid
 			   having responses queue up as a consequence of
 			   retransmissions. */
-#ifdef FD_SET
-			if (FD_ISSET(fwd_sock, &readfds)) {
-				FD_CLR(fwd_sock, &readfds);
-#else
-			if (readfds & (1 << fwd_sock)) {
-				readfds &= ~(1 << fwd_sock);
-#endif
-				--nsel;	
+			if (FD_ISSET(fwd_sock, fdsp)) {
+				FD_CLR(fwd_sock, fdsp);
+				--nsel;
 				do {
 					fwd_reply();
 				} while (rpc_pending_now() > 0);
@@ -291,21 +296,18 @@ static serv_state run_rpc(P_void)
 				 * Anything left must be a normal
 				 * RPC request.
 				 */
-#ifdef RPC_4
-				svc_getreqset(&readfds);
+#ifdef __OpenBSD__
+				svc_getreqset2(fdsp, fdsn);
 #else
-#ifdef FD_SET
-				svc_getreq(readfds.fds_bits[0]);
-#else
-				svc_getreq(readfds);
-#endif /* FD_SET */
-#endif /* RPC_4 */
+				svc_getreqset(fdsp);
+#endif
 			}
 			break;
 		}
+		free(fdsp);
 	}
 
-	(void) sigsetmask(smask);
+	sigprocmask(SIG_SETMASK, &omask, NULL);
 
 	if (amd_state == Quit)
 		amd_state = Done;
@@ -313,8 +315,8 @@ static serv_state run_rpc(P_void)
 	return amd_state;
 }
 
-static int bindnfs_port(so)
-int so;
+static int
+bindnfs_port(int so)
 {
 	unsigned short port;
 	int error = bind_resv_port(so, &port);
@@ -323,7 +325,8 @@ int so;
 	return error;
 }
 
-void unregister_amq(P_void)
+void
+unregister_amq(void)
 {
 #ifdef DEBUG
 	Debug(D_AMQ)
@@ -331,20 +334,49 @@ void unregister_amq(P_void)
 	(void) pmap_unset(AMQ_PROGRAM, AMQ_VERSION);
 }
 
-int mount_automounter(ppid)
-int ppid;
+int
+mount_automounter(pid_t ppid)
 {
-	int so = socket(AF_INET, SOCK_DGRAM, 0);
-	SVCXPRT *amqp;
-	int nmount;
+	struct sockaddr_in sin;
+	int so, so2, nmount;
+	int sinlen;
+	int on = 1;
+
+	so = socket(AF_INET, SOCK_DGRAM, 0);
 
 	if (so < 0 || bindnfs_port(so) < 0) {
 		perror("Can't create privileged nfs port");
 		return 1;
 	}
 
-	if ((nfsxprt = svcudp_create(so)) == NULL || 
-			(amqp = svcudp_create(so)) == NULL) {
+	if ((nfsxprt = svcudp_create(so)) == NULL ||
+	    (amqp = svcudp_create(so)) == NULL) {
+		plog(XLOG_FATAL, "cannot create rpc/udp service");
+		return 2;
+	}
+
+	sinlen = sizeof sin;
+	if (getsockname(so, (struct sockaddr *)&sin, &sinlen) == -1) {
+		perror("Can't get information on socket");
+		return 1;
+	}
+
+	so2 = socket(AF_INET, SOCK_DGRAM, 0);
+	if (so2 < 0) {
+		perror("Can't create 2nd socket");
+		return 1;
+	}
+
+	setsockopt(so2, SOL_SOCKET, SO_REUSEADDR, &on, sizeof on);
+
+	sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+	if (bind(so2, (struct sockaddr *)&sin, sizeof sin) == -1) {
+		perror("Can't bind 2nd socket");
+		return 1;
+	}
+
+	if ((lnfsxprt = svcudp_create(so2)) == NULL ||
+	    (lamqp = svcudp_create(so2)) == NULL) {
 		plog(XLOG_FATAL, "cannot create rpc/udp service");
 		return 2;
 	}
@@ -367,6 +399,8 @@ int ppid;
 	 */
 	if (so > max_fds)
 		max_fds = so;
+	if (so2 > max_fds)
+		max_fds = so2;
 	if (fwd_sock > max_fds)
 		max_fds = fwd_sock;
 
@@ -408,7 +442,7 @@ int ppid;
 	 */
 	unregister_amq();
 
-	if (!svc_register(amqp, AMQ_PROGRAM, AMQ_VERSION, amq_program_1, IPPROTO_UDP)) {
+	if (!svc_register(amqp, AMQ_PROGRAM, AMQ_VERSION, amq_program_57, IPPROTO_UDP)) {
 		plog(XLOG_FATAL, "unable to register (AMQ_PROGRAM, AMQ_VERSION, udp)");
 		return 3;
 	}

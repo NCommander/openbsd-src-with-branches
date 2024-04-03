@@ -259,31 +259,6 @@ struct elf_link_loaded_list
 };
 
 /* Structures used by the eh_frame optimization code.  */
-struct cie_header
-{
-  unsigned int length;
-  unsigned int id;
-};
-
-struct cie
-{
-  struct cie_header hdr;
-  unsigned char version;
-  char augmentation[20];
-  bfd_vma code_align;
-  bfd_signed_vma data_align;
-  bfd_vma ra_column;
-  bfd_vma augmentation_size;
-  struct elf_link_hash_entry *personality;
-  unsigned char per_encoding;
-  unsigned char lsda_encoding;
-  unsigned char fde_encoding;
-  unsigned char initial_insn_length;
-  unsigned char make_relative;
-  unsigned char make_lsda_relative;
-  unsigned char initial_instructions[50];
-};
-
 struct eh_cie_fde
 {
   /* For FDEs, this points to the CIE used.  */
@@ -302,12 +277,12 @@ struct eh_cie_fde
   unsigned int make_lsda_relative : 1;
   unsigned int need_lsda_relative : 1;
   unsigned int per_encoding_relative : 1;
+  unsigned int *set_loc;
 };
 
 struct eh_frame_sec_info
 {
   unsigned int count;
-  unsigned int alloced;
   struct eh_cie_fde entry[1];
 };
 
@@ -317,11 +292,11 @@ struct eh_frame_array_ent
   bfd_vma fde;
 };
 
+struct htab;
+
 struct eh_frame_hdr_info
 {
-  struct cie last_cie;
-  asection *last_cie_sec;
-  struct eh_cie_fde *last_cie_inf;
+  struct htab *cies;
   asection *hdr_sec;
   unsigned int fde_count, array_count;
   struct eh_frame_array_ent *array;
@@ -1022,6 +997,9 @@ struct elf_backend_data
 			       bfd_boolean *, bfd_boolean *,
 			       bfd *, asection **);
 
+  /* Return TRUE if symbol should be hashed in the `.gnu.hash' section.  */
+  bfd_boolean (*elf_hash_symbol) (struct elf_link_hash_entry *);
+
   /* Used to handle bad SHF_LINK_ORDER input.  */
   bfd_error_handler_type link_order_error_handler;
 
@@ -1337,6 +1315,12 @@ struct elf_obj_tdata
   /* Should the PT_GNU_RELRO segment be emitted?  */
   bfd_boolean relro;
 
+  /* TRUE if output program should be marked to request W^X permission */
+  bfd_boolean wxneeded;
+
+  /* TRUE if output program should be marked to stop branch target CFI enforcement */
+  bfd_boolean nobtcfi;
+
   /* Symbol version definitions in external objects.  */
   Elf_Internal_Verdef *verdef;
 
@@ -1368,6 +1352,12 @@ struct elf_obj_tdata
 
   /* Used to determine if the e_flags field has been initialized */
   bfd_boolean flags_init;
+
+  /* Used to determine if we are creating an executable.  */
+  bfd_boolean executable;
+
+  /* Symbol buffer.  */
+  Elf_Internal_Sym *symbuf;
 };
 
 #define elf_tdata(bfd)		((bfd) -> tdata.elf_obj_data)
@@ -1462,6 +1452,8 @@ extern bfd_vma _bfd_elf_section_offset
 
 extern unsigned long bfd_elf_hash
   (const char *);
+extern unsigned long bfd_elf_gnu_hash
+  (const char *);
 
 extern bfd_reloc_status_type bfd_elf_generic_reloc
   (bfd *, arelent *, asymbol *, void *, asection *, bfd *, char **);
@@ -1500,11 +1492,11 @@ extern bfd_boolean _bfd_elf_match_sections_by_type
 extern bfd_boolean bfd_elf_is_group_section
   (bfd *, const struct bfd_section *);
 extern void _bfd_elf_section_already_linked
-  (bfd *, struct bfd_section *);
+  (bfd *, struct bfd_section *, struct bfd_link_info *);
 extern void bfd_elf_set_group_contents
   (bfd *, asection *, void *);
 extern asection *_bfd_elf_check_kept_section
-  (asection *);
+  (asection *, struct bfd_link_info *);
 extern void _bfd_elf_link_just_syms
   (asection *, struct bfd_link_info *);
 extern bfd_boolean _bfd_elf_copy_private_header_data
@@ -1632,6 +1624,8 @@ extern bfd_boolean _bfd_elf_merge_symbol
    struct elf_link_hash_entry **, bfd_boolean *,
    bfd_boolean *, bfd_boolean *, bfd_boolean *);
 
+extern bfd_boolean _bfd_elf_hash_symbol (struct elf_link_hash_entry *);
+
 extern bfd_boolean _bfd_elf_add_default_symbol
   (bfd *, struct bfd_link_info *, struct elf_link_hash_entry *,
    const char *, Elf_Internal_Sym *, asection **, bfd_vma *,
@@ -1700,7 +1694,7 @@ extern bfd_boolean _bfd_elf_symbol_refs_local_p
   (struct elf_link_hash_entry *, struct bfd_link_info *, bfd_boolean);
 
 extern bfd_boolean bfd_elf_match_symbols_in_sections
-  (asection *sec1, asection *sec2);
+  (asection *, asection *, struct bfd_link_info *);
 
 extern bfd_boolean _bfd_elf_setup_sections
   (bfd *);

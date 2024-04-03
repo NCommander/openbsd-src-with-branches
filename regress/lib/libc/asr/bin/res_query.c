@@ -1,4 +1,4 @@
-/*	$OpenBSD: config.c,v 1.15 2011/05/01 12:57:11 eric Exp $	*/
+/*	$OpenBSD: res_query.c,v 1.3 2018/12/15 15:16:12 eric Exp $	*/
 /*
  * Copyright (c) 2012 Eric Faurot <eric@openbsd.org>
  *
@@ -17,6 +17,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 
 #include <netinet/in.h>
 #include <arpa/nameser.h>
@@ -71,8 +72,11 @@ main(int argc, char *argv[])
 	dflag = 0;
 	qflag = 0;
 
-	while((ch = getopt(argc, argv, "deqt:")) !=  -1) {
+	while((ch = getopt(argc, argv, "R:deqt:")) !=  -1) {
 		switch(ch) {
+		case 'R':
+			parseresopt(optarg);
+			break;
 		case 'd':
 			dflag = 1;
 			break;
@@ -328,7 +332,7 @@ print_dname(const char *_dname, char *buf, size_t max)
 {
 	const unsigned char *dname = _dname;
 	char	*res;
-	size_t	 left, n, count;
+	size_t	 left, count;
 
 	if (_dname[0] == 0) {
 		strlcpy(buf, ".", max);
@@ -337,7 +341,7 @@ print_dname(const char *_dname, char *buf, size_t max)
 
 	res = buf;
 	left = max - 1;
-	for (n = 0; dname[0] && left; n += dname[0]) {
+	while (dname[0] && left) {
 		count = (dname[0] < (left - 1)) ? dname[0] : (left - 1);
 		memmove(buf, dname + 1, count);
 		dname += dname[0] + 1;

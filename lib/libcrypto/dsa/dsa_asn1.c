@@ -1,4 +1,4 @@
-/* dsa_asn1.c */
+/* $OpenBSD: dsa_asn1.c,v 1.30 2023/03/25 09:09:28 tb Exp $ */
 /* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
  * project 2000.
  */
@@ -10,7 +10,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -57,48 +57,119 @@
  */
 
 #include <stdio.h>
-#include "cryptlib.h"
-#include <openssl/dsa.h>
+#include <string.h>
+
 #include <openssl/asn1.h>
 #include <openssl/asn1t.h>
-#include <openssl/rand.h>
+#include <openssl/bn.h>
+#include <openssl/dsa.h>
+#include <openssl/err.h>
+
+#include "dsa_local.h"
 
 /* Override the default new methods */
-static int sig_cb(int operation, ASN1_VALUE **pval, const ASN1_ITEM *it,
-								void *exarg)
+static int
+sig_cb(int operation, ASN1_VALUE **pval, const ASN1_ITEM *it, void *exarg)
 {
-	if(operation == ASN1_OP_NEW_PRE) {
+	if (operation == ASN1_OP_NEW_PRE) {
 		DSA_SIG *sig;
-		sig = OPENSSL_malloc(sizeof(DSA_SIG));
-		if (!sig)
-			{
-			DSAerr(DSA_F_SIG_CB, ERR_R_MALLOC_FAILURE);
+
+		if ((sig = DSA_SIG_new()) == NULL) {
+			DSAerror(ERR_R_MALLOC_FAILURE);
 			return 0;
-			}
-		sig->r = NULL;
-		sig->s = NULL;
+		}
 		*pval = (ASN1_VALUE *)sig;
 		return 2;
 	}
 	return 1;
 }
 
-ASN1_SEQUENCE_cb(DSA_SIG, sig_cb) = {
-	ASN1_SIMPLE(DSA_SIG, r, CBIGNUM),
-	ASN1_SIMPLE(DSA_SIG, s, CBIGNUM)
-} ASN1_SEQUENCE_END_cb(DSA_SIG, DSA_SIG)
+static const ASN1_AUX DSA_SIG_aux = {
+	.app_data = NULL,
+	.flags = 0,
+	.ref_offset = 0,
+	.ref_lock = 0,
+	.asn1_cb = sig_cb,
+	.enc_offset = 0,
+};
+static const ASN1_TEMPLATE DSA_SIG_seq_tt[] = {
+	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA_SIG, r),
+		.field_name = "r",
+		.item = &BIGNUM_it,
+	},
+	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA_SIG, s),
+		.field_name = "s",
+		.item = &BIGNUM_it,
+	},
+};
 
-IMPLEMENT_ASN1_ENCODE_FUNCTIONS_const_fname(DSA_SIG, DSA_SIG, DSA_SIG)
+const ASN1_ITEM DSA_SIG_it = {
+	.itype = ASN1_ITYPE_SEQUENCE,
+	.utype = V_ASN1_SEQUENCE,
+	.templates = DSA_SIG_seq_tt,
+	.tcount = sizeof(DSA_SIG_seq_tt) / sizeof(ASN1_TEMPLATE),
+	.funcs = &DSA_SIG_aux,
+	.size = sizeof(DSA_SIG),
+	.sname = "DSA_SIG",
+};
+
+
+DSA_SIG *
+d2i_DSA_SIG(DSA_SIG **a, const unsigned char **in, long len)
+{
+	return (DSA_SIG *)ASN1_item_d2i((ASN1_VALUE **)a, in, len,
+	    &DSA_SIG_it);
+}
+LCRYPTO_ALIAS(d2i_DSA_SIG);
+
+int
+i2d_DSA_SIG(const DSA_SIG *a, unsigned char **out)
+{
+	return ASN1_item_i2d((ASN1_VALUE *)a, out, &DSA_SIG_it);
+}
+LCRYPTO_ALIAS(i2d_DSA_SIG);
+
+void
+DSA_SIG_get0(const DSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps)
+{
+	if (pr != NULL)
+		*pr = sig->r;
+	if (ps != NULL)
+		*ps = sig->s;
+}
+LCRYPTO_ALIAS(DSA_SIG_get0);
+
+int
+DSA_SIG_set0(DSA_SIG *sig, BIGNUM *r, BIGNUM *s)
+{
+	if (r == NULL || s == NULL)
+		return 0;
+
+	BN_free(sig->r);
+	sig->r = r;
+	BN_free(sig->s);
+	sig->s = s;
+
+	return 1;
+}
+LCRYPTO_ALIAS(DSA_SIG_set0);
 
 /* Override the default free and new methods */
-static int dsa_cb(int operation, ASN1_VALUE **pval, const ASN1_ITEM *it,
-							void *exarg)
+static int
+dsa_cb(int operation, ASN1_VALUE **pval, const ASN1_ITEM *it, void *exarg)
 {
-	if(operation == ASN1_OP_NEW_PRE) {
+	if (operation == ASN1_OP_NEW_PRE) {
 		*pval = (ASN1_VALUE *)DSA_new();
-		if(*pval) return 2;
+		if (*pval)
+			return 2;
 		return 0;
-	} else if(operation == ASN1_OP_FREE_PRE) {
+	} else if (operation == ASN1_OP_FREE_PRE) {
 		DSA_free((DSA *)*pval);
 		*pval = NULL;
 		return 2;
@@ -106,83 +177,300 @@ static int dsa_cb(int operation, ASN1_VALUE **pval, const ASN1_ITEM *it,
 	return 1;
 }
 
-ASN1_SEQUENCE_cb(DSAPrivateKey, dsa_cb) = {
-	ASN1_SIMPLE(DSA, version, LONG),
-	ASN1_SIMPLE(DSA, p, BIGNUM),
-	ASN1_SIMPLE(DSA, q, BIGNUM),
-	ASN1_SIMPLE(DSA, g, BIGNUM),
-	ASN1_SIMPLE(DSA, pub_key, BIGNUM),
-	ASN1_SIMPLE(DSA, priv_key, BIGNUM)
-} ASN1_SEQUENCE_END_cb(DSA, DSAPrivateKey)
-
-IMPLEMENT_ASN1_ENCODE_FUNCTIONS_const_fname(DSA, DSAPrivateKey, DSAPrivateKey)
-
-ASN1_SEQUENCE_cb(DSAparams, dsa_cb) = {
-	ASN1_SIMPLE(DSA, p, BIGNUM),
-	ASN1_SIMPLE(DSA, q, BIGNUM),
-	ASN1_SIMPLE(DSA, g, BIGNUM),
-} ASN1_SEQUENCE_END_cb(DSA, DSAparams)
-
-IMPLEMENT_ASN1_ENCODE_FUNCTIONS_const_fname(DSA, DSAparams, DSAparams)
-
-/* DSA public key is a bit trickier... its effectively a CHOICE type
- * decided by a field called write_params which can either write out
- * just the public key as an INTEGER or the parameters and public key
- * in a SEQUENCE
- */
-
-ASN1_SEQUENCE(dsa_pub_internal) = {
-	ASN1_SIMPLE(DSA, pub_key, BIGNUM),
-	ASN1_SIMPLE(DSA, p, BIGNUM),
-	ASN1_SIMPLE(DSA, q, BIGNUM),
-	ASN1_SIMPLE(DSA, g, BIGNUM)
-} ASN1_SEQUENCE_END_name(DSA, dsa_pub_internal)
-
-ASN1_CHOICE_cb(DSAPublicKey, dsa_cb) = {
-	ASN1_SIMPLE(DSA, pub_key, BIGNUM),
-	ASN1_EX_COMBINE(0, 0, dsa_pub_internal)
-} ASN1_CHOICE_END_cb(DSA, DSAPublicKey, write_params)
-
-IMPLEMENT_ASN1_ENCODE_FUNCTIONS_const_fname(DSA, DSAPublicKey, DSAPublicKey)
-
-DSA *DSAparams_dup(DSA *dsa)
+static const ASN1_AUX DSAPrivateKey_aux = {
+	.app_data = NULL,
+	.flags = 0,
+	.ref_offset = 0,
+	.ref_lock = 0,
+	.asn1_cb = dsa_cb,
+	.enc_offset = 0,
+};
+static const ASN1_TEMPLATE DSAPrivateKey_seq_tt[] = {
 	{
-	return ASN1_item_dup(ASN1_ITEM_rptr(DSAparams), dsa);
-	}
-
-int DSA_sign(int type, const unsigned char *dgst, int dlen, unsigned char *sig,
-	     unsigned int *siglen, DSA *dsa)
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA, version),
+		.field_name = "version",
+		.item = &LONG_it,
+	},
 	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA, p),
+		.field_name = "p",
+		.item = &BIGNUM_it,
+	},
+	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA, q),
+		.field_name = "q",
+		.item = &BIGNUM_it,
+	},
+	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA, g),
+		.field_name = "g",
+		.item = &BIGNUM_it,
+	},
+	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA, pub_key),
+		.field_name = "pub_key",
+		.item = &BIGNUM_it,
+	},
+	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA, priv_key),
+		.field_name = "priv_key",
+		.item = &BIGNUM_it,
+	},
+};
+
+const ASN1_ITEM DSAPrivateKey_it = {
+	.itype = ASN1_ITYPE_SEQUENCE,
+	.utype = V_ASN1_SEQUENCE,
+	.templates = DSAPrivateKey_seq_tt,
+	.tcount = sizeof(DSAPrivateKey_seq_tt) / sizeof(ASN1_TEMPLATE),
+	.funcs = &DSAPrivateKey_aux,
+	.size = sizeof(DSA),
+	.sname = "DSA",
+};
+
+
+DSA *
+d2i_DSAPrivateKey(DSA **a, const unsigned char **in, long len)
+{
+	return (DSA *)ASN1_item_d2i((ASN1_VALUE **)a, in, len,
+	    &DSAPrivateKey_it);
+}
+LCRYPTO_ALIAS(d2i_DSAPrivateKey);
+
+int
+i2d_DSAPrivateKey(const DSA *a, unsigned char **out)
+{
+	return ASN1_item_i2d((ASN1_VALUE *)a, out, &DSAPrivateKey_it);
+}
+LCRYPTO_ALIAS(i2d_DSAPrivateKey);
+
+static const ASN1_AUX DSAparams_aux = {
+	.app_data = NULL,
+	.flags = 0,
+	.ref_offset = 0,
+	.ref_lock = 0,
+	.asn1_cb = dsa_cb,
+	.enc_offset = 0,
+};
+static const ASN1_TEMPLATE DSAparams_seq_tt[] = {
+	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA, p),
+		.field_name = "p",
+		.item = &BIGNUM_it,
+	},
+	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA, q),
+		.field_name = "q",
+		.item = &BIGNUM_it,
+	},
+	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA, g),
+		.field_name = "g",
+		.item = &BIGNUM_it,
+	},
+};
+
+const ASN1_ITEM DSAparams_it = {
+	.itype = ASN1_ITYPE_SEQUENCE,
+	.utype = V_ASN1_SEQUENCE,
+	.templates = DSAparams_seq_tt,
+	.tcount = sizeof(DSAparams_seq_tt) / sizeof(ASN1_TEMPLATE),
+	.funcs = &DSAparams_aux,
+	.size = sizeof(DSA),
+	.sname = "DSA",
+};
+
+
+DSA *
+d2i_DSAparams(DSA **a, const unsigned char **in, long len)
+{
+	return (DSA *)ASN1_item_d2i((ASN1_VALUE **)a, in, len,
+	    &DSAparams_it);
+}
+LCRYPTO_ALIAS(d2i_DSAparams);
+
+int
+i2d_DSAparams(const DSA *a, unsigned char **out)
+{
+	return ASN1_item_i2d((ASN1_VALUE *)a, out, &DSAparams_it);
+}
+LCRYPTO_ALIAS(i2d_DSAparams);
+
+DSA *
+d2i_DSAparams_bio(BIO *bp, DSA **a)
+{
+	return ASN1_item_d2i_bio(&DSAparams_it, bp, a);
+}
+LCRYPTO_ALIAS(d2i_DSAparams_bio);
+
+int
+i2d_DSAparams_bio(BIO *bp, DSA *a)
+{
+	return ASN1_item_i2d_bio(&DSAparams_it, bp, a);
+}
+LCRYPTO_ALIAS(i2d_DSAparams_bio);
+
+DSA *
+d2i_DSAparams_fp(FILE *fp, DSA **a)
+{
+	return ASN1_item_d2i_fp(&DSAparams_it, fp, a);
+}
+LCRYPTO_ALIAS(d2i_DSAparams_fp);
+
+int
+i2d_DSAparams_fp(FILE *fp, DSA *a)
+{
+	return ASN1_item_i2d_fp(&DSAparams_it, fp, a);
+}
+LCRYPTO_ALIAS(i2d_DSAparams_fp);
+
+static const ASN1_AUX DSAPublicKey_aux = {
+	.app_data = NULL,
+	.flags = 0,
+	.ref_offset = 0,
+	.ref_lock = 0,
+	.asn1_cb = dsa_cb,
+	.enc_offset = 0,
+};
+static const ASN1_TEMPLATE DSAPublicKey_seq_tt[] = {
+	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA, pub_key),
+		.field_name = "pub_key",
+		.item = &BIGNUM_it,
+	},
+	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA, p),
+		.field_name = "p",
+		.item = &BIGNUM_it,
+	},
+	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA, q),
+		.field_name = "q",
+		.item = &BIGNUM_it,
+	},
+	{
+		.flags = 0,
+		.tag = 0,
+		.offset = offsetof(DSA, g),
+		.field_name = "g",
+		.item = &BIGNUM_it,
+	},
+};
+
+const ASN1_ITEM DSAPublicKey_it = {
+	.itype = ASN1_ITYPE_SEQUENCE,
+	.utype = V_ASN1_SEQUENCE,
+	.templates = DSAPublicKey_seq_tt,
+	.tcount = sizeof(DSAPublicKey_seq_tt) / sizeof(ASN1_TEMPLATE),
+	.funcs = &DSAPublicKey_aux,
+	.size = sizeof(DSA),
+	.sname = "DSA",
+};
+
+DSA *
+d2i_DSAPublicKey(DSA **a, const unsigned char **in, long len)
+{
+	return (DSA *)ASN1_item_d2i((ASN1_VALUE **)a, in, len,
+	    &DSAPublicKey_it);
+}
+LCRYPTO_ALIAS(d2i_DSAPublicKey);
+
+int
+i2d_DSAPublicKey(const DSA *a, unsigned char **out)
+{
+	return ASN1_item_i2d((ASN1_VALUE *)a, out, &DSAPublicKey_it);
+}
+LCRYPTO_ALIAS(i2d_DSAPublicKey);
+
+DSA *
+DSAparams_dup(DSA *dsa)
+{
+	return ASN1_item_dup(&DSAparams_it, dsa);
+}
+LCRYPTO_ALIAS(DSAparams_dup);
+
+int
+DSA_sign(int type, const unsigned char *dgst, int dlen, unsigned char *sig,
+    unsigned int *out_siglen, DSA *dsa)
+{
 	DSA_SIG *s;
-	RAND_seed(dgst, dlen);
-	s=DSA_do_sign(dgst,dlen,dsa);
-	if (s == NULL)
-		{
-		*siglen=0;
-		return(0);
-		}
-	*siglen=i2d_DSA_SIG(s,&sig);
-	DSA_SIG_free(s);
-	return(1);
-	}
+	int siglen;
+	int ret = 0;
 
-/* data has already been hashed (probably with SHA or SHA-1). */
-/* returns
+	*out_siglen = 0;
+
+	if ((s = DSA_do_sign(dgst, dlen, dsa)) == NULL)
+		goto err;
+
+	if ((siglen = i2d_DSA_SIG(s, &sig)) < 0)
+		goto err;
+
+	*out_siglen = siglen;
+
+	ret = 1;
+ err:
+	DSA_SIG_free(s);
+
+	return ret;
+}
+LCRYPTO_ALIAS(DSA_sign);
+
+/*
+ * data has already been hashed (probably with SHA or SHA-1).
+ * returns
  *      1: correct signature
  *      0: incorrect signature
  *     -1: error
  */
-int DSA_verify(int type, const unsigned char *dgst, int dgst_len,
-	     const unsigned char *sigbuf, int siglen, DSA *dsa)
-	{
-	DSA_SIG *s;
-	int ret=-1;
+int
+DSA_verify(int type, const unsigned char *dgst, int dgst_len,
+    const unsigned char *sigbuf, int siglen, DSA *dsa)
+{
+	DSA_SIG *s = NULL;
+	unsigned char *der = NULL;
+	const unsigned char *p;
+	int ret = -1;
 
-	s = DSA_SIG_new();
-	if (s == NULL) return(ret);
-	if (d2i_DSA_SIG(&s,&sigbuf,siglen) == NULL) goto err;
-	ret=DSA_do_verify(dgst,dgst_len,s,dsa);
-err:
+	p = sigbuf;
+	if ((s = d2i_DSA_SIG(NULL, &p, siglen)) == NULL)
+		goto err;
+
+	/* Ensure signature uses DER and doesn't have trailing garbage */
+	if (i2d_DSA_SIG(s, &der) != siglen)
+		goto err;
+
+	if (memcmp(der, sigbuf, siglen) != 0)
+		goto err;
+
+	ret = DSA_do_verify(dgst, dgst_len, s, dsa);
+ err:
+	free(der);
 	DSA_SIG_free(s);
-	return(ret);
-	}
+
+	return ret;
+}
+LCRYPTO_ALIAS(DSA_verify);

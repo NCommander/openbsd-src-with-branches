@@ -1,4 +1,4 @@
-.\"	$NetBSD: ualarm.3,v 1.5 1995/02/25 15:39:31 cgd Exp $
+.\"	$OpenBSD: ualarm.3,v 1.17 2019/07/26 12:08:18 millert Exp $
 .\"
 .\" Copyright (c) 1986, 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -11,11 +11,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -31,63 +27,82 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)ualarm.3	8.2 (Berkeley) 4/19/94
-.\"
-.Dd April 19, 1994
+.Dd $Mdocdate: July 26 2019 $
 .Dt UALARM 3
-.Os BSD 4.3
+.Os
 .Sh NAME
 .Nm ualarm
-.Nd schedule signal after specified time
+.Nd schedule high resolution SIGALRM delivery
 .Sh SYNOPSIS
-.Fd #include <unistd.h>
-.Ft u_int 
-.Fn ualarm "u_int microseconds" "u_int interval"
+.In unistd.h
+.Ft useconds_t
+.Fn ualarm "useconds_t microseconds" "useconds_t interval"
 .Sh DESCRIPTION
 .Bf -symbolic
-This is a simplified interface to setitimer(2).
+This is a simplified interface to
+.Xr setitimer 2 .
 .Ef
 .Pp
 The
 .Fn ualarm
-function
-waits a count of
-.Ar microseconds
-before asserting the terminating signal
-.Dv SIGALRM .
-System activity or time used in processing the call may cause a slight
-delay.
-.Pp
-If the
-.Fa interval
-argument is non-zero, the
+function schedules the
 .Dv SIGALRM
-signal will be sent
-to the process every
+signal for delivery to the calling process after at least the given number of
+.Fa microseconds
+have elapsed.
+If
 .Fa interval
-microseconds after the timer expires (e.g. after
-.Fa value
-microseconds have passed).
+is non-zero,
+the
+.Dv SIGALRM
+signal is scheduled for redelivery to the calling process every
+.Fa interval
+microseconds thereafter.
+.Pp
+If an alarm is already pending,
+an additional call to
+.Fn ualarm
+supersedes the prior call.
+.Pp
+If
+.Fa microseconds
+is zero,
+any pending alarm is cancelled and the value of
+.Fa interval
+is ignored.
 .Sh RETURN VALUES
-When the signal has successfully been caught,
-.Fn alarm
-returns the amount of time left on the clock.
-The maximum number of
-.Ar microseconds
-allowed
-is 2147483647.
+The
+.Fn ualarm
+function returns the number of microseconds remaining until the next
+alarm is scheduled for delivery,
+or zero if no alarm is pending.
 .Sh SEE ALSO
-.Xr getitimer 2 ,
 .Xr setitimer 2 ,
 .Xr sigaction 2 ,
-.Xr sigpause 2 ,
-.Xr sigvec 3 ,
+.Xr sigsuspend 2 ,
+.Xr alarm 3 ,
 .Xr signal 3 ,
 .Xr sleep 3 ,
-.Xr alarm 3 ,
 .Xr usleep 3
+.Sh STANDARDS
+The
+.Fn ualarm
+function conforms to
+.St -xpg4.2 .
 .Sh HISTORY
 The
 .Fn ualarm
-function appeared in 
+function first appeared in
 .Bx 4.3 .
+.Sh CAVEATS
+The
+.Fn ualarm
+function is implemented with the per-process
+.Dv ITIMER_REAL
+timer described in
+.Xr setitimer 2 .
+Use of both
+.Fn ualarm
+and
+.Xr setitimer 2
+in the same program may yield confusing behavior.

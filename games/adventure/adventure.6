@@ -1,4 +1,4 @@
-.\"	$NetBSD: adventure.6,v 1.2 1995/03/21 12:04:57 cgd Exp $
+.\"	$OpenBSD: adventure.6,v 1.8 2007/05/31 19:19:16 jmc Exp $
 .\"
 .\" Copyright (c) 1991, 1993
 .\"	The Regents of the University of California.  All rights reserved.
@@ -16,11 +16,7 @@
 .\" 2. Redistributions in binary form must reproduce the above copyright
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
-.\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
-.\"	This product includes software developed by the University of
-.\"	California, Berkeley and its contributors.
-.\" 4. Neither the name of the University nor the names of its contributors
+.\" 3. Neither the name of the University nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
 .\"
@@ -38,7 +34,7 @@
 .\"
 .\"	@(#)adventure.6	8.1 (Berkeley) 5/31/93
 .\"
-.Dd May 31, 1993
+.Dd $Mdocdate: May 31 2007 $
 .Dt ADVENTURE 6
 .Os
 .Sh NAME
@@ -46,7 +42,7 @@
 .Nd an exploration game
 .Sh SYNOPSIS
 .Nm adventure
-.Op saved-file
+.Op Ar saved-file
 .Sh DESCRIPTION
 The object of the game is to locate and explore Colossal Cave, find the
 treasures hidden there, and bring them back to the building with you.
@@ -57,3 +53,13 @@ To terminate a game, enter
 .Dq quit ;
 to save a game for later resumption, enter
 .Dq suspend .
+.Sh AUTHORS
+.An -nosplit
+The game
+.Nm
+was originally written in Fortran by
+.An Will Crowther
+and
+.An Don Woods .
+It was later translated to C and enhanced by
+.An Jim Gillogly Aq Mt jim@rand.org .

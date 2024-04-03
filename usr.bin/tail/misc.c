@@ -1,3 +1,5 @@
+/*	$OpenBSD: misc.c,v 1.8 2009/10/27 23:59:44 deraadt Exp $	*/
+
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -13,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -34,61 +32,31 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)misc.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: misc.c,v 1.3 1994/11/23 07:42:04 jtc Exp $";
-#endif /* not lint */
-
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <errno.h>
-#include <unistd.h>
+
+#include <err.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
 #include "extern.h"
 
 void
-ierr()
+ierr(const char *fname)
 {
-	err(0, "%s: %s", fname, strerror(errno));
-}
-
-void
-oerr()
-{
-	err(1, "stdout: %s", strerror(errno));
-}
-
-#if __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-void
-#if __STDC__
-err(int fatal, const char *fmt, ...)
-#else
-err(fatal, fmt, va_alist)
-	int fatal;
-	char *fmt;
-	va_dcl
-#endif
-{
-	va_list ap;
-#if __STDC__
-	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	(void)fprintf(stderr, "tail: ");
-	(void)vfprintf(stderr, fmt, ap);
-	va_end(ap);
-	(void)fprintf(stderr, "\n");
-	if (fatal)
-		exit(1);
+	warn("%s", fname);
 	rval = 1;
+}
+
+void
+oerr(void)
+{
+	err(1, "stdout");
+}
+
+void printfname(const char *fname)
+{
+	static int first = 1;
+	(void)printf("%s==> %s <==\n", first ? "" : "\n", fname);
+	first = 0;
+	(void)fflush(stdout);
 }

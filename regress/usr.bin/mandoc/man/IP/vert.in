@@ -1,0 +1,10 @@
+.\" $OpenBSD$
+.TH IP-VERT 1 "February 19, 2020"
+.SH NAME
+IP-vert \- vertical spacing before indented paragraphs
+.SH DESCRIPTION
+.PD 2v
+.IP tag
+text
+.IP tag
+text

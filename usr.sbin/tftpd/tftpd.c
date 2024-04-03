@@ -1,4 +1,4 @@
-/*	$OpenBSD: tftpd.c,v 1.63 2009/10/27 23:59:32 deraadt Exp $	*/
+/*	$OpenBSD: tftpd.c,v 1.49 2022/10/04 23:33:22 kn Exp $	*/
 
 /*
  * Copyright (c) 2012 David Gwynne <dlg@uq.edu.au>
@@ -57,9 +57,8 @@
  * Information Technology.
  */
 
-#include <sys/ioctl.h>
-#include <sys/param.h>
 #include <sys/types.h>
+#include <sys/queue.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
@@ -75,6 +74,7 @@
 #include <errno.h>
 #include <event.h>
 #include <fcntl.h>
+#include <paths.h>
 #include <poll.h>
 #include <pwd.h>
 #include <stdio.h>
@@ -83,6 +83,7 @@
 #include <stdarg.h>
 #include <syslog.h>
 #include <unistd.h>
+#include <limits.h>
 #include <vis.h>
 
 #define TIMEOUT		5		/* packet rexmt timeout */
@@ -90,6 +91,8 @@
 #define TIMEOUT_MAX	255		/* maximal packet rexmt timeout */
 
 #define RETRIES		5
+
+#define SEEDPATH	"/etc/random.seed"
 
 struct formats;
 
@@ -150,6 +153,7 @@ struct tftp_client {
 
 __dead void	usage(void);
 const char	*getip(void *);
+int		rdaemon(int);
 
 void		rewrite_connect(const char *);
 void		rewrite_events(void);
@@ -161,11 +165,13 @@ int		tftpd_listen(const char *, const char *, int);
 void		tftpd_events(void);
 void		tftpd_recv(int, short, void *);
 int		retry(struct tftp_client *);
+int		tftp_flush(struct tftp_client *);
+void		tftp_end(struct tftp_client *);
 
 void		tftp(struct tftp_client *, struct tftphdr *, size_t);
 void		tftp_open(struct tftp_client *, const char *);
 void		nak(struct tftp_client *, int);
-void		oack(struct tftp_client *);
+int		oack(struct tftp_client *);
 void		oack_done(int, short, void *);
 
 void		sendfile(struct tftp_client *);
@@ -175,14 +181,20 @@ int		fput_octet(struct tftp_client *, int);
 int		fget_netascii(struct tftp_client *);
 int		fput_netascii(struct tftp_client *, int);
 void		file_read(struct tftp_client *);
+void		tftp_send(struct tftp_client *);
 int		tftp_wrq_ack_packet(struct tftp_client *);
 void		tftp_rrq_ack(int, short, void *);
 void		tftp_wrq_ack(struct tftp_client *client);
 void		tftp_wrq(int, short, void *);
+void		tftp_wrq_end(int, short, void *);
 
 int		parse_options(struct tftp_client *, char *, size_t,
 		    struct opt_client *);
 int		validate_access(struct tftp_client *, const char *);
+
+struct tftp_client *
+		client_alloc(void);
+void		client_free(struct tftp_client *client);
 
 struct formats {
 	const char	*f_mode;
@@ -210,12 +222,19 @@ struct errmsg {
 	{ -1,		NULL }
 };
 
-struct loggers {   
-	void (*err)(int, const char *, ...);
-	void (*errx)(int, const char *, ...);
-	void (*warn)(const char *, ...);
-	void (*warnx)(const char *, ...);
-	void (*info)(const char *, ...);
+struct loggers {
+	__dead void (*err)(int, const char *, ...)
+	    __attribute__((__format__ (printf, 2, 3)));
+	__dead void (*errx)(int, const char *, ...)
+	    __attribute__((__format__ (printf, 2, 3)));
+	void (*warn)(const char *, ...)
+	    __attribute__((__format__ (printf, 1, 2)));
+	void (*warnx)(const char *, ...)
+	    __attribute__((__format__ (printf, 1, 2)));
+	void (*info)(const char *, ...)
+	    __attribute__((__format__ (printf, 1, 2)));
+	void (*debug)(const char *, ...)
+	    __attribute__((__format__ (printf, 1, 2)));
 };
 
 const struct loggers conslogger = {
@@ -223,15 +242,24 @@ const struct loggers conslogger = {
 	errx,
 	warn,
 	warnx,
-	warnx
+	warnx, /* info */
+	warnx /* debug */
 };
 
-void	syslog_err(int, const char *, ...);
-void	syslog_errx(int, const char *, ...);
-void	syslog_warn(const char *, ...);
-void	syslog_warnx(const char *, ...);
-void	syslog_info(const char *, ...);
-void	syslog_vstrerror(int, int, const char *, va_list);
+__dead void	syslog_err(int, const char *, ...)
+		    __attribute__((__format__ (printf, 2, 3)));
+__dead void	syslog_errx(int, const char *, ...)
+		    __attribute__((__format__ (printf, 2, 3)));
+void		syslog_warn(const char *, ...)
+		    __attribute__((__format__ (printf, 1, 2)));
+void		syslog_warnx(const char *, ...)
+		    __attribute__((__format__ (printf, 1, 2)));
+void		syslog_info(const char *, ...)
+		    __attribute__((__format__ (printf, 1, 2)));
+void		syslog_debug(const char *, ...)
+		    __attribute__((__format__ (printf, 1, 2)));
+void		syslog_vstrerror(int, int, const char *, va_list)
+		    __attribute__((__format__ (printf, 3, 0)));
 
 const struct loggers syslogger = {
 	syslog_err,
@@ -239,6 +267,7 @@ const struct loggers syslogger = {
 	syslog_warn,
 	syslog_warnx,
 	syslog_info,
+	syslog_debug
 };
 
 const struct loggers *logger = &conslogger;
@@ -248,26 +277,29 @@ const struct loggers *logger = &conslogger;
 #define lwarn(_f...) logger->warn(_f)
 #define lwarnx(_f...) logger->warnx(_f)
 #define linfo(_f...) logger->info(_f)
+#define ldebug(_f...) logger->debug(_f)
 
 __dead void
 usage(void)
 {
 	extern char *__progname;
-	fprintf(stderr, "usage: %s [-46cdv] [-l addr] [-p port] [-r sock]"
+	fprintf(stderr, "usage: %s [-46cdivw] [-l address] [-p port] [-r socket]"
 	    " directory\n", __progname);
 	exit(1);
 }
 
 int		  cancreate = 0;
+int		  canwrite = 0;
 int		  verbose = 0;
+int		  debug = 0;
+int		  iflag = 0;
 
 int
 main(int argc, char *argv[])
 {
 	extern char *__progname;
-	int debug = 0;
 
-	int		 n = 0, i, c;
+	int		 c;
 	struct passwd	*pw;
 
 	char *dir = NULL;
@@ -276,8 +308,9 @@ main(int argc, char *argv[])
 	char *addr = NULL;
 	char *port = "tftp";
 	int family = AF_UNSPEC;
+	int devnull = -1;
 
-	while ((c = getopt(argc, argv, "46cdl:p:r:v")) != -1) {
+	while ((c = getopt(argc, argv, "46cdil:p:r:vw")) != -1) {
 		switch (c) {
 		case '4':
 			family = AF_INET;
@@ -286,11 +319,16 @@ main(int argc, char *argv[])
 			family = AF_INET6;
 			break;
 		case 'c':
-			cancreate = 1;
+			canwrite = cancreate = 1;
 			break;
 		case 'd':
 			verbose = debug = 1;
-			break;	
+			break;
+		case 'i':
+			if (rewrite != NULL)
+				errx(1, "options -i and -r are incompatible");
+			iflag = 1;
+			break;
 		case 'l':
 			addr = optarg;
 			break;
@@ -298,10 +336,15 @@ main(int argc, char *argv[])
 			port = optarg;
 			break;
 		case 'r':
+			if (iflag == 1)
+				errx(1, "options -i and -r are incompatible");
 			rewrite = optarg;
 			break;
 		case 'v':
 			verbose = 1;
+			break;
+		case 'w':
+			canwrite = 1;
 			break;
 		default:
 			usage();
@@ -322,12 +365,15 @@ main(int argc, char *argv[])
 
 	pw = getpwnam("_tftpd");
 	if (pw == NULL)
-		err(1, "no _tftpd user");
+		errx(1, "no _tftpd user");
 
 	if (!debug) {
 		openlog(__progname, LOG_PID|LOG_NDELAY, LOG_DAEMON);
 		tzset();
 		logger = &syslogger;
+		devnull = open(_PATH_DEVNULL, O_RDWR);
+		if (devnull == -1)
+			err(1, "open %s", _PATH_DEVNULL);
 	}
 
 	if (rewrite != NULL)
@@ -346,8 +392,19 @@ main(int argc, char *argv[])
 	    setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid))
 		errx(1, "can't drop privileges");
 
-	if (!debug && daemon(1, 0) == -1)
+	if (!debug && rdaemon(devnull) == -1)
 		err(1, "unable to daemonize");
+
+	if (cancreate) {
+		if (pledge("stdio rpath wpath cpath fattr dns inet", NULL) == -1)
+			lerr(1, "pledge");
+	} else if (canwrite) {
+		if (pledge("stdio rpath wpath dns inet", NULL) == -1)
+			lerr(1, "pledge");
+	} else {
+		if (pledge("stdio rpath dns inet", NULL) == -1)
+			lerr(1, "pledge");
+	}
 
 	event_init();
 
@@ -380,7 +437,6 @@ rewrite_connect(const char *path)
 	int s;
 	struct sockaddr_un remote;
 	size_t len;
-	int on = 1;
 
 	rwmap = malloc(sizeof(*rwmap));
 	if (rwmap == NULL)
@@ -396,7 +452,7 @@ rewrite_connect(const char *path)
 
 	TAILQ_INIT(&rwmap->clients);
 
-	s = socket(AF_UNIX, SOCK_STREAM, 0);
+	s = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0);
 	if (s == -1)
 		err(1, "rewrite socket");
 
@@ -408,9 +464,6 @@ rewrite_connect(const char *path)
 	len += sizeof(remote.sun_family) + 1;
 	if (connect(s, (struct sockaddr *)&remote, len) == -1)
 		err(1, "%s", path);
-
-	if (ioctl(s, FIONBIO, &on) < 0)
-		err(1, "rewrite ioctl(FIONBIO)");
 
 	rwmap->s = s;
 }
@@ -426,13 +479,16 @@ rewrite_events(void)
 void
 rewrite_map(struct tftp_client *client, const char *filename)
 {
-	char nicebuf[MAXPATHLEN];
+	char *nicebuf;
 
-	(void)strnvis(nicebuf, filename, MAXPATHLEN, VIS_SAFE|VIS_OCTAL);
+	if (stravis(&nicebuf, filename, VIS_SAFE|VIS_OCTAL) == -1)
+		lerr(1, "rwmap stravis");
 
 	if (evbuffer_add_printf(rwmap->wrbuf, "%s %s %s\n", getip(&client->ss),
 	    client->opcode == WRQ ? "write" : "read", nicebuf) == -1)
 		lerr(1, "rwmap printf");
+
+	free(nicebuf);
 
 	TAILQ_INSERT_TAIL(&rwmap->clients, client, entry);
 
@@ -442,8 +498,16 @@ rewrite_map(struct tftp_client *client, const char *filename)
 void
 rewrite_req(int fd, short events, void *arg)
 {
-	if (evbuffer_write(rwmap->wrbuf, fd) == -1)
-		lerr(1, "rwmap read");
+	if (evbuffer_write(rwmap->wrbuf, fd) == -1) {
+		switch (errno) {
+		case EINTR:
+		case EAGAIN:
+			event_add(&rwmap->wrev, NULL);
+			return;
+		}
+
+		lerr(1, "rewrite socket write");
+	}
 
 	if (EVBUFFER_LENGTH(rwmap->wrbuf))
 		event_add(&rwmap->wrev, NULL);
@@ -456,11 +520,22 @@ rewrite_res(int fd, short events, void *arg)
 	char *filename;
 	size_t len;
 
-	if (evbuffer_read(rwmap->rdbuf, fd, MAXPATHLEN) == -1)
-		lerr(1, "rwmap read");
+	switch (evbuffer_read(rwmap->rdbuf, fd, PATH_MAX)) {
+	case -1:
+		switch (errno) {
+		case EINTR:
+		case EAGAIN:
+			return;
+		}
+		lerr(1, "rewrite socket read");
+	case 0:
+		lerrx(1, "rewrite socket closed");
+	default:
+		break;
+	}
 
-	while (filename = evbuffer_readln(rwmap->rdbuf, &len,
-	    EVBUFFER_EOL_LF)) {
+	while ((filename = evbuffer_readln(rwmap->rdbuf, &len,
+	    EVBUFFER_EOL_LF)) != NULL) {
 		client = TAILQ_FIRST(&rwmap->clients);
 		if (client == NULL)
 			lerrx(1, "unexpected rwmap reply");
@@ -482,15 +557,15 @@ tftpd_listen(const char *addr, const char *port, int family)
 	int error;
 	int s;
 
-	int saved_errno;
-	const char *cause = NULL;
+	int cerrno = EADDRNOTAVAIL;
+	const char *cause = "getaddrinfo";
+
+	int on = 1;
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = family;
 	hints.ai_socktype = SOCK_DGRAM;
 	hints.ai_flags = AI_PASSIVE;
-
-	int on = 1;
 
 	TAILQ_INIT(&tftp_servers);
 
@@ -501,33 +576,31 @@ tftpd_listen(const char *addr, const char *port, int family)
 	}
 
 	for (res = res0; res != NULL; res = res->ai_next) {
-		s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		s = socket(res->ai_family, res->ai_socktype | SOCK_NONBLOCK,
+		    res->ai_protocol);
 		if (s == -1) {
 			cause = "socket";
+			cerrno = errno;
 			continue;
 		}
 
 		if (bind(s, res->ai_addr, res->ai_addrlen) == -1) {
 			cause = "bind";
-			saved_errno = errno;
+			cerrno = errno;
 			close(s);
-			errno = saved_errno;
 			continue;
 		}
-
-		if (ioctl(s, FIONBIO, &on) < 0)
-			err(1, "ioctl(FIONBIO)");
 
 		switch (res->ai_family) {
 		case AF_INET:
 			if (setsockopt(s, IPPROTO_IP, IP_RECVDSTADDR,
 			    &on, sizeof(on)) == -1)
-				errx(1, "setsockopt(IP_RECVDSTADDR)");
+				err(1, "setsockopt(IP_RECVDSTADDR)");
 			break;
 		case AF_INET6:
 			if (setsockopt(s, IPPROTO_IPV6, IPV6_RECVPKTINFO,
 			    &on, sizeof(on)) == -1)
-				errx(1, "setsockopt(IPV6_RECVPKTINFO)");
+				err(1, "setsockopt(IPV6_RECVPKTINFO)");
 			break;
 		}
 
@@ -540,8 +613,9 @@ tftpd_listen(const char *addr, const char *port, int family)
 	}
 
 	if (TAILQ_EMPTY(&tftp_servers))
-		err(1, "%s", cause);
+		errc(1, cerrno, "%s", cause);
 
+	freeaddrinfo(res0);
 	return (0);
 }
 
@@ -557,11 +631,11 @@ tftpd_events(void)
 }
 
 struct tftp_client *
-client_alloc()
+client_alloc(void)
 {
 	struct tftp_client *client;
 
-	client = calloc(sizeof(*client), 1);
+	client = calloc(1, sizeof(*client));
 	if (client == NULL)
 		return (NULL);
 
@@ -581,8 +655,7 @@ client_alloc()
 void
 client_free(struct tftp_client *client)
 {
-	if (client->options != NULL)
-		free(client->options);
+	free(client->options);
 
 	if (client->file != NULL)
 		fclose(client->file);
@@ -610,12 +683,11 @@ tftpd_recv(int fd, short events, void *arg)
 
 	struct tftphdr *tp;
 
-	struct tftp_server *server = arg;
 	struct tftp_client *client;
 
 	client = client_alloc();
 	if (client == NULL) {
-		char *buf = alloca(SEGSIZE_MAX + 4);
+		char buf[SEGSIZE_MAX + 4];
 		/* no memory! flush this request... */
 		recv(fd, buf, SEGSIZE_MAX + 4, 0);
 		/* dont care if it fails */
@@ -640,7 +712,8 @@ tftpd_recv(int fd, short events, void *arg)
 	if (n < 4)
 		goto err;
 
-	client->sock = socket(client->ss.ss_family, SOCK_DGRAM, 0);
+	client->sock = socket(client->ss.ss_family,
+	    SOCK_DGRAM | SOCK_NONBLOCK, 0);
 	if (client->sock == -1) {
 		lwarn("socket");
 		goto err;
@@ -668,11 +741,9 @@ tftpd_recv(int fd, short events, void *arg)
 			ipi = (struct in6_pktinfo *)CMSG_DATA(cmsg);
 			memcpy(&((struct sockaddr_in6 *)&s_in)->sin6_addr,
 			    &ipi->ipi6_addr, sizeof(struct in6_addr));
-#ifdef __KAME__
 			if (IN6_IS_ADDR_LINKLOCAL(&ipi->ipi6_addr))
 				((struct sockaddr_in6 *)&s_in)->sin6_scope_id =
 				    ipi->ipi6_ifindex;
-#endif
 			break;
 		}
 	}
@@ -684,7 +755,7 @@ tftpd_recv(int fd, short events, void *arg)
 		    &on, sizeof(on));
 
 		if (bind(client->sock, (struct sockaddr *)&s_in,
-		    s_in.ss_len) < 0) {
+		    s_in.ss_len) == -1) {
 			lwarn("bind to %s", getip(&s_in));
 			goto err;
 		}
@@ -694,9 +765,6 @@ tftpd_recv(int fd, short events, void *arg)
 		lwarn("connect to %s", getip(&client->ss));
 		goto err;
 	}
-
-	if (ioctl(client->sock, FIONBIO, &on) < 0)
-		err(1, "client ioctl(FIONBIO)");
 
 	tp = (struct tftphdr *)client->buf;
 	client->opcode = ntohs(tp->th_opcode);
@@ -738,7 +806,7 @@ parse_options(struct tftp_client *client, char *cp, size_t size,
 		}
 
 		for (option = cp; *cp; cp++)
-			*cp = tolower(*cp);
+			*cp = tolower((unsigned char)*cp);
 
 		for (i = 0; i < NOPT; i++) {
 			if (strcmp(option, opt_names[i]) == 0) {
@@ -759,13 +827,12 @@ void
 tftp(struct tftp_client *client, struct tftphdr *tp, size_t size)
 {
 	struct opt_client *options;
-	int has_options;
 
 	char		*cp;
 	int		 i, first = 1, ecode, to;
 	struct formats	*pf;
-	char		*mode = NULL, *option, *ccp;
-	char		 filename[MAXPATHLEN];
+	char		*mode = NULL;
+	char		 filename[PATH_MAX];
 	const char	*errstr;
 
 	if (size < 5) {
@@ -797,7 +864,7 @@ again:
 		goto again;
 	}
 	for (cp = mode; *cp; cp++)
-		*cp = tolower(*cp);
+		*cp = tolower((unsigned char)*cp);
 
 	for (pf = formats; pf->f_mode; pf++) {
 		if (strcmp(pf->f_mode, mode) == 0)
@@ -810,7 +877,7 @@ again:
 	client->fgetc = pf->f_getc;
 	client->fputc = pf->f_putc;
 
-	client->options = options = calloc(sizeof(*client->options), NOPT);
+	client->options = options = calloc(NOPT, sizeof(*client->options));
 	if (options == NULL) {
 		ecode = 100 + ENOMEM;
 		goto error;
@@ -844,9 +911,9 @@ again:
 	}
 
 	if (verbose) {
-		char nicebuf[MAXPATHLEN];
+		char nicebuf[PATH_MAX];
 
-		(void)strnvis(nicebuf, filename, MAXPATHLEN,
+		(void)strnvis(nicebuf, filename, PATH_MAX,
 		    VIS_SAFE|VIS_OCTAL);
 
 		linfo("%s: %s request for '%s'", getip(&client->ss),
@@ -874,7 +941,8 @@ tftp_open(struct tftp_client *client, const char *filename)
 		goto error;
 
 	if (client->options) {
-		oack(client);
+		if (oack(client) == -1)
+			goto error;
 
 		free(client->options);
 		client->options = NULL;
@@ -884,7 +952,6 @@ tftp_open(struct tftp_client *client, const char *filename)
 		sendfile(client);
 
 	return;
-
 error:
 	nak(client, ecode);
 }
@@ -901,23 +968,67 @@ error:
  * given as we have no login directory.
  */
 int
-validate_access(struct tftp_client *client, const char *filename)
+validate_access(struct tftp_client *client, const char *requested)
 {
 	int		 mode = client->opcode;
 	struct opt_client *options = client->options;
 	struct stat	 stbuf;
-	int		 fd, wmode, serrno;
-	const char	*errstr;
+	int		 fd, wmode;
+	const char	*errstr, *filename;
+	char		 rewritten[PATH_MAX];
+
+	if (!canwrite && mode != RRQ)
+		return (EACCESS);
+
+	if (strcmp(requested, SEEDPATH) == 0) {
+		char *buf;
+		if (mode != RRQ)
+			return (EACCESS);
+
+		buf = client->buf + sizeof(client->buf) - 512;
+		arc4random_buf(buf, 512);
+		if (options != NULL && options[OPT_TSIZE].o_request)
+			options[OPT_TSIZE].o_reply = 512;
+		client->file = fmemopen(buf, 512, "r");
+		if (client->file == NULL)
+			return (errno + 100);
+
+		return (0);
+	}
+
+	if (iflag) {
+		int ret;
+
+		/*
+		 * In -i mode, look in the directory named after the
+		 * client address.
+		 */
+		ret = snprintf(rewritten, sizeof(rewritten), "%s/%s",
+		    getip(&client->ss), requested);
+		if (ret < 0 || ret >= sizeof(rewritten))
+			return (ENAMETOOLONG + 100);
+		filename = rewritten;
+	} else {
+retryread:
+		filename = requested;
+	}
 
 	/*
 	 * We use a different permissions scheme if `cancreate' is
 	 * set.
 	 */
 	wmode = O_TRUNC;
-	if (stat(filename, &stbuf) < 0) {
-		if (!cancreate)
+	if (stat(filename, &stbuf) == -1) {
+		if (!cancreate) {
+			/*
+			 * In -i mode, retry failed read requests from
+			 * the root directory.
+			 */
+			if (mode == RRQ && errno == ENOENT &&
+			    filename == rewritten)
+				goto retryread;
 			return (errno == ENOENT ? ENOTFOUND : EACCESS);
-		else {
+		} else {
 			if ((errno == ENOENT) && (mode != RRQ))
 				wmode |= O_CREAT;
 			else
@@ -925,10 +1036,10 @@ validate_access(struct tftp_client *client, const char *filename)
 		}
 	} else {
 		if (mode == RRQ) {
-			if ((stbuf.st_mode & (S_IREAD >> 6)) == 0)
+			if ((stbuf.st_mode & (S_IRUSR >> 6)) == 0)
 				return (EACCESS);
 		} else {
-			if ((stbuf.st_mode & (S_IWRITE >> 6)) == 0)
+			if ((stbuf.st_mode & (S_IWUSR >> 6)) == 0)
 				return (EACCESS);
 		}
 	}
@@ -946,12 +1057,12 @@ validate_access(struct tftp_client *client, const char *filename)
 		}
 	}
 	fd = open(filename, mode == RRQ ? O_RDONLY : (O_WRONLY|wmode), 0666);
-	if (fd < 0)
+	if (fd == -1)
 		return (errno + 100);
 	/*
 	 * If the file was created, set default permissions.
 	 */
-	if ((wmode & O_CREAT) && fchmod(fd, 0666) < 0) {
+	if ((wmode & O_CREAT) && fchmod(fd, 0666) == -1) {
 		int serrno = errno;
 
 		close(fd);
@@ -983,7 +1094,7 @@ fput_octet(struct tftp_client *client, int c)
 int
 fget_netascii(struct tftp_client *client)
 {
-	int c;
+	int c = -1;
 
 	switch (client->newline) {
 	case 0:
@@ -1064,6 +1175,12 @@ file_read(struct tftp_client *client)
 	client->buflen = i + 4;
 	client->retries = RETRIES;
 
+	tftp_send(client);
+}
+
+void
+tftp_send(struct tftp_client *client)
+{
 	if (send(client->sock, client->buf, client->buflen, 0) == -1) {
 		lwarn("send(block)");
 		client_free(client);
@@ -1078,16 +1195,19 @@ tftp_rrq_ack(int fd, short events, void *arg)
 {
 	struct tftp_client *client = arg;
 	struct tftphdr *ap; /* ack packet */
+	char rbuf[SEGSIZE_MIN];
 	ssize_t n;
 
 	if (events & EV_TIMEOUT) {
-		if (retry(client) == -1)
+		if (retry(client) == -1) {
+			lwarn("%s: retry", getip(&client->ss));
 			goto done;
+		}
 
 		return;
 	}
 
-	n = recv(fd, client->buf, client->packet_size, 0);
+	n = recv(fd, rbuf, sizeof(rbuf), 0);
 	if (n == -1) {
 		switch (errno) {
 		case EINTR:
@@ -1096,18 +1216,35 @@ tftp_rrq_ack(int fd, short events, void *arg)
 			return;
 
 		default:
+			lwarn("%s: recv", getip(&client->ss));
 			goto done;
 		}
 	}
 
-	ap = (struct tftphdr *)client->buf;
+	ap = (struct tftphdr *)rbuf;
 	ap->th_opcode = ntohs((u_short)ap->th_opcode);
 	ap->th_block = ntohs((u_short)ap->th_block);
 
-	if (ap->th_opcode == ERROR)
+	switch (ap->th_opcode) {
+	case ACK:
+		break;
+	case ERROR:
+	default: /* assume the worst */
 		goto done;
-	if (ap->th_opcode != ACK || ap->th_block != client->block)
-		goto done; /* XXX */
+	}
+
+	if (ap->th_block != client->block) {
+		if (tftp_flush(client) == -1) {
+			lwarnx("%s: flush", getip(&client->ss));
+			goto done;
+		}
+
+		if (ap->th_block != (client->block - 1))
+			goto done;
+
+		tftp_send(client);
+		return;
+	}
 
 	if (client->buflen != client->packet_size) {
 		/* this was the last packet in the stream */
@@ -1122,6 +1259,29 @@ done:
 	client_free(client);
 }
 
+int
+tftp_flush(struct tftp_client *client)
+{
+	char rbuf[SEGSIZE_MIN];
+	ssize_t n;
+
+	for (;;) {
+		n = recv(client->sock, rbuf, sizeof(rbuf), 0);
+		if (n == -1) {
+			switch (errno) {
+			case EAGAIN:
+				return (0);
+
+			case EINTR:
+				break;
+
+			default:
+				return (-1);
+			}
+		}
+	}
+}
+
 void
 recvfile(struct tftp_client *client)
 {
@@ -1133,14 +1293,13 @@ int
 tftp_wrq_ack_packet(struct tftp_client *client)
 {
 	struct tftphdr *ap; /* ack packet */
-	ssize_t n;
 
 	ap = (struct tftphdr *)client->buf;
 	ap->th_opcode = htons((u_short)ACK);
 	ap->th_block = htons(client->block);
 
-	client->retries = RETRIES;
 	client->buflen = 4;
+	client->retries = RETRIES;
 
 	return (send(client->sock, client->buf, client->buflen, 0) != 4);
 }
@@ -1161,19 +1320,22 @@ tftp_wrq_ack(struct tftp_client *client)
 void
 tftp_wrq(int fd, short events, void *arg)
 {
+	char wbuf[SEGSIZE_MAX + 4];
 	struct tftp_client *client = arg;
 	struct tftphdr *dp;
 	ssize_t n;
 	int i;
 
 	if (events & EV_TIMEOUT) {
-		if (retry(client) == -1)
+		if (retry(client) == -1) {
+			lwarn("%s", getip(&client->ss));
 			goto done;
+		}
 
 		return;
 	}
 
-	n = recv(client->sock, client->buf, client->packet_size, 0);
+	n = recv(fd, wbuf, client->packet_size, 0);
 	if (n == -1) {
 		switch (errno) {
 		case EINTR:
@@ -1189,18 +1351,33 @@ tftp_wrq(int fd, short events, void *arg)
 	if (n < 4)
 		goto done;
 
-	dp = (struct tftphdr *)client->buf;
+	dp = (struct tftphdr *)wbuf;
 	dp->th_opcode = ntohs((u_short)dp->th_opcode);
 	dp->th_block = ntohs((u_short)dp->th_block);
 
-	if (dp->th_opcode != DATA)
+	switch (dp->th_opcode) {
+	case ERROR:
 		goto done;
+	case DATA:
+		break;
+	default:
+		goto retry;
+	}
 
-	if (dp->th_block != client->block)
-		goto done;
+	if (dp->th_block != client->block) {
+		if (tftp_flush(client) == -1) {
+			lwarnx("%s: flush", getip(&client->ss));
+			goto done;
+		}
+
+		if (dp->th_block != (client->block - 1))
+			goto done;
+
+		goto retry;
+	}
 
 	for (i = 4; i < n; i++) {
-		if (client->fputc(client, client->buf[i]) == EOF) {
+		if (client->fputc(client, wbuf[i]) == EOF) {
 			lwarn("tftp wrq");
 			goto done;
 		}
@@ -1208,7 +1385,12 @@ tftp_wrq(int fd, short events, void *arg)
 
 	if (n < client->packet_size) {
 		tftp_wrq_ack_packet(client);
-		goto done;
+		fclose(client->file);
+		client->file = NULL;
+		event_set(&client->sev, client->sock, EV_READ,
+		    tftp_wrq_end, client);
+		event_add(&client->sev, &client->tv);
+		return;
 	}
 
 	tftp_wrq_ack(client);
@@ -1220,6 +1402,63 @@ retry:
 done:
 	client_free(client);
 }
+
+void
+tftp_wrq_end(int fd, short events, void *arg)
+{
+	char wbuf[SEGSIZE_MAX + 4];
+	struct tftp_client *client = arg;
+	struct tftphdr *dp;
+	ssize_t n;
+
+	if (events & EV_TIMEOUT) {
+		/* this was the last packet, we can clean up */
+		goto done;
+	}
+
+	n = recv(fd, wbuf, client->packet_size, 0);
+	if (n == -1) {
+		switch (errno) {
+		case EINTR:
+		case EAGAIN:
+			goto retry;
+
+		default:
+			lwarn("tftp_wrq_end recv");
+			goto done;
+		}
+	}
+
+	if (n < 4)
+		goto done;
+
+	dp = (struct tftphdr *)wbuf;
+	dp->th_opcode = ntohs((u_short)dp->th_opcode);
+	dp->th_block = ntohs((u_short)dp->th_block);
+
+	switch (dp->th_opcode) {
+	case ERROR:
+		goto done;
+	case DATA:
+		break;
+	default:
+		goto retry;
+	}
+
+	if (dp->th_block != client->block)
+		goto done;
+
+retry:
+	if (retry(client) == -1) {
+		lwarn("%s", getip(&client->ss));
+		goto done;
+	}
+	return;
+done:
+	client_free(client);
+	return;
+}
+
 
 /*
  * Send a nak packet (error message).
@@ -1233,6 +1472,7 @@ nak(struct tftp_client *client, int error)
 	struct tftphdr	*tp;
 	struct errmsg	*pe;
 	size_t		 length;
+	ssize_t		 rslt;
 
 	tp = (struct tftphdr *)client->buf;
 	tp->th_opcode = htons((u_short)ERROR);
@@ -1244,15 +1484,21 @@ nak(struct tftp_client *client, int error)
 	}
 	if (pe->e_code < 0) {
 		pe->e_msg = strerror(error - 100);
-		tp->th_code = EUNDEF;   /* set 'undef' errorcode */
+		tp->th_code = htons(EUNDEF);   /* set 'undef' errorcode */
 	}
 
 	length = strlcpy(tp->th_msg, pe->e_msg, client->packet_size - 5) + 5;
 	if (length > client->packet_size)
 		length = client->packet_size;
 
-	if (send(client->sock, client->buf, length, 0) != length)
-		lwarn("nak");
+	linfo("%s: nak: %s", getip(&client->ss), tp->th_msg);
+
+	rslt = send(client->sock, client->buf, length, 0);
+	if (rslt == -1)
+		lwarn("%s: nak", getip(&client->ss));
+	else if ((size_t)rslt != length)
+		lwarnx("%s: nak: sent %zd of %zu bytes", getip(&client->ss),
+		    rslt, length);
 
 	client_free(client);
 }
@@ -1260,7 +1506,7 @@ nak(struct tftp_client *client, int error)
 /*
  * Send an oack packet (option acknowledgement).
  */
-void
+int
 oack(struct tftp_client *client)
 {
 	struct opt_client *options = client->options;
@@ -1270,7 +1516,7 @@ oack(struct tftp_client *client)
 
 	tp = (struct tftphdr *)client->buf;
 	bp = (char *)tp->th_stuff;
-	size = client->packet_size - 2;
+	size = sizeof(client->buf) - 2;
 
 	tp->th_opcode = htons((u_short)OACK);
 	for (i = 0; i < NOPT; i++) {
@@ -1279,15 +1525,15 @@ oack(struct tftp_client *client)
 
 		n = snprintf(bp, size, "%s%c%lld", opt_names[i], '\0',
 		    options[i].o_reply);
-		if (n == -1 || n >= size) {
-			lwarn("oack: no buffer space");
+		if (n < 0 || n >= size) {
+			lwarnx("oack: no buffer space");
 			goto error;
 		}
 
 		bp += n + 1;
 		size -= n + 1;
 		if (size < 0) {
-			lwarn("oack: no buffer space");
+			lwarnx("oack: no buffer space");
 			goto error;
 		}
 	}
@@ -1310,22 +1556,21 @@ oack(struct tftp_client *client)
 		    oack_done, client);
 
 	event_add(&client->sev, &client->tv);
-	return;
+	return (0);
 
 error:
-	client_free(client);
+	return (-1);
 }
 
 int
 retry(struct tftp_client *client)
 {
-	if (--client->retries == 0)
+	if (--client->retries == 0) {
+		errno = ETIMEDOUT;
 		return (-1);
+	}
 
-	if (send(client->sock, client->buf, client->buflen, 0) == -1)
-		return -1;
-
-	event_add(&client->sev, &client->tv);
+	tftp_send(client);
 
 	return (0);
 }
@@ -1338,8 +1583,10 @@ oack_done(int fd, short events, void *arg)
 	ssize_t n;
 
 	if (events & EV_TIMEOUT) {
-		if (retry(client) == -1)
+		if (retry(client) == -1) {
+			lwarn("%s", getip(&client->ss));
 			goto done;
+		}
 
 		return;
 	}
@@ -1353,7 +1600,7 @@ oack_done(int fd, short events, void *arg)
 			return;
 
 		default:
-			lwarn("recv");
+			lwarn("%s: recv", getip(&client->ss));
 			goto done;
 		}
 	}
@@ -1388,6 +1635,38 @@ getip(void *s)
 	return(hbuf);
 }
 
+/* daemon(3) clone, intended to be used in a "r"estricted environment */
+int
+rdaemon(int devnull)
+{
+	if (devnull == -1) {
+		errno = EBADF;
+		return (-1);
+	}
+	if (fcntl(devnull, F_GETFL) == -1)
+		return (-1);
+
+	switch (fork()) {
+	case -1:
+		return (-1);
+	case 0:
+		break;
+	default:
+		_exit(0);
+	}
+
+	if (setsid() == -1)
+		return (-1);
+
+	(void)dup2(devnull, STDIN_FILENO);
+	(void)dup2(devnull, STDOUT_FILENO);
+	(void)dup2(devnull, STDERR_FILENO);
+	if (devnull > 2)
+		(void)close(devnull);
+
+	return (0);
+}
+
 void
 syslog_vstrerror(int e, int priority, const char *fmt, va_list ap)
 {
@@ -1397,19 +1676,19 @@ syslog_vstrerror(int e, int priority, const char *fmt, va_list ap)
 		syslog(LOG_EMERG, "unable to alloc in syslog_vstrerror");
 		exit(1);
 	}
- 
+
 	syslog(priority, "%s: %s", s, strerror(e));
- 
+
 	free(s);
 }
- 
+
 void
 syslog_err(int ecode, const char *fmt, ...)
-{  
+{
 	va_list ap;
 
 	va_start(ap, fmt);
-	syslog_vstrerror(errno, LOG_EMERG, fmt, ap);
+	syslog_vstrerror(errno, LOG_CRIT, fmt, ap);
 	va_end(ap);
 
 	exit(ecode);
@@ -1421,7 +1700,7 @@ syslog_errx(int ecode, const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	vsyslog(LOG_WARNING, fmt, ap);
+	vsyslog(LOG_CRIT, fmt, ap);
 	va_end(ap);
 
 	exit(ecode);
@@ -1433,7 +1712,7 @@ syslog_warn(const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	syslog_vstrerror(errno, LOG_WARNING, fmt, ap);
+	syslog_vstrerror(errno, LOG_ERR, fmt, ap);
 	va_end(ap);
 }
 
@@ -1443,7 +1722,7 @@ syslog_warnx(const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	vsyslog(LOG_WARNING, fmt, ap);
+	vsyslog(LOG_ERR, fmt, ap);
 	va_end(ap);
 }
 
@@ -1457,3 +1736,15 @@ syslog_info(const char *fmt, ...)
 	va_end(ap);
 }
 
+void
+syslog_debug(const char *fmt, ...)
+{
+	va_list ap;
+
+	if (!debug)
+		return;
+
+	va_start(ap, fmt);
+	vsyslog(LOG_DEBUG, fmt, ap);
+	va_end(ap);
+}

@@ -1,0 +1,29 @@
+EM-TAG(1) - General Commands Manual
+
+# NAME
+
+**Em-tag** - tagging of emphasis macros
+
+# DESCRIPTION
+
+BEGINTEST
+
+*one* | *two*
+
+> text
+
+*three-with-hyphens*
+
+> text
+
+*minus&#45;sign*
+
+> text
+
+*four*
+*one*
+*five*
+
+ENDTEST
+
+OpenBSD - November 24, 2023

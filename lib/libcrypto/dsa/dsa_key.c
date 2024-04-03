@@ -1,25 +1,25 @@
-/* crypto/dsa/dsa_key.c */
+/* $OpenBSD: dsa_key.c,v 1.34 2023/07/08 14:28:15 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
  * This package is an SSL implementation written
  * by Eric Young (eay@cryptsoft.com).
  * The implementation was written so as to conform with Netscapes SSL.
- * 
+ *
  * This library is free for commercial and non-commercial use as long as
  * the following conditions are aheared to.  The following conditions
  * apply to all code found in this distribution, be it the RC4, RSA,
  * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
  * included with this distribution is covered by the same copyright terms
  * except that the holder is Tim Hudson (tjh@cryptsoft.com).
- * 
+ *
  * Copyright remains Eric Young's, and as such any Copyright notices in
  * the code are not to be removed.
  * If this package is used in a product, Eric Young should be given attribution
  * as the author of the parts of the library used.
  * This can be in the form of a textual message at program startup or
  * in documentation (online or textual) provided with the package.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -34,10 +34,10 @@
  *     Eric Young (eay@cryptsoft.com)"
  *    The word 'cryptographic' can be left out if the rouines from the library
  *    being used are not cryptographic related :-).
- * 4. If you include any Windows specific code (or a derivative thereof) from 
+ * 4. If you include any Windows specific code (or a derivative thereof) from
  *    the apps directory (application code) you must include an acknowledgement:
  *    "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -49,7 +49,7 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- * 
+ *
  * The licence and distribution terms for any publically available version or
  * derivative of this code cannot be changed.  i.e. this code cannot simply be
  * copied and put under another distribution licence
@@ -58,87 +58,63 @@
 
 #include <stdio.h>
 #include <time.h>
-#include "cryptlib.h"
+
+#include <openssl/opensslconf.h>
+
 #ifndef OPENSSL_NO_SHA
+
 #include <openssl/bn.h>
 #include <openssl/dsa.h>
-#include <openssl/rand.h>
 
-#ifdef OPENSSL_FIPS
-#include <openssl/fips.h>
-#endif
+#include "bn_local.h"
+#include "dsa_local.h"
 
 static int dsa_builtin_keygen(DSA *dsa);
 
-int DSA_generate_key(DSA *dsa)
-	{
-#ifdef OPENSSL_FIPS
-	if (FIPS_mode() && !(dsa->meth->flags & DSA_FLAG_FIPS_METHOD)
-			&& !(dsa->flags & DSA_FLAG_NON_FIPS_ALLOW))
-		{
-		DSAerr(DSA_F_DSA_GENERATE_KEY, DSA_R_NON_FIPS_DSA_METHOD);
-		return 0;
-		}
-#endif
-	if(dsa->meth->dsa_keygen)
+int
+DSA_generate_key(DSA *dsa)
+{
+	if (dsa->meth->dsa_keygen)
 		return dsa->meth->dsa_keygen(dsa);
-#ifdef OPENSSL_FIPS
-	if (FIPS_mode())
-		return FIPS_dsa_generate_key(dsa);
-#endif
 	return dsa_builtin_keygen(dsa);
-	}
+}
+LCRYPTO_ALIAS(DSA_generate_key);
 
-static int dsa_builtin_keygen(DSA *dsa)
-	{
-	int ok=0;
-	BN_CTX *ctx=NULL;
-	BIGNUM *pub_key=NULL,*priv_key=NULL;
+static int
+dsa_builtin_keygen(DSA *dsa)
+{
+	BIGNUM *pub_key = NULL, *priv_key = NULL;
+	BN_CTX *ctx = NULL;
+	int ok = 0;
 
-	if ((ctx=BN_CTX_new()) == NULL) goto err;
+	if ((priv_key = BN_new()) == NULL)
+		goto err;
+	if ((pub_key = BN_new()) == NULL)
+		goto err;
 
-	if (dsa->priv_key == NULL)
-		{
-		if ((priv_key=BN_new()) == NULL) goto err;
-		}
-	else
-		priv_key=dsa->priv_key;
+	if ((ctx = BN_CTX_new()) == NULL)
+		goto err;
 
-	do
-		if (!BN_rand_range(priv_key,dsa->q)) goto err;
-	while (BN_is_zero(priv_key));
+	if (!bn_rand_interval(priv_key, 1, dsa->q))
+		goto err;
+	if (!BN_mod_exp_ct(pub_key, dsa->g, priv_key, dsa->p, ctx))
+		goto err;
 
-	if (dsa->pub_key == NULL)
-		{
-		if ((pub_key=BN_new()) == NULL) goto err;
-		}
-	else
-		pub_key=dsa->pub_key;
-	
-	{
-		BIGNUM local_prk;
-		BIGNUM *prk;
+	BN_free(dsa->priv_key);
+	dsa->priv_key = priv_key;
+	priv_key = NULL;
 
-		if ((dsa->flags & DSA_FLAG_NO_EXP_CONSTTIME) == 0)
-			{
-			BN_init(&local_prk);
-			prk = &local_prk;
-			BN_with_flags(prk, priv_key, BN_FLG_CONSTTIME);
-			}
-		else
-			prk = priv_key;
+	BN_free(dsa->pub_key);
+	dsa->pub_key = pub_key;
+	pub_key = NULL;
 
-		if (!BN_mod_exp(pub_key,dsa->g,prk,dsa->p,ctx)) goto err;
-	}
+	ok = 1;
 
-	dsa->priv_key=priv_key;
-	dsa->pub_key=pub_key;
-	ok=1;
+ err:
+	BN_free(pub_key);
+	BN_free(priv_key);
+	BN_CTX_free(ctx);
 
-err:
-	if ((pub_key != NULL) && (dsa->pub_key == NULL)) BN_free(pub_key);
-	if ((priv_key != NULL) && (dsa->priv_key == NULL)) BN_free(priv_key);
-	if (ctx != NULL) BN_CTX_free(ctx);
-	return(ok);
-	}
+	return ok;
+}
 #endif

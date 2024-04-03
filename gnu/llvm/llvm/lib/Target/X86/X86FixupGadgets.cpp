@@ -90,6 +90,7 @@ private:
   unsigned getEquivalentRegForReg(unsigned oreg, unsigned nreg) const;
   bool hasImplicitUseOrDef(const MachineInstr &MI, unsigned Reg1,
                            unsigned Reg2) const;
+  bool fixupWithoutExchange(MachineInstr &MI);
 
   bool fixupInstruction(MachineFunction &MF, MachineBasicBlock &MBB,
                         MachineInstr &MI, struct FixupInfo Info);
@@ -541,26 +542,54 @@ bool FixupGadgetsPass::hasImplicitUseOrDef(const MachineInstr &MI,
 
   const MCInstrDesc &Desc = MI.getDesc();
 
-  const MCPhysReg *ImpDefs = Desc.getImplicitDefs();
-  if (ImpDefs) {
-    for (; *ImpDefs; ++ImpDefs) {
-      unsigned w = getWidestRegForReg(*ImpDefs);
-      if (w == Reg1 || w == Reg2) {
-        return true;
-      }
+  const ArrayRef<MCPhysReg> ImpDefs = Desc.implicit_defs();
+  for (MCPhysReg ImpDef : ImpDefs) {
+    unsigned w = getWidestRegForReg(ImpDef);
+    if (w == Reg1 || w == Reg2) {
+      return true;
     }
   }
 
-  const MCPhysReg *ImpUses = Desc.getImplicitUses();
-  if (ImpUses) {
-    for (; *ImpUses; ++ImpUses) {
-      unsigned w = getWidestRegForReg(*ImpUses);
-      if (w == Reg1 || w == Reg2) {
-        return true;
-      }
+  const ArrayRef<MCPhysReg> ImpUses = Desc.implicit_uses();
+  for (MCPhysReg ImpUse : ImpUses) {
+    unsigned w = getWidestRegForReg(ImpUse);
+    if (w == Reg1 || w == Reg2) {
+      return true;
     }
   }
   return false;
+}
+
+bool FixupGadgetsPass::fixupWithoutExchange(MachineInstr &MI) {
+  switch (MI.getOpcode()) {
+    case X86::MOV8rr_REV:
+      MI.setDesc(TII->get(X86::MOV8rr));
+      break;
+    case X86::MOV16rr_REV:
+      MI.setDesc(TII->get(X86::MOV16rr));
+      break;
+    case X86::MOV32rr_REV:
+      MI.setDesc(TII->get(X86::MOV32rr));
+      break;
+    case X86::MOV64rr_REV:
+      MI.setDesc(TII->get(X86::MOV64rr));
+      break;
+    case X86::MOV8rr:
+      MI.setDesc(TII->get(X86::MOV8rr_REV));
+      break;
+    case X86::MOV16rr:
+      MI.setDesc(TII->get(X86::MOV16rr_REV));
+      break;
+    case X86::MOV32rr:
+      MI.setDesc(TII->get(X86::MOV32rr_REV));
+      break;
+    case X86::MOV64rr:
+      MI.setDesc(TII->get(X86::MOV64rr_REV));
+      break;
+    default:
+      return false;
+  }
+  return true;
 }
 
 bool FixupGadgetsPass::fixupInstruction(MachineFunction &MF,
@@ -608,6 +637,11 @@ bool FixupGadgetsPass::fixupInstruction(MachineFunction &MF,
     unsigned treg = SwapReg1;
     SwapReg1 = SwapReg2;
     SwapReg2 = treg;
+  }
+
+  // Check for specific instructions we can fix without the xchg dance
+  if (fixupWithoutExchange(MI)) {
+      return true;
   }
 
   // Swap the two registers to start

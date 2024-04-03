@@ -1,0 +1,13 @@
+.\" $OpenBSD: bold.in,v 1.2 2017/07/04 14:53:23 schwarze Exp $
+.Dd $Mdocdate: July 5 2017 $
+.Dt UNARY-BOLD 1
+.Os
+.Sh NAME
+.Nm unary-bold
+.Nd font handling in bold boxes
+.Sh DESCRIPTION
+initial text
+.EQ
+bold { sin "sin" } "text" bold x hat
+.EN
+final text

@@ -1,44 +1,140 @@
-use strict;
-# $OpenBSD: Temp.pm,v 1.1.1.1 2003/10/16 17:16:30 espie Exp $
+# ex:ts=8 sw=4:
+# $OpenBSD: Temp.pm,v 1.38 2019/07/24 09:03:12 espie Exp $
 #
-# Copyright (c) 2003 Marc Espie.
-# 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 
-# THIS SOFTWARE IS PROVIDED BY THE OPENBSD PROJECT AND CONTRIBUTORS
-# ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OPENBSD
-# PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright (c) 2003-2005 Marc Espie <espie@openbsd.org>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-use warnings;
+use v5.36;
+
 package OpenBSD::Temp;
 
-use File::Temp;
-my $tempbase = $ENV{'PKG_TMPDIR'} || '/var/tmp';
+use OpenBSD::MkTemp;
+use OpenBSD::Paths;
+use OpenBSD::Error;
 
-sub dir()
+our $tempbase = $ENV{'PKG_TMPDIR'} || OpenBSD::Paths->vartmp;
+
+# stuff that should be cleaned up on exit, registered by pid,
+# so that it gets cleaned on exit from the correct process
+
+my $dirs = {};
+my $files = {};
+
+my ($lastname, $lasterror, $lasttype);
+
+OpenBSD::Handler->atend(
+    sub($) {
+	while (my ($name, $pid) = each %$files) {
+		unlink($name) if $pid == $$;
+	}
+	while (my ($dir, $pid) = each %$dirs) {
+		OpenBSD::Error->rmtree([$dir]) if $pid == $$;
+	}
+    });
+
+
+sub dir($)
 {
-	return File::Temp::tempdir("pkginfo.XXXXXXXXXXX", DIR => $tempbase,
-	    CLEANUP => 1).'/';
+	my $caught;
+	my $h = sub($sig, @) { $caught = $sig; };
+	my $dir;
+
+	{
+	    local $SIG{'INT'} = $h;
+	    local $SIG{'QUIT'} = $h;
+	    local $SIG{'HUP'} = $h;
+	    local $SIG{'KILL'} = $h;
+	    local $SIG{'TERM'} = $h;
+	    $dir = permanent_dir($tempbase, "pkginfo");
+	    if (defined $dir) {
+		    $dirs->{$dir} = $$;
+	    }
+	}
+	if (defined $caught) {
+		kill $caught, $$;
+	}
+	if (defined $dir) {
+		return "$dir/";
+	} else {
+		return undef;
+	}
 }
 
-sub list($)
+sub fh_file($stem, $cleanup)
 {
-	return File::Temp::tempfile("list.XXXXXXXXXXX", DIR => shift);
+	my $caught;
+	my $h = sub($sig, @) { $caught = $sig; };
+	my ($fh, $file);
+
+	{
+	    local $SIG{'INT'} = $h;
+	    local $SIG{'QUIT'} = $h;
+	    local $SIG{'HUP'} = $h;
+	    local $SIG{'KILL'} = $h;
+	    local $SIG{'TERM'} = $h;
+	    ($fh, $file) = permanent_file($tempbase, $stem);
+	    if (defined $file) {
+		    &$cleanup($file);
+	    }
+	}
+	if (defined $caught) {
+		kill $caught, $$;
+	}
+	return ($fh, $file);
 }
 
+sub file($)
+{
+	return (fh_file("pkgout", 
+	    sub($name) { $files->{$name} = $$; })) [1];
+}
+
+sub reclaim($class, $name)
+{
+	delete $files->{$name};
+	delete $dirs->{$name};
+}
+
+sub permanent_file($dir, $stem)
+{
+	my $template = "$stem.XXXXXXXXXX";
+	if (defined $dir) {
+		$template = "$dir/$template";
+	}
+	if (my @l = OpenBSD::MkTemp::mkstemp($template)) {
+		return @l;
+	}
+	($lastname, $lasttype, $lasterror) = ($template, 'file', $!);
+	return ();
+}
+
+sub permanent_dir($dir, $stem)
+{
+	my $template = "$stem.XXXXXXXXXX";
+	if (defined $dir) {
+		$template = "$dir/$template";
+	}
+	if (my $d = OpenBSD::MkTemp::mkdtemp($template)) {
+		return $d;
+	}
+	($lastname, $lasttype, $lasterror) = ($template, 'dir', $!);
+	return undef;
+}
+
+sub last_error($class, $template = "User #1 couldn't create temp #2 as #3: #4")
+{
+	my ($user) = getpwuid($>);
+	return ($template, $user, $lasttype, $lastname, $lasterror);
+}
 1;

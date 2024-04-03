@@ -557,6 +557,10 @@ static bfd *reldyn_sorting_bfd;
 #define MIPS_ELF_DYN_SIZE(abfd) \
   (get_elf_backend_data (abfd)->s->sizeof_dyn)
 
+/* The size of the rld_map pointer.  */
+#define MIPS_ELF_RLD_MAP_SIZE(abfd) \
+  (get_elf_backend_data (abfd)->s->arch_size / 8)
+
 /* The size of a GOT entry.  */
 #define MIPS_ELF_GOT_SIZE(abfd) \
   (get_elf_backend_data (abfd)->s->arch_size / 8)
@@ -2782,7 +2786,8 @@ mips_elf_sort_hash_table_f (struct mips_elf_link_hash_entry *h, void *data)
   /* Global symbols that need GOT entries that are not explicitly
      referenced are marked with got offset 2.  Those that are
      referenced get a 1, and those that don't need GOT entries get
-     -1.  */
+     -1.  Forced local symbols may also be marked with got offset 1,
+     but are never given global GOT entries.  */
   if (h->root.got.offset == 2)
     {
       BFD_ASSERT (h->tls_type == GOT_NORMAL);
@@ -2791,7 +2796,7 @@ mips_elf_sort_hash_table_f (struct mips_elf_link_hash_entry *h, void *data)
 	hsd->low = (struct elf_link_hash_entry *) h;
       h->root.dynindx = hsd->max_unref_got_dynindx++;
     }
-  else if (h->root.got.offset != 1)
+  else if (h->root.got.offset != 1 || h->forced_local)
     h->root.dynindx = hsd->max_non_got_dynindx++;
   else
     {
@@ -3248,6 +3253,7 @@ mips_elf_set_global_got_offset (void **entryp, void *p)
 
   if (entry->abfd != NULL && entry->symndx == -1
       && entry->d.h->root.dynindx != -1
+      && !entry->d.h->forced_local
       && entry->d.h->tls_type == GOT_NORMAL)
     {
       if (g)
@@ -3949,7 +3955,7 @@ mips_elf_calculate_relocation (bfd *abfd, bfd *input_bfd,
       *namep = bfd_elf_string_from_elf_section (input_bfd,
 						symtab_hdr->sh_link,
 						sym->st_name);
-      if (*namep == '\0')
+      if (*namep == NULL || **namep == '\0')
 	*namep = bfd_section_name (input_bfd, sec);
 
       target_is_16_bit_code_p = (sym->st_other == STO_MIPS16);
@@ -4766,7 +4772,7 @@ mips_elf_create_dynamic_relocation (bfd *output_bfd,
   /* We must now calculate the dynamic symbol table index to use
      in the relocation.  */
   if (h != NULL
-      && (!h->root.def_regular
+      && (sec == NULL || !h->root.def_regular
 	  || (info->shared && !info->symbolic && !h->root.forced_local)))
     {
       indx = h->root.dynindx;
@@ -4966,6 +4972,9 @@ _bfd_elf_mips_mach (flagword flags)
 
     case E_MIPS_MACH_SB1:
       return bfd_mach_mips_sb1;
+
+    case E_MIPS_MACH_OCTEON:
+      return bfd_mach_mips_octeon;
 
     default:
       switch (flags & EF_MIPS_ARCH)
@@ -5938,7 +5947,7 @@ _bfd_mips_elf_create_dynamic_sections (bfd *abfd, struct bfd_link_info *info)
     }
 
   if ((IRIX_COMPAT (abfd) == ict_irix5 || IRIX_COMPAT (abfd) == ict_none)
-      && !info->shared
+      && info->executable
       && bfd_get_section_by_name (abfd, ".rld_map") == NULL)
     {
       s = bfd_make_section_with_flags (abfd, ".rld_map",
@@ -6015,6 +6024,11 @@ _bfd_mips_elf_create_dynamic_sections (bfd *abfd, struct bfd_link_info *info)
 
       if (! bfd_elf_link_record_dynamic_symbol (info, h))
 	return FALSE;
+    }
+
+  if (info->executable)
+    {
+      const char *name;
 
       if (! mips_elf_hash_table (info)->use_rld_obj_head)
 	{
@@ -7204,9 +7218,9 @@ _bfd_mips_elf_always_size_sections (bfd *output_bfd,
        not include R_MIPS_GOT_PAGE.  */
     local_gotno = 0;
   else
-    /* Assume there are two loadable segments consisting of contiguous
-       sections.  Is 5 enough?  */
-    local_gotno = (loadable_size >> 16) + 5;
+    /* Assume there are four loadable segments consisting of contiguous
+       sections.  Is 7 enough?  */
+    local_gotno = (loadable_size >> 16) + 7;
 
   g->local_gotno += local_gotno;
   s->size += g->local_gotno * MIPS_ELF_GOT_SIZE (output_bfd);
@@ -7263,7 +7277,7 @@ _bfd_mips_elf_size_dynamic_sections (bfd *output_bfd,
   if (elf_hash_table (info)->dynamic_sections_created)
     {
       /* Set the contents of the .interp section to the interpreter.  */
-      if (info->executable)
+      if (info->executable && !info->static_link)
 	{
 	  s = bfd_get_section_by_name (dynobj, ".interp");
 	  BFD_ASSERT (s != NULL);
@@ -7416,13 +7430,13 @@ _bfd_mips_elf_size_dynamic_sections (bfd *output_bfd,
 	     of .text section.  So put a dummy.  XXX  */
 	  s->size += htab->function_stub_size;
 	}
-      else if (! info->shared
+      else if (info->executable
 	       && ! mips_elf_hash_table (info)->use_rld_obj_head
 	       && strncmp (name, ".rld_map", 8) == 0)
 	{
 	  /* We add a room for __rld_map.  It will be filled in by the
 	     rtld to contain a pointer to the _r_debug structure.  */
-	  s->size += 4;
+	  s->size += MIPS_ELF_RLD_MAP_SIZE (output_bfd);
 	}
       else if (SGI_COMPAT (output_bfd)
 	       && strncmp (name, ".compact_rel", 12) == 0)
@@ -7484,6 +7498,16 @@ _bfd_mips_elf_size_dynamic_sections (bfd *output_bfd,
 	  /* SGI object has the equivalence of DT_DEBUG in the
 	     DT_MIPS_RLD_MAP entry.  */
 	  if (!MIPS_ELF_ADD_DYNAMIC_ENTRY (info, DT_MIPS_RLD_MAP, 0))
+	    return FALSE;
+	  if (!SGI_COMPAT (output_bfd))
+	    {
+	      if (!MIPS_ELF_ADD_DYNAMIC_ENTRY (info, DT_DEBUG, 0))
+		return FALSE;
+	    }
+	}
+      else if (info->pie)
+        {
+	  if (!MIPS_ELF_ADD_DYNAMIC_ENTRY (info, DT_MIPS_RLD_MAP_REL, 0))
 	    return FALSE;
 	  if (!SGI_COMPAT (output_bfd))
 	    {
@@ -8241,7 +8265,7 @@ _bfd_mips_elf_finish_dynamic_symbol (bfd *output_bfd,
   if (IRIX_COMPAT (output_bfd) == ict_irix6)
     mips_elf_irix6_finish_dynamic_symbol (output_bfd, name, sym);
 
-  if (! info->shared)
+  if (info->executable)
     {
       if (! mips_elf_hash_table (info)->use_rld_obj_head
 	  && (strcmp (name, "__rld_map") == 0
@@ -8693,6 +8717,16 @@ _bfd_mips_elf_finish_dynamic_sections (bfd *output_bfd,
 	      dyn.d_un.d_ptr = mips_elf_hash_table (info)->rld_value;
 	      break;
 
+	    case DT_MIPS_RLD_MAP_REL:
+	      {
+		bfd_vma dt_addr;
+
+		dt_addr = (sdyn->output_section->vma + sdyn->output_offset
+			   + (b - sdyn->contents));
+	        dyn.d_un.d_val = mips_elf_hash_table (info)->rld_value - dt_addr;
+	      }
+	      break;
+
 	    case DT_MIPS_OPTIONS:
 	      s = (bfd_get_section_by_name
 		   (output_bfd, MIPS_ELF_OPTIONS_SECTION_NAME (output_bfd)));
@@ -8862,11 +8896,16 @@ _bfd_mips_elf_finish_dynamic_sections (bfd *output_bfd,
 		 decided not to make.  This is for the n64 irix rld,
 		 which doesn't seem to apply any relocations if there
 		 are trailing null entries.  */
-	      s = mips_elf_rel_dyn_section (info, FALSE);
-	      dyn.d_un.d_val = (s->reloc_count
-				* (ABI_64_P (output_bfd)
-				   ? sizeof (Elf64_Mips_External_Rel)
-				   : sizeof (Elf32_External_Rel)));
+	      if (SGI_COMPAT (output_bfd))
+		{
+		  s = mips_elf_rel_dyn_section (info, FALSE);
+		  dyn.d_un.d_val = (s->reloc_count
+				    * (ABI_64_P (output_bfd)
+				       ? sizeof (Elf64_Mips_External_Rel)
+				       : sizeof (Elf32_External_Rel)));
+		}
+	      else
+		swap_out_p = FALSE;
 	      break;
 
 	    default:
@@ -9026,6 +9065,10 @@ mips_set_isa_flags (bfd *abfd)
 
     case bfd_mach_mips_sb1:
       val = E_MIPS_ARCH_64 | E_MIPS_MACH_SB1;
+      break;
+
+    case bfd_mach_mips_octeon:
+      val = E_MIPS_ARCH_64R2 | E_MIPS_MACH_OCTEON;
       break;
 
     case bfd_mach_mipsisa32:
@@ -9311,7 +9354,8 @@ _bfd_mips_elf_modify_segment_map (bfd *abfd,
 	      m->p_flags_valid = 1;
 	    }
 	}
-      if (m != NULL
+      if (SGI_COMPAT (abfd)
+	  && m != NULL
 	  && m->count == 1 && strcmp (m->sections[0]->name, ".dynamic") == 0)
 	{
 	  static const char *sec_names[] =
@@ -10709,6 +10753,9 @@ struct mips_mach_extension {
    are ordered topologically with MIPS I extensions listed last.  */
 
 static const struct mips_mach_extension mips_mach_extensions[] = {
+  /* MIPS64r2 extensions.  */
+  { bfd_mach_mips_octeon, bfd_mach_mipsisa64r2 },
+
   /* MIPS64 extensions.  */
   { bfd_mach_mipsisa64r2, bfd_mach_mipsisa64 },
   { bfd_mach_mips_sb1, bfd_mach_mipsisa64 },
@@ -11127,4 +11174,12 @@ bfd_boolean
 _bfd_mips_elf_ignore_undef_symbol (struct elf_link_hash_entry *h)
 {
   return ELF_MIPS_IS_OPTIONAL (h->other) ? TRUE : FALSE;
+}
+
+bfd_boolean
+_bfd_mips_elf_common_definition (Elf_Internal_Sym *sym)
+{
+  return (sym->st_shndx == SHN_COMMON
+	  || sym->st_shndx == SHN_MIPS_ACOMMON
+	  || sym->st_shndx == SHN_MIPS_SCOMMON);
 }

@@ -1,6 +1,9 @@
+.\"	$OpenBSD: ndp.8,v 1.45 2017/08/09 14:36:00 florian Exp $
+.\"	$KAME: ndp.8,v 1.28 2002/07/17 08:46:33 itojun Exp $
+.\"
 .\" Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
 .\" All rights reserved.
-.\" 
+.\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
 .\" are met:
@@ -12,7 +15,7 @@
 .\" 3. Neither the name of the project nor the names of its contributors
 .\"    may be used to endorse or promote products derived from this software
 .\"    without specific prior written permission.
-.\" 
+.\"
 .\" THIS SOFTWARE IS PROVIDED BY THE PROJECT AND CONTRIBUTORS ``AS IS'' AND
 .\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 .\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,64 +28,28 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     $Id: ndp.8,v 1.3 1999/12/09 16:43:42 jinmei Exp $
-.\"
-.Dd May 17, 1998
+.Dd $Mdocdate: August 9 2017 $
 .Dt NDP 8
-.Os KAME
-.\"
+.Os
 .Sh NAME
 .Nm ndp
-.Nd control/diagnose  IPv6 neighbor discovery protocol 
-.\"
+.Nd control/diagnose IPv6 Neighbor Discovery Protocol (NDP)
 .Sh SYNOPSIS
 .Nm ndp
-.Fl a
-.Op Fl ntl
-.Nm ndp
-.Fl A Ar wait
-.Op Fl ntl
-.Nm ndp
-.Fl c
-.Op Fl nt
-.Nm ndp
-.Fl d
-.Op Fl nt
-.Ar hostname
-.Nm ndp
-.Fl f
-.Op Fl nt
-.Ar filename
-.Nm ndp
-.Fl H
-.Nm ndp
-.Fl I
-.Ar interface
-.Nm ndp
-.Fl i
-.Ar interface
-.Nm ndp
-.Fl p
-.Nm ndp
-.Fl P
-.Nm ndp
-.Fl r
-.Nm ndp
-.Fl R
-.Nm ndp
-.Fl s
-.Op Fl nt
-.Ar nodename
-.Ar ether_addr
-.Op temp
-.\"
+.Op Fl acnt
+.Op Fl A Ar wait
+.Op Fl d Ar hostname
+.Op Fl f Ar filename
+.Op Fl i Ar interface
+.Op Fl s Ar nodename ether_addr Oo Cm temp Oc Op Cm proxy
+.Op Fl V Ar rdomain
+.Op Ar hostname
 .Sh DESCRIPTION
+The
 .Nm
 command manipulates the address mapping table
-used by Neighbor Discovery Protocol (NDP).
+used by the Neighbor Discovery Protocol (NDP).
 .Bl -tag -width Ds
-.It Fl a
-Dump the currently existing NDP entries.
 .It Fl A Ar wait
 Repeat
 .Fl a
@@ -90,56 +57,109 @@ Repeat
 every
 .Ar wait
 seconds.
+.It Fl a
+Dump the currently existing NDP entries.
+The following information will be printed:
+.Bl -tag -width Ds -offset 3n
+.It Neighbor
+The IPv6 address of the neighbor.
+.It Linklayer Address
+The linklayer address of the neighbor.
+If the address is not available,
+it will be displayed as
+.Dq (incomplete) .
+.It Netif
+The network interface associated with the neighbor cache entry.
+.It Expire
+The time until expiry of the entry.
+If the entry is marked
+.Dq permanent ,
+it will never expire.
+.It S
+The state of the neighbor cache entry, as a single letter:
+.Pp
+.Bl -tag -width Ds -offset 3n -compact
+.It D
+Delay
+.It I
+Incomplete
+.It N
+Nostate
+.It P
+Probe
+.It R
+Reachable
+.It S
+Stale
+.It W
+Waitdelete
+.It \&?
+Unknown state (should never happen).
+.El
+.It Flags
+Flags on the neighbor cache entry, in a single letter.
+They are: local
+.Pq Sq l ,
+Router
+.Pq Sq R
+and proxy neighbor advertisement
+.Pq Sq p .
+This field may be followed by a decimal number,
+representing the number of NS probes
+the node has sent during the current state.
+.El
 .It Fl c
 Erase all the NDP entries.
-.It Fl d
-Delete specified NDP entry.
-.It Fl f
-Parse the file specified by
-.Ar filename .
-.It Fl H
-Harmonize consistency between the routing table and the default router
-list; install the top entry of the list into the kernel routing table.
-.It Fl I
-.Ar interface
-Specifies the default interface used as the default route when
-there is no default router.
-.It Fl i
-.Ar interface
-view ND information for specified interface.
-.It Fl l
-Do not truncate numeric IPv6 address.
+.It Fl d Ar hostname
+Delete the specified NDP entry.
+.It Fl f Ar filename
+Parse entries from
+.Ar file
+to be inserted in the neighbor cache.
+See the
+.Fl s
+option for a description of the file format.
+.It Fl i Ar interface
+View ND information for the specified interface.
 .It Fl n
-Do not try to resolve numeric address to hostname.
-.It Fl p
-Show prefix list.
-.It Fl P
-Flush all the entries in the prefix list.
-.It Fl r
-Show default router list.
-.It Fl R
-Flush all the entries in the default router list.
-.It Fl s
-Register a NDP entry for a node.
+Do not perform domain name resolution.
+If a name cannot be resolved without DNS, an error will be reported.
+.It Xo
+.Fl s Ar nodename ether_addr
+.Op Cm temp
+.Op Cm proxy
+.Xc
+Register an NDP entry for the node called nodename with the Ether
+address ether_addr.
+The Ethernet address is given as six hexadecimal bytes separated by
+colons.
+The entry will be permanent unless the word
+.Cm temp
+is given in the command.
+If the word
+.Cm proxy
+is given, this system will act as an ND Proxy server,
+responding to requests for
+.Ar nodename
+even though the node address is not its own.
 .It Fl t
-Print timestamp on each entries,
-to make it possible to merge output with
-.Xr tcpdump 1 .
+Print a timestamp on each entry,
+making it possible to merge output with
+.Xr tcpdump 8 .
 Most useful when used with
 .Fl A .
+.It Fl V Ar rdomain
+Select the routing domain.
 .El
-.\"
-.Sh RETURN VALUES
-.Nm Ndp
-will exit with 0 on success, and non-zero on errors.
-.\"
+.Sh EXIT STATUS
+.Ex -std ndp
 .Sh SEE ALSO
-.Xr arp 8
-.\"
+.Xr ip6 4 ,
+.Xr sysctl.conf 5 ,
+.Xr arp 8 ,
+.Xr sysctl 8 ,
+.Xr tcpdump 8
 .Sh HISTORY
 The
 .Nm
-command first appeared in WIDE Hydrangea IPv6 protocol stack kit.
-.\"
-.\" .Sh BUGS
-.\" (to be written)
+command first appeared in the WIDE Hydrangea IPv6 protocol stack kit.

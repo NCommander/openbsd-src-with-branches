@@ -160,6 +160,7 @@ DESCRIPTION
 .#define bfd_mach_mips16		16
 .#define bfd_mach_mips5                 5
 .#define bfd_mach_mips_sb1              12310201 {* octal 'SB', 01 *}
+.#define bfd_mach_mips_octeon           6501
 .#define bfd_mach_mipsisa32             32
 .#define bfd_mach_mipsisa32r2           33
 .#define bfd_mach_mipsisa64             64
@@ -381,6 +382,8 @@ DESCRIPTION
 .#define bfd_mach_z80            3 {* With ixl, ixh, iyl, and iyh.  *}
 .#define bfd_mach_z80full        7 {* All undocumented instructions.  *}
 .#define bfd_mach_r800           11 {* R800: successor with multiplication.  *}
+.  bfd_arch_aarch64,
+.  bfd_arch_riscv64,
 .  bfd_arch_last
 .  };
 */
@@ -419,6 +422,7 @@ DESCRIPTION
 .
 */
 
+extern const bfd_arch_info_type bfd_aarch64_arch;
 extern const bfd_arch_info_type bfd_alpha_arch;
 extern const bfd_arch_info_type bfd_arc_arch;
 extern const bfd_arch_info_type bfd_arm_arch;
@@ -464,6 +468,7 @@ extern const bfd_arch_info_type bfd_pj_arch;
 extern const bfd_arch_info_type bfd_powerpc_archs[];
 #define bfd_powerpc_arch bfd_powerpc_archs[0]
 extern const bfd_arch_info_type bfd_rs6000_arch;
+extern const bfd_arch_info_type bfd_riscv64_arch;
 extern const bfd_arch_info_type bfd_s390_arch;
 extern const bfd_arch_info_type bfd_sh_arch;
 extern const bfd_arch_info_type bfd_sparc_arch;
@@ -528,6 +533,7 @@ static const bfd_arch_info_type * const bfd_archures_list[] =
     &bfd_or32_arch,
     &bfd_pdp11_arch,
     &bfd_powerpc_arch,
+    &bfd_riscv_arch,
     &bfd_rs6000_arch,
     &bfd_s390_arch,
     &bfd_sh_arch,

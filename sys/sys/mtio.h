@@ -1,4 +1,5 @@
-/*	$NetBSD: mtio.h,v 1.12 1995/03/29 22:10:07 briggs Exp $	*/
+/*	$OpenBSD: mtio.h,v 1.8 2007/01/05 00:42:47 krw Exp $	*/
+/*	$NetBSD: mtio.h,v 1.14 1997/04/15 06:50:19 lukem Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,6 +32,9 @@
  *	@(#)mtio.h	8.1 (Berkeley) 6/2/93
  */
 
+#ifndef _SYS_MTIO_H_
+#define _SYS_MTIO_H_
+
 /*
  * Structures and definitions for mag tape io control commands
  */
@@ -42,7 +42,7 @@
 /* structure for MTIOCTOP - mag tape op command */
 struct mtop {
 	short	mt_op;		/* operations defined below */
-	daddr_t	mt_count;	/* how many of them */
+	int	mt_count;	/* how many of them */
 };
 
 /* operations */
@@ -72,14 +72,12 @@ struct mtget {
 	short	mt_erreg;	/* ``error'' register */
 /* end device-dependent registers */
 	short	mt_resid;	/* residual count */
-/* the following two are not yet implemented */
-	daddr_t	mt_fileno;	/* file number of current position */
-	daddr_t	mt_blkno;	/* block number of current position */
-/* end not yet implemented */
-	daddr_t	mt_blksiz;	/* current block size */
-	daddr_t	mt_density;	/* current density code */
-	daddr_t	mt_mblksiz[4];	/* block size for different modes */
-	daddr_t mt_mdensity[4];	/* density codes for different modes */
+	int	mt_fileno;	/* current file number relative to BOT. */ 
+	int	mt_blkno;	/* current block number relative to BOF. */
+	int	mt_blksiz;	/* current block size */
+	int	mt_density;	/* current density code */
+	int	mt_mblksiz;	/* default block size */
+	int	mt_mdensity;	/* default density code */
 };
 
 /*
@@ -111,15 +109,26 @@ struct mtget {
 #define MT_ISTK50	0x12		/* DEC SCSI TK50 */
 #define MT_ISMT02	0x13		/* Emulex MT02 SCSI tape controller */
 
+/* bits defined for the mt_dsreg field */
+#define MT_DS_RDONLY	0x10		/* tape mounted readonly */
+#define MT_DS_MOUNTED	0x03		/* tape mounted (for control opens) */
+
 /* mag tape io control commands */
 #define	MTIOCTOP	_IOW('m', 1, struct mtop)	/* do a mag tape op */
 #define	MTIOCGET	_IOR('m', 2, struct mtget)	/* get tape status */
 #define MTIOCIEOT	_IO('m', 3)			/* ignore EOT error */
 #define MTIOCEEOT	_IO('m', 4)			/* enable EOT error */
 
-#ifndef _KERNEL
-#define	DEFTAPE	"/dev/rst0"
-#endif
+/*
+ * When more SCSI-3 SSC (streaming device) devices are out there
+ * that support the full 32 byte type 2 structure, we'll have to
+ * rethink these ioctls to support all the entities they haul into
+ * the picture (64 bit blocks, logical file record numbers, etc..).
+ */
+#define MTIOCRDSPOS	_IOR('m', 5, u_int32_t)	/* get logical blk addr */
+#define MTIOCRDHPOS	_IOR('m', 6, u_int32_t)	/* get hardware blk addr */
+#define MTIOCSLOCATE	_IOW('m', 5, u_int32_t)	/* seek to logical blk addr */
+#define MTIOCHLOCATE	_IOW('m', 6, u_int32_t)	/* seek to hardware blk addr */
 
 #ifdef	_KERNEL
 /*
@@ -133,4 +142,6 @@ struct mtget {
 #define	T_1600BPI	010		/* select 1600 bpi */
 #define	T_6250BPI	020		/* select 6250 bpi */
 #define	T_BADBPI	030		/* undefined selection */
-#endif
+#endif /* _KERNEL */
+
+#endif /* !_SYS_MTIO_H_ */

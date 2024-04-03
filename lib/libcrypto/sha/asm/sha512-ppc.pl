@@ -20,7 +20,7 @@
 #
 # (*)	64-bit code in 32-bit application context, which actually is
 #	on TODO list. It should be noted that for safe deployment in
-#	32-bit *mutli-threaded* context asyncronous signals should be
+#	32-bit *multi-threaded* context asynchronous signals should be
 #	blocked upon entry to SHA512 block routine. This is because
 #	32-bit signaling procedure invalidates upper halves of GPRs.
 #	Context switch procedure preserves them, but not signaling:-(
@@ -220,8 +220,11 @@ $func:
 	$LD	$G,`6*$SZ`($ctx)
 	$LD	$H,`7*$SZ`($ctx)
 
-	bl	LPICmeup
-LPICedup:
+	bcl	20,31,Lpc
+Lpc:
+	mflr	$Tbl
+	addis	$Tbl,$Tbl,Ltable-Lpc\@ha
+	addi	$Tbl,$Tbl,Ltable-Lpc\@l
 	andi.	r0,$inp,3
 	bne	Lunaligned
 Laligned:
@@ -306,9 +309,6 @@ Ldone:
 	mtlr	r0
 	addi	$sp,$sp,$FRAME
 	blr
-	.long	0
-	.byte	0,12,4,1,0x80,18,3,0
-	.long	0
 
 .align	4
 Lsha2_block_private:
@@ -375,24 +375,8 @@ $code.=<<___;
 	$ST	$H,`7*$SZ`($ctx)
 	bne	Lsha2_block_private
 	blr
-	.long	0
-	.byte	0,12,0x14,0,0,0,0,0
-___
-
-# Ugly hack here, because PPC assembler syntax seem to vary too
-# much from platforms to platform...
-$code.=<<___;
-.align	6
-LPICmeup:
-	mflr	r0
-	bcl	20,31,\$+4
-	mflr	$Tbl	; vvvvvv "distance" between . and 1st data entry
-	addi	$Tbl,$Tbl,`64-8`
-	mtlr	r0
-	blr
-	.long	0
-	.byte	0,12,0x14,0,0,0,0,0
-	.space	`64-9*4`
+	.section .rodata
+Ltable:
 ___
 $code.=<<___ if ($SZ==8);
 	.long	0x428a2f98,0xd728ae22,0x71374491,0x23ef65cd

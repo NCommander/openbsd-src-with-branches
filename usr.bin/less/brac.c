@@ -1,12 +1,13 @@
 /*
  * Copyright (C) 1984-2012  Mark Nudelman
+ * Modified for use with illumos by Garrett D'Amore.
+ * Copyright 2014 Garrett D'Amore <garrett@damore.org>
  *
  * You may distribute under the terms of either the GNU General Public
  * License or the Less License, as specified in the README file.
  *
  * For more information, see the README file.
  */
-
 
 /*
  * Routines to perform bracket matching functions.
@@ -16,26 +17,20 @@
 #include "position.h"
 
 /*
- * Try to match the n-th open bracket 
+ * Try to match the n-th open bracket
  *  which appears in the top displayed line (forwdir),
- * or the n-th close bracket 
+ * or the n-th close bracket
  *  which appears in the bottom displayed line (!forwdir).
- * The characters which serve as "open bracket" and 
+ * The characters which serve as "open bracket" and
  * "close bracket" are given.
  */
-	public void
-match_brac(obrac, cbrac, forwdir, n)
-	register int obrac;
-	register int cbrac;
-	int forwdir;
-	int n;
+void
+match_brac(int obrac, int cbrac, int forwdir, int n)
 {
-	register int c;
-	register int nest;
-	POSITION pos;
-	int (*chget)();
-
-	extern int ch_forw_get(), ch_back_get();
+	int c;
+	int nest;
+	off_t pos;
+	int (*chget)(void);
 
 	/*
 	 * Seek to the line containing the open bracket.
@@ -43,26 +38,23 @@ match_brac(obrac, cbrac, forwdir, n)
 	 * depending on the type of bracket.
 	 */
 	pos = position((forwdir) ? TOP : BOTTOM);
-	if (pos == NULL_POSITION || ch_seek(pos))
-	{
+	if (pos == -1 || ch_seek(pos)) {
 		if (forwdir)
-			error("Nothing in top line", NULL_PARG);
+			error("Nothing in top line", NULL);
 		else
-			error("Nothing in bottom line", NULL_PARG);
+			error("Nothing in bottom line", NULL);
 		return;
 	}
 
 	/*
 	 * Look thru the line to find the open bracket to match.
 	 */
-	do
-	{
-		if ((c = ch_forw_get()) == '\n' || c == EOI)
-		{
+	do {
+		if ((c = ch_forw_get()) == '\n' || c == EOI) {
 			if (forwdir)
-				error("No bracket in top line", NULL_PARG);
+				error("No bracket in top line", NULL);
 			else
-				error("No bracket in bottom line", NULL_PARG);
+				error("No bracket in bottom line", NULL);
 			return;
 		}
 	} while (c != obrac || --n > 0);
@@ -81,12 +73,12 @@ match_brac(obrac, cbrac, forwdir, n)
 	 */
 	chget = (forwdir) ? ch_forw_get : ch_back_get;
 	nest = 0;
-	while ((c = (*chget)()) != EOI)
-	{
-		if (c == obrac)
+	while ((c = (*chget)()) != EOI) {
+		if (c == obrac) {
+			if (nest == INT_MAX)
+				break;
 			nest++;
-		else if (c == cbrac && --nest < 0)
-		{
+		} else if (c == cbrac && --nest < 0) {
 			/*
 			 * Found the matching bracket.
 			 * If searching backward, put it on the top line.
@@ -96,5 +88,5 @@ match_brac(obrac, cbrac, forwdir, n)
 			return;
 		}
 	}
-	error("No matching bracket", NULL_PARG);
+	error("No matching bracket", NULL);
 }

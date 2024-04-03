@@ -1,66 +1,75 @@
-/* * $OpenBSD: etc.c,v 1.2 1998/03/26 19:46:18 niklas Exp $*/
-/*
- */
+/* $OpenBSD: etc.c,v 1.7 2006/05/12 23:35:16 deraadt Exp $ */
+
+/* Public Domain */
+
+#include <sys/types.h>
 
 #include <err.h>
 #include <stdlib.h>
 #include <string.h>
+#include "ld.h"
 
-/*
- * Like malloc but get fatal error if memory is exhausted.
- */
-void *
-xmalloc(size)
-	size_t size;
+#define	OOM_MSG	"Out of memory"
+
+__dead void
+_dl_oom(void)
 {
-	register void	*result = (void *)malloc(size);
-
-	if (!result)
-		errx(1, "virtual memory exhausted");
-
-	return result;
+	err(1, OOM_MSG);
 }
 
-/*
- * Like realloc but get fatal error if memory is exhausted.
- */
-void *
-xrealloc(ptr, size)
-	void *ptr;
-	size_t size;
-{
-	register void	*result;
-
-	if (ptr == NULL)
-		result = (void *)malloc(size);
-	else
-		result = (void *)realloc(ptr, size);
-
-	if (!result)
-		errx(1, "virtual memory exhausted");
-
-	return result;
-}
-
-/*
- * Return a newly-allocated string whose contents concatenate
- * the strings S1, S2, S3.
- */
 char *
-concat(s1, s2, s3)
-	const char *s1, *s2, *s3;
+xstrdup(const char *s)
 {
-	register int	len1 = strlen(s1),
-			len2 = strlen(s2),
-			len3 = strlen(s3);
+	char *ptr;
 
-	register char *result = (char *)xmalloc(len1 + len2 + len3 + 1);
-
-	strcpy(result, s1);
-	strcpy(result + len1, s2);
-	strcpy(result + len1 + len2, s3);
-	result[len1 + len2 + len3] = 0;
-
-	return result;
+	if ((ptr = strdup(s)) == NULL)
+		err(1, OOM_MSG);
+	return (ptr);
 }
 
+void *
+xmalloc(size_t size)
+{
+	void *ptr;
+
+	if ((ptr = malloc(size)) == NULL)
+		err(1, OOM_MSG);
+	return (ptr);
+}
+
+void *
+xrealloc(void *ptr, size_t size)
+{
+	void *nptr;
+
+	if ((nptr = realloc(ptr, size)) == NULL)
+		err(1, OOM_MSG);
+	return (nptr);
+}
+
+void *
+xcalloc(size_t nmemb, size_t size)
+{
+	void *ptr;
+
+	ptr = calloc(nmemb, size);
+	if (ptr == NULL)
+		err(1, OOM_MSG);
+	return ptr;
+}
+
+char *
+concat(const char *s1, const char *s2, const char *s3)
+{
+	char *str;
+	size_t len;
+
+	len = strlen(s1) + strlen(s2) + strlen(s3) + 1;
+	str = xmalloc(len);
+
+	strlcpy(str, s1, len);
+	strlcat(str, s2, len);
+	strlcat(str, s3, len);
+
+	return (str);
+}

@@ -1,0 +1,9 @@
+.\" $OpenBSD$
+.Dt DD-ORDER 1
+.Dd August 5, 2014
+.Os
+.Sh NAME
+.Nm Dd-order
+.Nd date macro after title macro
+.Sh DESCRIPTION
+some text

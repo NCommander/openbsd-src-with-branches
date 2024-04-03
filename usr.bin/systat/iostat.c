@@ -1,4 +1,5 @@
-/*	$NetBSD: iostat.c,v 1.3 1995/05/17 15:51:47 mycroft Exp $	*/
+/*	$OpenBSD: iostat.c,v 1.49 2019/06/28 13:35:04 deraadt Exp $	*/
+/*	$NetBSD: iostat.c,v 1.5 1996/05/10 23:16:35 thorpej Exp $	*/
 
 /*
  * Copyright (c) 1980, 1992, 1993
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,363 +30,275 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)iostat.c	8.1 (Berkeley) 6/6/93";
-#endif
-static char rcsid[] = "$NetBSD: iostat.c,v 1.3 1995/05/17 15:51:47 mycroft Exp $";
-#endif not lint
-
-#include <sys/param.h>
-#include <sys/dkstat.h>
-#include <sys/buf.h>
+#include <sys/types.h>
+#include <sys/mount.h>
+#include <sys/signal.h>
+#include <sys/sched.h>
+#include <sys/sysctl.h>
+#include <sys/time.h>
 
 #include <string.h>
 #include <stdlib.h>
-#include <nlist.h>
 #include <paths.h>
 #include "systat.h"
-#include "extern.h"
 
-static struct nlist namelist[] = {
-#define X_DK_BUSY	0
-	{ "_dk_busy" },
-#define X_DK_TIME	1
-	{ "_dk_time" },
-#define X_DK_XFER	2
-	{ "_dk_xfer" },
-#define X_DK_WDS	3
-	{ "_dk_wds" },
-#define X_DK_SEEK	4
-	{ "_dk_seek" },
-#define X_CP_TIME	5
-	{ "_cp_time" },
-#ifdef vax
-#define X_MBDINIT	(X_CP_TIME+1)
-	{ "_mbdinit" },
-#define X_UBDINIT	(X_CP_TIME+2)
-	{ "_ubdinit" },
-#endif
-#ifdef tahoe
-#define	X_VBDINIT	(X_CP_TIME+1)
-	{ "_vbdinit" },
-#endif
-	{ "" },
+#include "dkstats.h"
+extern struct _disk cur, last;
+struct bcachestats bclast, bccur;
+
+static double etime;
+
+void showtotal(void);
+void showdrive(int);
+void print_io(void);
+int read_io(void);
+int select_io(void);
+void showbcache(void);
+
+#define ATIME(x,y) ((double)x[y].tv_sec + \
+        ((double)x[y].tv_usec / (double)1000000))
+
+
+field_def fields_io[] = {
+	{"DEVICE", 8, 16, 1, FLD_ALIGN_LEFT, -1, 0, 0, 0},
+	{"READ", 5, 8, 1, FLD_ALIGN_RIGHT, -1, 0, 0, 0},
+	{"WRITE", 5, 8, 1, FLD_ALIGN_RIGHT, -1, 0, 0, 0},
+	{"RTPS", 5, 8, 1, FLD_ALIGN_RIGHT, -1, 0, 0, 0},
+	{"WTPS", 5, 8, 1, FLD_ALIGN_RIGHT, -1, 0, 0, 0},
+	{"SEC", 5, 8, 1, FLD_ALIGN_RIGHT, -1, 0, 0, 0},
+	{"", 8, 19, 1, FLD_ALIGN_RIGHT, -1, 0, 0, 0},
+	{"STATS", 12, 15, 1, FLD_ALIGN_LEFT, -1, 0, 0, 0}
 };
 
-static struct {
-	int	dk_busy;
-	long	cp_time[CPUSTATES];
-	long	*dk_time;
-	long	*dk_wds;
-	long	*dk_seek;
-	long	*dk_xfer;
-} s, s1;
+#define FLD_IO_DEVICE	FIELD_ADDR(fields_io,0)
+#define FLD_IO_READ	FIELD_ADDR(fields_io,1)
+#define FLD_IO_WRITE	FIELD_ADDR(fields_io,2)
+#define FLD_IO_RTPS	FIELD_ADDR(fields_io,3)
+#define FLD_IO_WTPS	FIELD_ADDR(fields_io,4)
+#define FLD_IO_SEC	FIELD_ADDR(fields_io,5)
 
-static  int linesperregion;
-static  double etime;
-static  int numbers = 0;		/* default display bar graphs */
-static  int msps = 0;			/* default ms/seek shown */
+/* This is a hack that stuffs bcache statistics to the last two columns! */
+#define FLD_IO_SVAL	FIELD_ADDR(fields_io,6)
+#define FLD_IO_SSTR	FIELD_ADDR(fields_io,7)
 
-static int barlabels __P((int));
-static void histogram __P((double, int, double));
-static int numlabels __P((int));
-static int stats __P((int, int, int));
-static void stat1 __P((int, int));
+/* Define views */
+field_def *view_io_0[] = {
+	FLD_IO_DEVICE, FLD_IO_READ, FLD_IO_WRITE, FLD_IO_RTPS,
+	FLD_IO_WTPS, FLD_IO_SEC, FLD_IO_SVAL, FLD_IO_SSTR, NULL
+};
 
+static enum state { BOOT, TIME } state = TIME;
 
-WINDOW *
-openiostat()
+static int
+io_keyboard_callback(int ch)
 {
-	return (subwin(stdscr, LINES-1-5, 0, 5, 0));
+	switch (ch) {
+	case 'b':
+		state = BOOT;
+		break;
+	case 't':
+		state = TIME;
+		break;
+	default:
+		return keyboard_callback(ch);
+	}
+	return 0;
 }
 
-void
-closeiostat(w)
-	WINDOW *w;
+/* Define view managers */
+struct view_manager iostat_mgr = {
+	"Iostat", select_io, read_io, NULL, print_header,
+	print_io, io_keyboard_callback, NULL, NULL
+};
+
+
+field_view views_io[] = {
+	{view_io_0, "iostat", '2', &iostat_mgr},
+	{NULL, NULL, 0, NULL}
+};
+
+
+int
+select_io(void)
 {
-	if (w == NULL)
-		return;
-	wclear(w);
-	wrefresh(w);
-	delwin(w);
+	num_disp = cur.dk_ndrive + 1;
+	return (0);
 }
 
 int
-initiostat()
+read_io(void)
 {
-	if (namelist[X_DK_BUSY].n_type == 0) {
-		if (kvm_nlist(kd, namelist)) {
-			nlisterr(namelist);
-			return(0);
-		}
-		if (namelist[X_DK_BUSY].n_type == 0) {
-			error("Disk init information isn't in namelist");
-			return(0);
+	int mib[3];
+	size_t size;
+
+	dkreadstats();
+	if (state == BOOT) {
+		unsigned int dn;
+		for (dn = 0; dn < last.dk_ndrive; dn++) {
+			last.dk_rbytes[dn] = 0;
+			last.dk_wbytes[dn] = 0;
+			last.dk_rxfer[dn] = 0;
+			last.dk_wxfer[dn] = 0;
 		}
 	}
-	if (! dkinit())
-		return(0);
-	if (dk_ndrive) {
-#define	allocate(e, t) \
-    s./**/e = (t *)calloc(dk_ndrive, sizeof (t)); \
-    s1./**/e = (t *)calloc(dk_ndrive, sizeof (t));
-		allocate(dk_time, long);
-		allocate(dk_wds, long);
-		allocate(dk_seek, long);
-		allocate(dk_xfer, long);
-#undef allocate
-	}
-	return(1);
-}
+	dkswap();
+	num_disp = cur.dk_ndrive + 1;
 
-void
-fetchiostat()
-{
-	if (namelist[X_DK_BUSY].n_type == 0)
-		return;
-	NREAD(X_DK_BUSY, &s.dk_busy, LONG);
-	NREAD(X_DK_TIME, s.dk_time, dk_ndrive * LONG);
-	NREAD(X_DK_XFER, s.dk_xfer, dk_ndrive * LONG);
-	NREAD(X_DK_WDS, s.dk_wds, dk_ndrive * LONG);
-	NREAD(X_DK_SEEK, s.dk_seek, dk_ndrive * LONG);
-	NREAD(X_CP_TIME, s.cp_time, sizeof s.cp_time);
-}
+	bclast = bccur;
+	mib[0] = CTL_VFS;
+	mib[1] = VFS_GENERIC;
+	mib[2] = VFS_BCACHESTAT;
+	size = sizeof(bccur);
 
-#define	INSET	10
+	if (sysctl(mib, 3, &bccur, &size, NULL, 0) == -1)
+		error("cannot get vfs.bcachestat");
 
-void
-labeliostat()
-{
-	int row;
+	if (bclast.numbufs == 0)
+		bclast = bccur;
 
-	if (namelist[X_DK_BUSY].n_type == 0) {
-		error("No dk_busy defined.");
-		return;
-	}
-	row = 0;
-	wmove(wnd, row, 0); wclrtobot(wnd);
-	mvwaddstr(wnd, row++, INSET,
-	    "/0   /10  /20  /30  /40  /50  /60  /70  /80  /90  /100");
-	mvwaddstr(wnd, row++, 0, "cpu  user|");
-	mvwaddstr(wnd, row++, 0, "     nice|");
-	mvwaddstr(wnd, row++, 0, "   system|");
-	mvwaddstr(wnd, row++, 0, "interrupt|");
-	mvwaddstr(wnd, row++, 0, "     idle|");
-	if (numbers)
-		row = numlabels(row + 1);
-	else
-		row = barlabels(row + 1);
-}
+	if (state == BOOT)
+		memset(&bclast, 0, sizeof(bclast));
 
-static int
-numlabels(row)
-	int row;
-{
-	int i, col, regions, ndrives;
-
-#define COLWIDTH	14
-#define DRIVESPERLINE	((wnd->maxx - INSET) / COLWIDTH)
-	for (ndrives = 0, i = 0; i < dk_ndrive; i++)
-		if (dk_select[i])
-			ndrives++;
-	regions = howmany(ndrives, DRIVESPERLINE);
-	/*
-	 * Deduct -regions for blank line after each scrolling region.
-	 */
-	linesperregion = (wnd->maxy - row - regions) / regions;
-	/*
-	 * Minimum region contains space for two
-	 * label lines and one line of statistics.
-	 */
-	if (linesperregion < 3)
-		linesperregion = 3;
-	col = 0;
-	for (i = 0; i < dk_ndrive; i++)
-		if (dk_select[i] && dk_mspw[i] != 0.0) {
-			if (col + COLWIDTH >= wnd->maxx - INSET) {
-				col = 0, row += linesperregion + 1;
-				if (row > wnd->maxy - (linesperregion + 1))
-					break;
-			}
-			mvwaddstr(wnd, row, col + 4, dr_name[i]);
-			mvwaddstr(wnd, row + 1, col, "bps tps msps");
-			col += COLWIDTH;
-		}
-	if (col)
-		row += linesperregion + 1;
-	return (row);
-}
-
-static int
-barlabels(row)
-	int row;
-{
-	int i;
-
-	mvwaddstr(wnd, row++, INSET,
-	    "/0   /5   /10  /15  /20  /25  /30  /35  /40  /45  /50");
-	linesperregion = 2 + msps;
-	for (i = 0; i < dk_ndrive; i++)
-		if (dk_select[i] && dk_mspw[i] != 0.0) {
-			if (row > wnd->maxy - linesperregion)
-				break;
-			mvwprintw(wnd, row++, 0, "%3.3s   bps|", dr_name[i]);
-			mvwaddstr(wnd, row++, 0, "      tps|");
-			if (msps)
-				mvwaddstr(wnd, row++, 0, "     msps|");
-		}
-	return (row);
+	return 0;
 }
 
 
 void
-showiostat()
+print_io(void)
 {
-	register long t;
-	register int i, row, col;
+	int n, count = 0;
+	int curr;
 
-	if (namelist[X_DK_BUSY].n_type == 0)
-		return;
-	for (i = 0; i < dk_ndrive; i++) {
-#define X(fld)	t = s.fld[i]; s.fld[i] -= s1.fld[i]; s1.fld[i] = t
-		X(dk_xfer); X(dk_seek); X(dk_wds); X(dk_time);
-	}
-	etime = 0;
-	for(i = 0; i < CPUSTATES; i++) {
-		X(cp_time);
-		etime += s.cp_time[i];
-	}
-	if (etime == 0.0)
+	if (state == BOOT)
 		etime = 1.0;
-	etime /= (float) hz;
-	row = 1;
+	else
+		etime = naptime;
 
-	/*
-	 * Interrupt CPU state not calculated yet.
-	 */ 
-	for (i = 0; i < CPUSTATES; i++)
-		stat1(row++, i);
-	if (!numbers) {
-		row += 2;
-		for (i = 0; i < dk_ndrive; i++)
-			if (dk_select[i] && dk_mspw[i] != 0.0) {
-				if (row > wnd->maxy - linesperregion)
-					break;
-				row = stats(row, INSET, i);
-			}
-		return;
+	/* XXX engine internals: save and restore curr_line for bcache */
+	curr = curr_line;
+
+	for (n = dispstart; n < num_disp - 1; n++) {
+		showdrive(n);
+		count++;
+		if (maxprint > 0 && count >= maxprint)
+			break;
 	}
-	col = 0;
-	wmove(wnd, row + linesperregion, 0);
-	wdeleteln(wnd);
-	wmove(wnd, row + 3, 0);
-	winsertln(wnd);
-	for (i = 0; i < dk_ndrive; i++)
-		if (dk_select[i] && dk_mspw[i] != 0.0) {
-			if (col + COLWIDTH >= wnd->maxx) {
-				col = 0, row += linesperregion + 1;
-				if (row > wnd->maxy - (linesperregion + 1))
-					break;
-				wmove(wnd, row + linesperregion, 0);
-				wdeleteln(wnd);
-				wmove(wnd, row + 3, 0);
-				winsertln(wnd);
-			}
-			(void) stats(row + 3, col, i);
-			col += COLWIDTH;
-		}
-}
 
-static int
-stats(row, col, dn)
-	int row, col, dn;
-{
-	double atime, words, xtime, itime;
 
-	atime = s.dk_time[dn];
-	atime /= (float) hz;
-	words = s.dk_wds[dn]*32.0;	/* number of words transferred */
-	xtime = dk_mspw[dn]*words;	/* transfer time */
-	itime = atime - xtime;		/* time not transferring */
-	if (xtime < 0)
-		itime += xtime, xtime = 0;
-	if (itime < 0)
-		xtime += itime, itime = 0;
-	if (numbers) {
-		mvwprintw(wnd, row, col, "%3.0f%4.0f%5.1f",
-		    words / 512 / etime, s.dk_xfer[dn] / etime,
-		    s.dk_seek[dn] ? itime * 1000. / s.dk_seek[dn] : 0.0);
-		return (row);
-	}
-	wmove(wnd, row++, col);
-	histogram(words / 512 / etime, 50, 1.0);
-	wmove(wnd, row++, col);
-	histogram(s.dk_xfer[dn] / etime, 50, 1.0);
-	if (msps) {
-		wmove(wnd, row++, col);
-		histogram(s.dk_seek[dn] ? itime * 1000. / s.dk_seek[dn] : 0,
-		   50, 1.0);
-	}
-	return (row);
-}
+	if (maxprint == 0 || count < maxprint)
+		showtotal();
 
-static void
-stat1(row, o)
-	int row, o;
-{
-	register int i;
-	double time;
-
-	time = 0;
-	for (i = 0; i < CPUSTATES; i++)
-		time += s.cp_time[i];
-	if (time == 0.0)
-		time = 1.0;
-	wmove(wnd, row, INSET);
-#define CPUSCALE	0.5
-	histogram(100.0 * s.cp_time[o] / time, 50, CPUSCALE);
-}
-
-static void
-histogram(val, colwidth, scale)
-	double val;
-	int colwidth;
-	double scale;
-{
-	char buf[10];
-	register int k;
-	register int v = (int)(val * scale) + 0.5;
-
-	k = MIN(v, colwidth);
-	if (v > colwidth) {
-		sprintf(buf, "%4.1f", val);
-		k -= strlen(buf);
-		while (k--)
-			waddch(wnd, 'X');
-		waddstr(wnd, buf);
-		return;
-	}
-	while (k--)
-		waddch(wnd, 'X');
-	wclrtoeol(wnd);
+	curr_line = curr;
+	showbcache();
 }
 
 int
-cmdiostat(cmd, args)
-	char *cmd, *args;
+initiostat(void)
 {
+	field_view *v;
 
-	if (prefix(cmd, "msps"))
-		msps = !msps;
-	else if (prefix(cmd, "numbers"))
-		numbers = 1;
-	else if (prefix(cmd, "bars"))
-		numbers = 0;
-	else if (!dkcmd(cmd, args))
-		return (0);
-	wclear(wnd);
-	labeliostat();
-	refresh();
+	dkinit(1);
+	dkreadstats();
+
+	bzero(&bccur, sizeof(bccur));
+
+	for (v = views_io; v->name != NULL; v++)
+		add_view(v);
+
 	return (1);
+}
+
+void
+showtotal(void)
+{
+	double rsum, wsum, rtsum, wtsum, mssum;
+	int dn;
+
+	rsum = wsum = rtsum = wtsum = mssum = 0.0;
+
+	for (dn = 0; dn < cur.dk_ndrive; dn++) {
+		rsum += cur.dk_rbytes[dn] / etime;
+		wsum += cur.dk_wbytes[dn] / etime;
+		rtsum += cur.dk_rxfer[dn] / etime;
+		wtsum += cur.dk_wxfer[dn] / etime;
+		mssum += ATIME(cur.dk_time, dn) / etime;
+	}
+
+	print_fld_str(FLD_IO_DEVICE, "Totals");
+	print_fld_size(FLD_IO_READ, rsum);
+	print_fld_size(FLD_IO_WRITE, wsum);
+	print_fld_size(FLD_IO_RTPS, rtsum);
+	print_fld_size(FLD_IO_WTPS, wtsum);
+	print_fld_float(FLD_IO_SEC, mssum, 1);
+
+	end_line();
+}
+
+void
+showdrive(int dn)
+{
+	print_fld_str(FLD_IO_DEVICE, cur.dk_name[dn]);
+	print_fld_size(FLD_IO_READ, cur.dk_rbytes[dn] / etime);
+	print_fld_size(FLD_IO_WRITE, cur.dk_wbytes[dn] / etime);
+	print_fld_size(FLD_IO_RTPS, cur.dk_rxfer[dn] / etime);
+	print_fld_size(FLD_IO_WTPS, cur.dk_wxfer[dn] / etime);
+	print_fld_float(FLD_IO_SEC, ATIME(cur.dk_time, dn) / etime, 1);
+
+	end_line();
+}
+
+void
+showbcache(void)
+{
+	print_fld_str(FLD_IO_SSTR, "total pages");
+	print_fld_ssize(FLD_IO_SVAL, bccur.numbufpages);
+	end_line();
+
+	print_fld_str(FLD_IO_SSTR, "dma pages");
+	print_fld_ssize(FLD_IO_SVAL, bccur.dmapages);
+	end_line();
+
+	print_fld_str(FLD_IO_SSTR, "dirty pages");
+	print_fld_ssize(FLD_IO_SVAL, bccur.numdirtypages);
+	end_line();
+
+	print_fld_str(FLD_IO_SSTR, "delwri bufs");
+	print_fld_ssize(FLD_IO_SVAL, bccur.delwribufs);
+	end_line();
+
+	print_fld_str(FLD_IO_SSTR, "busymap bufs");
+	print_fld_ssize(FLD_IO_SVAL, bccur.busymapped);
+	end_line();
+
+	print_fld_str(FLD_IO_SSTR, "avail kvaslots");
+	print_fld_ssize(FLD_IO_SVAL, bccur.kvaslots_avail);
+	end_line();
+
+	print_fld_str(FLD_IO_SSTR, "kvaslots");
+	print_fld_ssize(FLD_IO_SVAL, bccur.kvaslots);
+	end_line();
+
+	print_fld_str(FLD_IO_SSTR, "pending writes");
+	print_fld_ssize(FLD_IO_SVAL, bccur.pendingwrites);
+	end_line();
+
+	print_fld_str(FLD_IO_SSTR, "pending reads");
+	print_fld_ssize(FLD_IO_SVAL, bccur.pendingreads);
+	end_line();
+
+	print_fld_str(FLD_IO_SSTR, "cache hits");
+	print_fld_ssize(FLD_IO_SVAL, bccur.cachehits - bclast.cachehits);
+	end_line();
+
+	print_fld_str(FLD_IO_SSTR, "high flips");
+	print_fld_ssize(FLD_IO_SVAL, bccur.highflips - bclast.highflips);
+	end_line();
+
+	print_fld_str(FLD_IO_SSTR, "high flops");
+	print_fld_ssize(FLD_IO_SVAL, bccur.highflops - bclast.highflops);
+	end_line();
+
+	print_fld_str(FLD_IO_SSTR, "dma flips");
+	print_fld_ssize(FLD_IO_SVAL, bccur.dmaflips - bclast.dmaflips);
+	end_line();
 }

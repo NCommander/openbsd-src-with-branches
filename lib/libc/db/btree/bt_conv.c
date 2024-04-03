@@ -1,4 +1,4 @@
-/*	$NetBSD: bt_conv.c,v 1.5 1995/02/27 13:20:04 cgd Exp $	*/
+/*	$OpenBSD: bt_conv.c,v 1.9 2005/08/05 13:02:59 espie Exp $	*/
 
 /*-
  * Copyright (c) 1990, 1993, 1994
@@ -15,11 +15,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -36,22 +32,12 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-#if 0
-static char sccsid[] = "@(#)bt_conv.c	8.3 (Berkeley) 5/31/94";
-#else
-static char rcsid[] = "$NetBSD: bt_conv.c,v 1.5 1995/02/27 13:20:04 cgd Exp $";
-#endif
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/param.h>
-
 #include <stdio.h>
 
 #include <db.h>
 #include "btree.h"
 
-static void mswap __P((PAGE *));
+static void mswap(PAGE *);
 
 /*
  * __BT_BPGIN, __BT_BPGOUT --
@@ -64,17 +50,14 @@ static void mswap __P((PAGE *));
  *	h:	page to convert
  */
 void
-__bt_pgin(t, pg, pp)
-	void *t;
-	pgno_t pg;
-	void *pp;
+__bt_pgin(void *t, pgno_t pg, void *pp)
 {
 	PAGE *h;
 	indx_t i, top;
 	u_char flags;
 	char *p;
 
-	if (!ISSET(((BTREE *)t), B_NEEDSWAP))
+	if (!F_ISSET(((BTREE *)t), B_NEEDSWAP))
 		return;
 	if (pg == P_META) {
 		mswap(pp);
@@ -132,17 +115,14 @@ __bt_pgin(t, pg, pp)
 }
 
 void
-__bt_pgout(t, pg, pp)
-	void *t;
-	pgno_t pg;
-	void *pp;
+__bt_pgout(void *t, pgno_t pg, void *pp)
 {
 	PAGE *h;
 	indx_t i, top;
 	u_char flags;
 	char *p;
 
-	if (!ISSET(((BTREE *)t), B_NEEDSWAP))
+	if (!F_ISSET(((BTREE *)t), B_NEEDSWAP))
 		return;
 	if (pg == P_META) {
 		mswap(pp);
@@ -206,22 +186,21 @@ __bt_pgout(t, pg, pp)
  *	p:	page to convert
  */
 static void
-mswap(pg)
-	PAGE *pg;
+mswap(PAGE *pg)
 {
 	char *p;
 
 	p = (char *)pg;
-	P_32_SWAP(p);		/* m_magic */
+	P_32_SWAP(p);		/* magic */
 	p += sizeof(u_int32_t);
-	P_32_SWAP(p);		/* m_version */
+	P_32_SWAP(p);		/* version */
 	p += sizeof(u_int32_t);
-	P_32_SWAP(p);		/* m_psize */
+	P_32_SWAP(p);		/* psize */
 	p += sizeof(u_int32_t);
-	P_32_SWAP(p);		/* m_free */
+	P_32_SWAP(p);		/* free */
 	p += sizeof(u_int32_t);
-	P_32_SWAP(p);		/* m_nrecs */
+	P_32_SWAP(p);		/* nrecs */
 	p += sizeof(u_int32_t);
-	P_32_SWAP(p);		/* m_flags */
+	P_32_SWAP(p);		/* flags */
 	p += sizeof(u_int32_t);
 }

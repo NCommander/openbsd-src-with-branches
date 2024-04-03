@@ -1,13 +1,18 @@
-#	$NetBSD: Makefile,v 1.3 1994/12/07 08:49:07 jtc Exp $
-#	@(#)Makefile	8.1 (Berkeley) 6/6/93
+#	$OpenBSD: Makefile,v 1.12 2016/03/30 06:38:46 jmc Exp $
 
 PROG=	tput
-DPADD=	${LIBTERMCAP}
-LDADD=	-ltermcap
-MLINKS=	tput.1 clear.1
+SRCS=	clear_cmd.c reset_cmd.c tparm_type.c tput.c transform.c \
+	tty_settings.c
+CURSES=	${.CURDIR}/../../lib/libcurses
+DPADD=	${LIBCURSES}
+LDADD=	-lcurses
+LINKS=	${BINDIR}/tput ${BINDIR}/clear
+TIC= ${.CURDIR}/../tic
+CFLAGS+= -I${CURSES} -I${TIC} -I${.CURDIR} -I.
+.PATH:  ${TIC}
+CLEANFILES+= termsort.h
 
-beforeinstall:
-	install -c -o ${BINOWN} -g ${BINGRP} -m ${BINMODE} \
-	    ${.CURDIR}/clear.sh ${DESTDIR}/usr/bin/clear
+termsort.h: ${TIC}/MKtermsort.sh
+	sh ${TIC}/MKtermsort.sh awk ${CURSES}/Caps > ${.TARGET}
 
 .include <bsd.prog.mk>

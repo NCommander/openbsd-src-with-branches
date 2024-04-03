@@ -30,6 +30,7 @@ class PassRegistry;
 ModulePass *createMipsOs16Pass();
 ModulePass *createMips16HardFloatPass();
 
+FunctionPass *createMipsLoongson2FBTBFix();
 FunctionPass *createMipsModuleISelDagPass();
 FunctionPass *createMipsOptimizePICCallPass();
 FunctionPass *createMipsDelaySlotFillerPass();
@@ -45,6 +46,7 @@ InstructionSelector *createMipsInstructionSelector(const MipsTargetMachine &,
                                                    MipsSubtarget &,
                                                    MipsRegisterBankInfo &);
 
+void initializeMipsLoongson2FBTBFixPass(PassRegistry &);
 void initializeMicroMipsSizeReducePass(PassRegistry &);
 void initializeMipsBranchExpansionPass(PassRegistry &);
 void initializeMipsDAGToDAGISelPass(PassRegistry &);

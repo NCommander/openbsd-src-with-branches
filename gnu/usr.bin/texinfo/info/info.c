@@ -1,5 +1,5 @@
 /* info.c -- Display nodes of Info files in multiple windows.
-   $Id: info.c,v 1.11 2004/04/11 17:56:45 karl Exp $
+   $Id: info.c,v 1.9 2006/07/17 16:12:36 espie Exp $
 
    Copyright (C) 1993, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
    2004 Free Software Foundation, Inc.
@@ -155,6 +155,11 @@ main (int argc, char **argv)
   /* Set locale via LC_ALL.  */
   setlocale (LC_ALL, "");
 #endif
+
+  if (pledge ("stdio rpath wpath getpw cpath tty proc exec", NULL) == -1) {
+    fprintf (stderr, _("%s: pledge\n"), program_name);
+    exit (1);
+  }
 
 #ifdef ENABLE_NLS
   /* Set the text message domain.  */
@@ -356,7 +361,7 @@ For more information about these matters, see the files named COPYING.\n"));
     }
 
   /* Get the initial Info node.  It is either "(dir)Top", or what the user
-     specifed with values in user_filename and user_nodenames. */
+     specified with values in user_filename and user_nodenames. */
   initial_node = info_get_node (user_filename,
                                 user_nodenames ? user_nodenames[0] : 0);
 

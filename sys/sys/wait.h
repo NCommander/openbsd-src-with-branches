@@ -1,4 +1,5 @@
-/*	$NetBSD: wait.h,v 1.9 1995/03/26 20:25:07 jtc Exp $	*/
+/*	$OpenBSD: wait.h,v 1.19 2022/10/25 16:08:26 kettenis Exp $	*/
+/*	$NetBSD: wait.h,v 1.11 1996/04/09 20:55:51 cgd Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1989, 1993, 1994
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,8 +32,14 @@
  *	@(#)wait.h	8.2 (Berkeley) 7/10/94
  */
 
+#ifndef _SYS_WAIT_H_
+#define _SYS_WAIT_H_
+
+#include <sys/cdefs.h>
+#include <sys/siginfo.h>
+
 /*
- * This file holds definitions relevent to the wait4 system call
+ * This file holds definitions relevant to the wait4 system call
  * and the alternate interfaces that use it (wait, wait3, waitpid).
  */
 
@@ -44,23 +47,19 @@
  * Macros to test the exit status returned by wait
  * and extract the relevant values.
  */
-#ifdef _POSIX_SOURCE
-#define	_W_INT(i)	(i)
-#else
-#define	_W_INT(w)	(*(int *)&(w))	/* convert union wait to int */
-#define	WCOREFLAG	0200
-#endif
-
-#define	_WSTATUS(x)	(_W_INT(x) & 0177)
+#define	_WSTATUS(x)	((x) & 0177)
 #define	_WSTOPPED	0177		/* _WSTATUS if process is stopped */
-#define WIFSTOPPED(x)	(_WSTATUS(x) == _WSTOPPED)
-#define WSTOPSIG(x)	(_W_INT(x) >> 8)
+#define	_WCONTINUED	0177777		/* process has continued */
+#define WIFSTOPPED(x)	(((x) & 0xff) == _WSTOPPED)
+#define WSTOPSIG(x)	(int)(((unsigned)(x) >> 8) & 0xff)
 #define WIFSIGNALED(x)	(_WSTATUS(x) != _WSTOPPED && _WSTATUS(x) != 0)
 #define WTERMSIG(x)	(_WSTATUS(x))
 #define WIFEXITED(x)	(_WSTATUS(x) == 0)
-#define WEXITSTATUS(x)	(_W_INT(x) >> 8)
-#ifndef _POSIX_SOURCE
-#define WCOREDUMP(x)	(_W_INT(x) & WCOREFLAG)
+#define WEXITSTATUS(x)	(int)(((unsigned)(x) >> 8) & 0xff)
+#define WIFCONTINUED(x)	(((x) & _WCONTINUED) == _WCONTINUED)
+#if __XPG_VISIBLE
+#define	WCOREFLAG	0200
+#define WCOREDUMP(x)	((x) & WCOREFLAG)
 
 #define	W_EXITCODE(ret, sig)	((ret) << 8 | (sig))
 #define	W_STOPCODE(sig)		((sig) << 8 | _WSTOPPED)
@@ -73,86 +72,49 @@
  * indicates that the caller should receive status about untraced children
  * which stop due to signals.  If children are stopped and a wait without
  * this option is done, it is as though they were still running... nothing
- * about them is returned.
+ * about them is returned. WNOWAIT only requests information about zombie,
+ * leaving the proc around, available for later waits.
  */
-#define WNOHANG		1	/* don't hang in wait */
-#define WUNTRACED	2	/* tell about stopped, untraced children */
+#define WNOHANG		0x01	/* don't hang in wait */
+#define WUNTRACED	0x02	/* report stopped-by-signal processes */
+#define WCONTINUED	0x08	/* report job control continued processes */
+#if __POSIX_VISIBLE >= 200809 || __XPG_VISIBLE >= 420
+#define WEXITED		0x04	/* report exited processes */
+#define WSTOPPED	WUNTRACED
+#define WNOWAIT		0x10	/* poll only */
+#define WTRAPPED	0x20	/* report stopped-by-tracing processes */
 
-#ifndef _POSIX_SOURCE
-/* POSIX extensions and 4.2/4.3 compatability: */
+typedef enum {
+	P_ALL,
+	P_PGID,
+	P_PID
+} idtype_t;
+#endif
 
+#if __BSD_VISIBLE
 /*
  * Tokens for special values of the "pid" parameter to wait4.
  */
 #define	WAIT_ANY	(-1)	/* any process */
 #define	WAIT_MYPGRP	0	/* any process in my process group */
-
-#include <machine/endian.h>
-
-/*
- * Deprecated:
- * Structure of the information in the status word returned by wait4.
- * If w_stopval==WSTOPPED, then the second structure describes
- * the information returned, else the first.
- */
-union wait {
-	int	w_status;		/* used in syscall */
-	/*
-	 * Terminated process status.
-	 */
-	struct {
-#if BYTE_ORDER == LITTLE_ENDIAN 
-		unsigned int	w_Termsig:7,	/* termination signal */
-				w_Coredump:1,	/* core dump indicator */
-				w_Retcode:8,	/* exit code if w_termsig==0 */
-				w_Filler:16;	/* upper bits filler */
-#endif
-#if BYTE_ORDER == BIG_ENDIAN 
-		unsigned int	w_Filler:16,	/* upper bits filler */
-				w_Retcode:8,	/* exit code if w_termsig==0 */
-				w_Coredump:1,	/* core dump indicator */
-				w_Termsig:7;	/* termination signal */
-#endif
-	} w_T;
-	/*
-	 * Stopped process status.  Returned
-	 * only for traced children unless requested
-	 * with the WUNTRACED option bit.
-	 */
-	struct {
-#if BYTE_ORDER == LITTLE_ENDIAN 
-		unsigned int	w_Stopval:8,	/* == W_STOPPED if stopped */
-				w_Stopsig:8,	/* signal that stopped us */
-				w_Filler:16;	/* upper bits filler */
-#endif
-#if BYTE_ORDER == BIG_ENDIAN 
-		unsigned int	w_Filler:16,	/* upper bits filler */
-				w_Stopsig:8,	/* signal that stopped us */
-				w_Stopval:8;	/* == W_STOPPED if stopped */
-#endif
-	} w_S;
-};
-#define	w_termsig	w_T.w_Termsig
-#define w_coredump	w_T.w_Coredump
-#define w_retcode	w_T.w_Retcode
-#define w_stopval	w_S.w_Stopval
-#define w_stopsig	w_S.w_Stopsig
-
-#define	WSTOPPED	_WSTOPPED
-#endif /* _POSIX_SOURCE */
+#endif /* __BSD_VISIBLE */
 
 #ifndef _KERNEL
 #include <sys/types.h>
-#include <sys/cdefs.h>
 
 __BEGIN_DECLS
 struct rusage;	/* forward declaration */
 
-pid_t	wait __P((int *));
-pid_t	waitpid __P((pid_t, int *, int));
-#ifndef _POSIX_SOURCE
-pid_t	wait3 __P((int *, int, struct rusage *));
-pid_t	wait4 __P((pid_t, int *, int, struct rusage *));
+pid_t	wait(int *);
+pid_t	waitpid(pid_t, int *, int);
+#if __POSIX_VISIBLE >= 200809 || __XPG_VISIBLE >= 420
+int	waitid(idtype_t, id_t, siginfo_t *, int);
 #endif
+#if __BSD_VISIBLE
+pid_t	wait3(int *, int, struct rusage *);
+pid_t	wait4(pid_t, int *, int, struct rusage *);
+#endif /* __BSD_VISIBLE */
 __END_DECLS
-#endif
+#endif /* !_KERNEL */
+
+#endif /* !_SYS_WAIT_H_ */

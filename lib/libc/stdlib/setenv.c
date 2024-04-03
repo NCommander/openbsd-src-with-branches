@@ -1,3 +1,4 @@
+/*	$OpenBSD: setenv.c,v 1.19 2016/09/21 04:38:56 guenther Exp $ */
 /*
  * Copyright (c) 1987 Regents of the University of California.
  * All rights reserved.
@@ -10,11 +11,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,13 +28,60 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-/*static char *sccsid = "from: @(#)setenv.c	5.6 (Berkeley) 6/4/91";*/
-static char *rcsid = "$Id: setenv.c,v 1.7 1995/06/14 05:19:57 jtc Exp $";
-#endif /* LIBC_SCCS and not lint */
-
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+
+static char **lastenv;				/* last value of environ */
+
+/*
+ * putenv --
+ *	Add a name=value string directly to the environmental, replacing
+ *	any current value.
+ */
+int
+putenv(char *str)
+{
+	char **P, *cp;
+	size_t cnt = 0;
+	int offset = 0;
+
+	for (cp = str; *cp && *cp != '='; ++cp)
+		;
+	if (cp == str || *cp != '=') {
+		/* '=' is the first character of string or is missing. */
+		errno = EINVAL;
+		return (-1);
+	}
+
+	if (__findenv(str, (int)(cp - str), &offset) != NULL) {
+		environ[offset++] = str;
+		/* could be set multiple times */
+		while (__findenv(str, (int)(cp - str), &offset)) {
+			for (P = &environ[offset];; ++P)
+				if (!(*P = *(P + 1)))
+					break;
+		}
+		return (0);
+	}
+
+	/* create new slot for string */
+	if (environ != NULL) {
+		for (P = environ; *P != NULL; P++)
+			;
+		cnt = P - environ;
+	}
+	P = reallocarray(lastenv, cnt + 2, sizeof(char *));
+	if (!P)
+		return (-1);
+	if (lastenv != environ && environ != NULL)
+		memcpy(P, environ, cnt * sizeof(char *));
+	lastenv = environ = P;
+	environ[cnt] = str;
+	environ[cnt + 1] = NULL;
+	return (0);
+}
+DEF_WEAK(putenv);
 
 /*
  * setenv --
@@ -45,76 +89,97 @@ static char *rcsid = "$Id: setenv.c,v 1.7 1995/06/14 05:19:57 jtc Exp $";
  *	"value".  If rewrite is set, replace any current value.
  */
 int
-setenv(name, value, rewrite)
-	register const char *name;
-	register const char *value;
-	int rewrite;
+setenv(const char *name, const char *value, int rewrite)
 {
-	extern char **environ;
-	static int alloced;			/* if allocated space before */
-	register char *C;
-	int l_value, offset;
-	char *__findenv();
+	char *C, **P;
+	const char *np;
+	int l_value, offset = 0;
 
-	if (*value == '=')			/* no `=' in value */
-		++value;
+	if (!name || !*name) {
+		errno = EINVAL;
+		return (-1);
+	}
+	for (np = name; *np && *np != '='; ++np)
+		;
+	if (*np) {
+		errno = EINVAL;
+		return (-1);			/* has `=' in name */
+	}
+
 	l_value = strlen(value);
-	if ((C = __findenv(name, &offset))) {	/* find if already exists */
+	if ((C = __findenv(name, (int)(np - name), &offset)) != NULL) {
+		int tmpoff = offset + 1;
 		if (!rewrite)
 			return (0);
+#if 0 /* XXX - existing entry may not be writable */
 		if (strlen(C) >= l_value) {	/* old larger; copy over */
-			while (*C++ = *value++);
+			while ((*C++ = *value++))
+				;
 			return (0);
 		}
+#endif
+		/* could be set multiple times */
+		while (__findenv(name, (int)(np - name), &tmpoff)) {
+			for (P = &environ[tmpoff];; ++P)
+				if (!(*P = *(P + 1)))
+					break;
+		}
 	} else {					/* create new slot */
-		register int	cnt;
-		register char	**P;
+		size_t cnt = 0;
 
-		for (P = environ, cnt = 0; *P; ++P, ++cnt);
-		if (alloced) {			/* just increase size */
-			environ = (char **)realloc((char *)environ,
-			    (size_t)(sizeof(char *) * (cnt + 2)));
-			if (!environ)
-				return (-1);
+		if (environ != NULL) {
+			for (P = environ; *P != NULL; P++)
+				;
+			cnt = P - environ;
 		}
-		else {				/* get new space */
-			alloced = 1;		/* copy old entries into it */
-			P = (char **)malloc((size_t)(sizeof(char *) *
-			    (cnt + 2)));
-			if (!P)
-				return (-1);
-			bcopy(environ, P, cnt * sizeof(char *));
-			environ = P;
-		}
-		environ[cnt + 1] = NULL;
+		P = reallocarray(lastenv, cnt + 2, sizeof(char *));
+		if (!P)
+			return (-1);
+		if (lastenv != environ && environ != NULL)
+			memcpy(P, environ, cnt * sizeof(char *));
+		lastenv = environ = P;
 		offset = cnt;
+		environ[cnt + 1] = NULL;
 	}
-	for (C = (char *)name; *C && *C != '='; ++C);	/* no `=' in name */
 	if (!(environ[offset] =			/* name + `=' + value */
-	    malloc((size_t)((int)(C - name) + l_value + 2))))
+	    malloc((int)(np - name) + l_value + 2)))
 		return (-1);
 	for (C = environ[offset]; (*C = *name++) && *C != '='; ++C)
 		;
-	for (*C++ = '='; *C++ = *value++; )
+	for (*C++ = '='; (*C++ = *value++); )
 		;
 	return (0);
 }
+DEF_WEAK(setenv);
 
 /*
  * unsetenv(name) --
  *	Delete environmental variable "name".
  */
-void
-unsetenv(name)
-	const char	*name;
+int
+unsetenv(const char *name)
 {
-	extern char **environ;
-	register char **P;
-	int offset;
-	char *__findenv();
+	char **P;
+	const char *np;
+	int offset = 0;
 
-	while (__findenv(name, &offset))		/* if set multiple times */
+	if (!name || !*name) {
+		errno = EINVAL;
+		return (-1);
+	}
+	for (np = name; *np && *np != '='; ++np)
+		;
+	if (*np) {
+		errno = EINVAL;
+		return (-1);			/* has `=' in name */
+	}
+
+	/* could be set multiple times */
+	while (__findenv(name, (int)(np - name), &offset)) {
 		for (P = &environ[offset];; ++P)
 			if (!(*P = *(P + 1)))
 				break;
+	}
+	return (0);
 }
+DEF_WEAK(unsetenv);

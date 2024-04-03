@@ -1,24 +1,37 @@
-#	$NetBSD: Makefile,v 1.1 1995/03/06 11:38:04 mycroft Exp $
+#	$OpenBSD: Makefile,v 1.28 2019/09/03 04:25:10 deraadt Exp $
+#	$NetBSD: Makefile,v 1.3 1996/05/10 21:54:24 cgd Exp $
 
 LIB=	pcap
-MAN=	pcap.3
+MAN=	pcap_open_live.3 pcap-filter.5
 
-CFLAGS+=-I. -I${.CURDIR}
+DEFS=	-DHAVE_SYS_IOCCOM_H -DHAVE_SYS_SOCKIO_H -DHAVE_ETHER_HOSTTON \
+	-DHAVE_STRERROR -DHAVE_SOCKADDR_SA_LEN -DLBL_ALIGN -DHAVE_IFADDRS_H \
+	-DINET6 -DHAVE_BSD_IEEE80211
+
+CFLAGS+=-I. -I${.CURDIR} -Dyylval=pcap_yylval ${DEFS}
 
 HDRS=	pcap.h pcap-namedb.h
 SRCS=	pcap.c inet.c gencode.c optimize.c nametoaddr.c etherent.c \
 	savefile.c bpf_filter.c bpf_image.c grammar.y scanner.l \
-	pcap-bpf.c
+	pcap-bpf.c version.c fad-getad.c
 .PATH:	${.CURDIR}/../../sys/net
 
-CLEANFILES+= grammar.c scanner.c y.tab.h
+YFLAGS = -ppcap_yy -d
+LFLAGS = -Ppcap_yy
 
-beforeinstall:
+CLEANFILES+= version.c
+
+version.c: ${.CURDIR}/VERSION
+	@rm -f $@
+	sed 's/.*/char pcap_version[] = "&";/' ${.CURDIR}/VERSION > $@
+
+includes:
 	@cd ${.CURDIR}; for i in $(HDRS); do \
-	    cmp -s $$i ${DESTDIR}/usr/include/$$i || \
-		{ j="install -c -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
+	    j="cmp -s $$i ${DESTDIR}/usr/include/$$i || \
+		${INSTALL} ${INSTALL_COPY} -o ${BINOWN} -g ${BINGRP} -m 444 $$i \
 		${DESTDIR}/usr/include"; \
-		echo $$j; $$j; } \
+	    echo $$j; \
+	    eval "$$j"; \
 	done
 
 .include <bsd.lib.mk>

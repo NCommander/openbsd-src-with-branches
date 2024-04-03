@@ -1,4 +1,4 @@
-/*	$OpenBSD: mib.c,v 1.103 2022/06/30 11:28:36 martijn Exp $	*/
+/*	$OpenBSD: mib.c,v 1.6 2023/10/24 18:27:26 martijn Exp $	*/
 
 /*
  * Copyright (c) 2022 Martijn van Duren <martijn@openbsd.org>
@@ -57,7 +57,6 @@
 #include <syslog.h>
 #include <time.h>
 #include <unistd.h>
-#include <pwd.h>
 #include <libgen.h>
 #include <limits.h>
 #include <kvm.h>
@@ -70,6 +69,10 @@ struct event		 connev;
 const char		*agentxsocket = NULL;
 int			 agentxfd = -1;
 
+int			 pageshift;
+#define pagetok(size) ((size) << pageshift)
+
+void		 pageshift_init(void);
 void		 snmp_connect(struct agentx *, void *, int);
 void		 snmp_tryconnect(int, short, void *);
 void		 snmp_read(int, short, void *);
@@ -90,6 +93,7 @@ struct agentx_object *hrProcessorLoad;
 struct agentx_index *hrSWRunIdx;
 struct agentx_object *hrSWRunIndex, *hrSWRunName, *hrSWRunID, *hrSWRunPath;
 struct agentx_object *hrSWRunParameters, *hrSWRunType, *hrSWRunStatus;
+struct agentx_object *hrSWRunPerfCPU, *hrSWRunPerfMem;
 
 void	 mib_hrsystemuptime(struct agentx_varbind *);
 void	 mib_hrsystemdate(struct agentx_varbind *);
@@ -104,7 +108,9 @@ int	 kinfo_proc_comp(const void *, const void *);
 int	 kinfo_proc(u_int32_t, struct kinfo_proc **);
 void	 kinfo_timer_cb(int, short, void *);
 void	 kinfo_proc_free(void);
-int	 kinfo_args(struct kinfo_proc *, char **);
+int	 kinfo_args(struct kinfo_proc *, char ***);
+int	 kinfo_path(struct kinfo_proc *, char **);
+int	 kinfo_parameters(struct kinfo_proc *, char **);
 
 /* IF-MIB */
 struct agentx_index *ifIdx;
@@ -635,6 +641,7 @@ mib_hrswrun(struct agentx_varbind *vb)
 	struct agentx_object		*obj;
 	enum agentx_request_type	 req;
 	int32_t				 idx;
+	int32_t				 time;
 	struct kinfo_proc		*kinfo;
 	char				*s;
 
@@ -670,13 +677,21 @@ mib_hrswrun(struct agentx_varbind *vb)
 
 	if (obj == hrSWRunIndex)
 		agentx_varbind_integer(vb, kinfo->p_pid);
-	else if (obj == hrSWRunName || obj == hrSWRunPath)
+	else if (obj == hrSWRunName)
 		agentx_varbind_string(vb, kinfo->p_comm);
-	else if (obj == hrSWRunID)
+ 	else if (obj == hrSWRunPath) {
+		if (kinfo_path(kinfo, &s) == -1) {
+			log_warn("kinfo_path");
+			agentx_varbind_error(vb);
+			return;
+		}
+		
+		agentx_varbind_string(vb, s);
+	} else if (obj == hrSWRunID)
 		agentx_varbind_oid(vb, AGENTX_OID(0, 0));
 	else if (obj == hrSWRunParameters) {
-		if (kinfo_args(kinfo, &s) == -1) {
-			log_warn("kinfo_args");
+		if (kinfo_parameters(kinfo, &s) == -1) {
+			log_warn("kinfo_parameters");
 			agentx_varbind_error(vb);
 			return;
 		}
@@ -712,6 +727,13 @@ mib_hrswrun(struct agentx_varbind *vb)
 			agentx_varbind_integer(vb, 4);
 			break;
 		}
+	} else if (obj == hrSWRunPerfCPU) {
+		time = kinfo->p_rtime_sec * 100;
+		time += (kinfo->p_rtime_usec + 5000) / 10000;
+		agentx_varbind_integer(vb, time);
+	} else if (obj == hrSWRunPerfMem) {
+		agentx_varbind_integer(vb, pagetok(kinfo->p_vm_tsize +
+		    kinfo->p_vm_dsize + kinfo->p_vm_ssize));
 	} else
 		fatal("%s: Unexpected object", __func__);
 }
@@ -812,24 +834,21 @@ kinfo_proc_free(void)
 }
 
 int
-kinfo_args(struct kinfo_proc *kinfo, char **s)
+kinfo_args(struct kinfo_proc *kinfo, char ***s)
 {
-	static char		 str[128];
 	static char		*buf = NULL;
 	static size_t		 buflen = 128;
 
 	int			 mib[] = { CTL_KERN, KERN_PROC_ARGS,
 				    kinfo->p_pid, KERN_PROC_ARGV };
-	char			*nbuf, **argv;
+	char			*nbuf;
 
+	*s = NULL;
 	if (buf == NULL) {
 		buf = malloc(buflen);
 		if (buf == NULL)
 			return (-1);
 	}
-
-	str[0] = '\0';
-	*s = str;
 
 	while (sysctl(mib, nitems(mib), buf, &buflen, NULL, 0) == -1) {
 		if (errno != ENOMEM) {
@@ -845,11 +864,41 @@ kinfo_args(struct kinfo_proc *kinfo, char **s)
 		buflen += 128;
 	}
 
-	argv = (char **)buf;
-	if (argv[0] == NULL)
-		return (0);
+	*s = (char **)buf;
+	return (0);
+}
 
+int
+kinfo_path(struct kinfo_proc *kinfo, char **s)
+{
+	static char		 str[129];
+	char			**argv;
+
+	if (kinfo_args(kinfo, &argv) == -1)
+		return (-1);
+
+	str[0] = '\0';
+	*s = str;
+	if (argv != NULL && argv[0] != NULL)
+		strlcpy(str, argv[0], sizeof(str));
+	return (0);
+}
+
+int
+kinfo_parameters(struct kinfo_proc *kinfo, char **s)
+{
+	static char		 str[129];
+	char			**argv;
+
+	if (kinfo_args(kinfo, &argv) == -1)
+		return (-1);
+
+	str[0] = '\0';
+	*s = str;
+	if (argv == NULL || argv[0] == NULL)
+		return (0);
 	argv++;
+
 	while (*argv != NULL) {
 		strlcat(str, *argv, sizeof(str));
 		argv++;
@@ -1183,6 +1232,8 @@ struct carpif {
 	struct carpreq	 carpr;
 	struct kif	 kif;
 };
+
+void	 mib_close_pftrans(struct agentx_varbind *, u_int32_t);
 
 void	 mib_pfinfo(struct agentx_varbind *);
 void	 mib_pfcounters(struct agentx_varbind *);
@@ -1746,6 +1797,17 @@ mib_pftableaddrs(struct agentx_varbind *vb)
 }
 
 void
+mib_close_pftrans(struct agentx_varbind *vb, u_int32_t ticket)
+{
+	extern int		devpf;
+
+	if (ioctl(devpf, DIOCXEND, &ticket) == -1) {
+		log_warn("DIOCXEND");
+		agentx_varbind_error(vb);
+	}
+}
+
+void
 mib_pflabelnum(struct agentx_varbind *vb)
 {
 	struct pfioc_rule	 pr;
@@ -1766,6 +1828,7 @@ mib_pflabelnum(struct agentx_varbind *vb)
 		if (ioctl(devpf, DIOCGETRULE, &pr) == -1) {
 			log_warn("DIOCGETRULE");
 			agentx_varbind_error(vb);
+			mib_close_pftrans(vb, pr.ticket);
 			return;
 		}
 
@@ -1774,6 +1837,8 @@ mib_pflabelnum(struct agentx_varbind *vb)
 	}
 
 	agentx_varbind_integer(vb, lnr);
+
+	mib_close_pftrans(vb, pr.ticket);
 }
 
 void
@@ -1819,6 +1884,7 @@ mib_pflabels(struct agentx_varbind *vb)
 		if (ioctl(devpf, DIOCGETRULE, &pr) == -1) {
 			log_warn("DIOCGETRULE");
 			agentx_varbind_error(vb);
+			mib_close_pftrans(vb, pr.ticket);
 			return;
 		}
 
@@ -1827,6 +1893,8 @@ mib_pflabels(struct agentx_varbind *vb)
 			break;
 		}
 	}
+
+	mib_close_pftrans(vb, pr.ticket);
 
 	if (r == NULL) {
 		agentx_varbind_notfound(vb);
@@ -3202,7 +3270,11 @@ main(int argc, char *argv[])
 		switch (ch) {
 		case 'C':
 			if (strcmp(optarg, "filter-routes") == 0) {
-				conf.sc_rtfilter = 1;
+				conf.sc_rtfilter = ROUTE_FILTER(RTM_NEWADDR) |
+				    ROUTE_FILTER(RTM_DELADDR) |
+				    ROUTE_FILTER(RTM_IFINFO) |
+				    ROUTE_FILTER(RTM_IFANNOUNCE);
+
 			}
 			break;
 		case 'c':
@@ -3260,6 +3332,7 @@ main(int argc, char *argv[])
 	kr_init();
 	pf_init();
 	timer_init();
+	pageshift_init();
 
 	if (agentxsocket != NULL) {
 		if (strlcpy(agentxsocketdir, agentxsocket,
@@ -3325,7 +3398,7 @@ main(int argc, char *argv[])
 	if ((hrDeviceIndex = agentx_object(host, AGENTX_OID(HRDEVICEINDEX),
 	    &hrDeviceIdx, 1, 0, mib_hrdevice)) == NULL ||
 	    (hrDeviceType = agentx_object(host, AGENTX_OID(HRDEVICETYPE),
-	    &hrDeviceIdx, 1, 0, mib_hrdevice)) == NULL |
+	    &hrDeviceIdx, 1, 0, mib_hrdevice)) == NULL ||
 	    (hrDeviceDescr = agentx_object(host, AGENTX_OID(HRDEVICEDESCR),
 	    &hrDeviceIdx, 1, 0, mib_hrdevice)) == NULL ||
 	    (hrDeviceID = agentx_object(host, AGENTX_OID(HRDEVICEID),
@@ -3357,6 +3430,10 @@ main(int argc, char *argv[])
 	    (hrSWRunType = agentx_object(host, AGENTX_OID(HRSWRUNTYPE),
 	    &hrSWRunIdx, 1, 0, mib_hrswrun)) == NULL ||
 	    (hrSWRunStatus = agentx_object(host, AGENTX_OID(HRSWRUNSTATUS),
+	    &hrSWRunIdx, 1, 0, mib_hrswrun)) == NULL ||
+	    (hrSWRunPerfCPU = agentx_object(host, AGENTX_OID(HRSWRUNPERFCPU),
+	    &hrSWRunIdx, 1, 0, mib_hrswrun)) == NULL ||
+	    (hrSWRunPerfMem = agentx_object(host, AGENTX_OID(HRSWRUNPERFMEM),
 	    &hrSWRunIdx, 1, 0, mib_hrswrun)) == NULL)
 		fatal("agentx_object");
 
@@ -4300,6 +4377,22 @@ main(int argc, char *argv[])
 	log_setverbose(verbose);
 
 	event_dispatch();
+}
+
+#define LOG1024		 10
+void
+pageshift_init(void)
+{
+	long pagesize;
+
+	if ((pagesize = sysconf(_SC_PAGESIZE)) == -1)
+		fatal("sysconf(_SC_PAGESIZE)");
+	while (pagesize > 1) {
+		pageshift++;
+		pagesize >>= 1;
+	}
+	/* we only need the amount of log(2)1024 for our conversion */
+	pageshift -= LOG1024;
 }
 
 void

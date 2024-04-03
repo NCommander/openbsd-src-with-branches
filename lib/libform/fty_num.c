@@ -1,173 +1,345 @@
+/*	$OpenBSD: fty_num.c,v 1.9 2015/01/23 22:48:51 krw Exp $	*/
+/****************************************************************************
+ * Copyright 2019-2020,2021 Thomas E. Dickey                                *
+ * Copyright 1998-2010,2012 Free Software Foundation, Inc.                  *
+ *                                                                          *
+ * Permission is hereby granted, free of charge, to any person obtaining a  *
+ * copy of this software and associated documentation files (the            *
+ * "Software"), to deal in the Software without restriction, including      *
+ * without limitation the rights to use, copy, modify, merge, publish,      *
+ * distribute, distribute with modifications, sublicense, and/or sell       *
+ * copies of the Software, and to permit persons to whom the Software is    *
+ * furnished to do so, subject to the following conditions:                 *
+ *                                                                          *
+ * The above copyright notice and this permission notice shall be included  *
+ * in all copies or substantial portions of the Software.                   *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+ * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+ *                                                                          *
+ * Except as contained in this notice, the name(s) of the above copyright   *
+ * holders shall not be used in advertising or otherwise to promote the     *
+ * sale, use or other dealings in this Software without prior written       *
+ * authorization.                                                           *
+ ****************************************************************************/
 
-/*
- * THIS CODE IS SPECIFICALLY EXEMPTED FROM THE NCURSES PACKAGE COPYRIGHT.
- * You may freely copy it for use as a template for your own field types.
- * If you develop a field type that might be of general use, please send
- * it back to the ncurses maintainers for inclusion in the next version.
- */
+/***************************************************************************
+*                                                                          *
+*  Author : Juergen Pfeifer                                                *
+*                                                                          *
+***************************************************************************/
 
 #include "form.priv.h"
-#include <locale.h>
 
-typedef struct {
-  int    precision;
-  double low;
-  double high;
-  struct lconv* L;
-} numericARG;
+MODULE_ID("$Id: fty_num.c,v 1.9 2015/01/23 22:48:51 krw Exp $")
+
+#if HAVE_LOCALE_H
+#include <locale.h>
+#endif
+
+#if HAVE_LOCALE_H && HAVE_LOCALECONV
+#define isDecimalPoint(c) ((c) == ((L && L->decimal_point) ? *(L->decimal_point) : '.'))
+#else
+#define isDecimalPoint(c) ((c) == '.')
+#endif
+
+#if USE_WIDEC_SUPPORT
+#define isDigit(c) (iswdigit((wint_t)(c)) || isdigit(UChar(c)))
+#else
+#define isDigit(c) isdigit(UChar(c))
+#endif
+
+#define thisARG numericARG
+
+typedef struct
+  {
+    int precision;
+    double low;
+    double high;
+    struct lconv *L;
+  }
+thisARG;
+
+typedef struct
+  {
+    int precision;
+    double low;
+    double high;
+  }
+thisPARM;
 
 /*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  static void *Make_Numeric_Type(va_list * ap)
-|   
+|   Facility      :  libnform
+|   Function      :  static void *Generic_This_Type(void * arg)
+|
 |   Description   :  Allocate structure for numeric type argument.
 |
 |   Return Values :  Pointer to argument structure or NULL on error
 +--------------------------------------------------------------------------*/
-static void *Make_Numeric_Type(va_list * ap)
+static void *
+Generic_This_Type(void *arg)
 {
-  numericARG *argn = (numericARG *)malloc(sizeof(numericARG));
+  thisARG *argn = (thisARG *)0;
+  thisPARM *args = (thisPARM *)arg;
 
-  if (argn)
+  if (args)
     {
-      argn->precision = va_arg(*ap,int);
-      argn->low       = va_arg(*ap,double);
-      argn->high      = va_arg(*ap,double);
-      argn->L         = localeconv();
+      argn = typeMalloc(thisARG, 1);
+
+      if (argn)
+	{
+	  T((T_CREATE("thisARG %p"), (void *)argn));
+	  argn->precision = args->precision;
+	  argn->low = args->low;
+	  argn->high = args->high;
+
+#if HAVE_LOCALE_H && HAVE_LOCALECONV
+	  argn->L = localeconv();
+#else
+	  argn->L = NULL;
+#endif
+	}
     }
   return (void *)argn;
 }
 
 /*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  static void *Copy_Numeric_Type(const void * argp)
-|   
-|   Description   :  Copy structure for numeric type argument.  
+|   Facility      :  libnform
+|   Function      :  static void *Make_This_Type(va_list * ap)
 |
-|   Return Values :  Pointer to argument structure or NULL on error.
+|   Description   :  Allocate structure for numeric type argument.
+|
+|   Return Values :  Pointer to argument structure or NULL on error
 +--------------------------------------------------------------------------*/
-static void *Copy_Numeric_Type(const void * argp)
+static void *
+Make_This_Type(va_list *ap)
 {
-  numericARG *ap  = (numericARG *)argp;
-  numericARG *new = (numericARG *)0;
+  thisPARM arg;
 
-  if (argp)
-    {
-      new = (numericARG *)malloc(sizeof(numericARG));
-      if (new)
-	*new  = *ap;
-    }
-  return (void *)new;
+  arg.precision = va_arg(*ap, int);
+  arg.low = va_arg(*ap, double);
+  arg.high = va_arg(*ap, double);
+
+  return Generic_This_Type((void *)&arg);
 }
 
 /*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  static void Free_Numeric_Type(void * argp)
-|   
+|   Facility      :  libnform
+|   Function      :  static void *Copy_This_Type(const void * argp)
+|
+|   Description   :  Copy structure for numeric type argument.
+|
+|   Return Values :  Pointer to argument structure or NULL on error.
++--------------------------------------------------------------------------*/
+static void *
+Copy_This_Type(const void *argp)
+{
+  const thisARG *ap = (const thisARG *)argp;
+  thisARG *result = (thisARG *)0;
+
+  if (argp)
+    {
+      result = typeMalloc(thisARG, 1);
+
+      if (result)
+	{
+	  T((T_CREATE("thisARG %p"), (void *)result));
+	  *result = *ap;
+	}
+    }
+  return (void *)result;
+}
+
+/*---------------------------------------------------------------------------
+|   Facility      :  libnform
+|   Function      :  static void Free_This_Type(void * argp)
+|
 |   Description   :  Free structure for numeric type argument.
 |
 |   Return Values :  -
 +--------------------------------------------------------------------------*/
-static void Free_Numeric_Type(void * argp)
+static void
+Free_This_Type(void *argp)
 {
-  if (argp) 
+  if (argp)
     free(argp);
 }
 
 /*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  static bool Check_Numeric_Field(FIELD * field,
-|                                                    const void * argp)
-|   
+|   Facility      :  libnform
+|   Function      :  static bool Check_This_Field(FIELD * field,
+|                                                 const void * argp)
+|
 |   Description   :  Validate buffer content to be a valid numeric value
 |
 |   Return Values :  TRUE  - field is valid
 |                    FALSE - field is invalid
 +--------------------------------------------------------------------------*/
-static bool Check_Numeric_Field(FIELD * field, const void * argp)
+static bool
+Check_This_Field(FIELD *field, const void *argp)
 {
-  numericARG *argn    = (numericARG *)argp;
-  double low          = argn->low;
-  double high         = argn->high;
-  int prec            = argn->precision;
-  unsigned char *bp   = (unsigned char *)field_buffer(field,0);
-  char *s             = (char *)bp;
-  double val          = 0.0;
-  struct lconv* L     = argn->L;
-  char buf[64];
+  const thisARG *argn = (const thisARG *)argp;
+  double low = argn->low;
+  double high = argn->high;
+  int prec = argn->precision;
+  unsigned char *bp = (unsigned char *)field_buffer(field, 0);
+  char *s = (char *)bp;
+  struct lconv *L = argn->L;
+  bool result = FALSE;
 
-  while(*bp && *bp==' ') bp++;
+  while (*bp == ' ')
+    bp++;
   if (*bp)
     {
-      if (*bp=='-' || *bp=='+')
+      if (*bp == '-' || *bp == '+')
 	bp++;
-      while(*bp)
+#if USE_WIDEC_SUPPORT
+      if (*bp)
 	{
-	  if (!isdigit(*bp)) break;
+	  int len;
+	  wchar_t *list = _nc_Widen_String((char *)bp, &len);
+
+	  if (list != 0)
+	    {
+	      bool blank = FALSE;
+	      int state = 0;
+	      int n;
+
+	      result = TRUE;
+	      for (n = 0; n < len; ++n)
+		{
+		  if (blank)
+		    {
+		      if (list[n] != ' ')
+			{
+			  result = FALSE;
+			  break;
+			}
+		    }
+		  else if (list[n] == ' ')
+		    {
+		      blank = TRUE;
+		    }
+		  else if (isDecimalPoint(list[n]))
+		    {
+		      if (++state > 1)
+			{
+			  result = FALSE;
+			  break;
+			}
+		    }
+		  else if (!isDigit(list[n]))
+		    {
+		      result = FALSE;
+		      break;
+		    }
+		}
+	      free(list);
+	    }
+	}
+#else
+      while (*bp)
+	{
+	  if (!isdigit(UChar(*bp)))
+	    break;
 	  bp++;
 	}
-      if (*bp==((L && L->decimal_point) ? *(L->decimal_point) : '.'))
+      if (isDecimalPoint(*bp))
 	{
 	  bp++;
-	  while(*bp)
+	  while (*bp)
 	    {
-	      if (!isdigit(*bp)) break;
+	      if (!isdigit(UChar(*bp)))
+		break;
 	      bp++;
 	    }
 	}
-      while(*bp && *bp==' ') bp++;
-      if (*bp=='\0')
+      while (*bp && *bp == ' ')
+	bp++;
+      result = (*bp == '\0');
+#endif
+      if (result)
 	{
-	  val = atof(s);
-	  if (low<high)
+	  double val = atof(s);
+
+	  if (low < high)
 	    {
-	      if (val<low || val>high) return FALSE;
+	      if (val < low || val > high)
+		result = FALSE;
 	    }
-	  sprintf(buf,"%.*f",prec,val);
-	  set_field_buffer(field,0,buf);
-	  return TRUE;
+	  if (result)
+	    {
+	      char buf[64];
+
+	      _nc_SPRINTF(buf, _nc_SLIMIT(sizeof(buf))
+			  "%.*f", (prec > 0 ? prec : 0), val);
+	      set_field_buffer(field, 0, buf);
+	    }
 	}
     }
-  return FALSE;
+  return (result);
 }
 
 /*---------------------------------------------------------------------------
-|   Facility      :  libnform  
-|   Function      :  static bool Check_Numeric_Character(
+|   Facility      :  libnform
+|   Function      :  static bool Check_This_Character(
 |                                      int c,
 |                                      const void * argp)
-|   
+|
 |   Description   :  Check a character for the numeric type.
 |
 |   Return Values :  TRUE  - character is valid
 |                    FALSE - character is invalid
 +--------------------------------------------------------------------------*/
-static bool Check_Numeric_Character(int c, const void * argp)
+static bool
+Check_This_Character(int c, const void *argp)
 {
-  numericARG *argn = (numericARG *)argp;
-  struct lconv* L  = argn->L;  
+  const thisARG *argn = (const thisARG *)argp;
+  struct lconv *L = argn->L;
 
-  return (isdigit(c)  || 
-	  c == '+'    || 
-	  c == '-'    || 
-	  c == ((L && L->decimal_point) ? *(L->decimal_point) : '.')
-	 ) ? TRUE : FALSE;
+  return ((isDigit(c) ||
+	   c == '+' ||
+	   c == '-' ||
+	   isDecimalPoint(c))
+	  ? TRUE
+	  : FALSE);
 }
 
-static FIELDTYPE typeNUMERIC = {
+static FIELDTYPE typeTHIS =
+{
   _HAS_ARGS | _RESIDENT,
-  1,                           /* this is mutable, so we can't be const */
+  1,				/* this is mutable, so we can't be const */
   (FIELDTYPE *)0,
   (FIELDTYPE *)0,
-  Make_Numeric_Type,
-  Copy_Numeric_Type,
-  Free_Numeric_Type,
-  Check_Numeric_Field,
-  Check_Numeric_Character,
-  NULL,
-  NULL
+  Make_This_Type,
+  Copy_This_Type,
+  Free_This_Type,
+  INIT_FT_FUNC(Check_This_Field),
+  INIT_FT_FUNC(Check_This_Character),
+  INIT_FT_FUNC(NULL),
+  INIT_FT_FUNC(NULL),
+#if NCURSES_INTEROP_FUNCS
+  Generic_This_Type
+#endif
 };
 
-FIELDTYPE* TYPE_NUMERIC = &typeNUMERIC;
+FORM_EXPORT_VAR(FIELDTYPE *) TYPE_NUMERIC = &typeTHIS;
+
+#if NCURSES_INTEROP_FUNCS
+/* The next routines are to simplify the use of ncurses from
+   programming languages with restrictions on interop with C level
+   constructs (e.g. variable access or va_list + ellipsis constructs)
+*/
+FORM_EXPORT(FIELDTYPE *)
+_nc_TYPE_NUMERIC(void)
+{
+  return TYPE_NUMERIC;
+}
+#endif
 
 /* fty_num.c ends here */

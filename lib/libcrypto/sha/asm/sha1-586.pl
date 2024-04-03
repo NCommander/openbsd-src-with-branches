@@ -28,7 +28,7 @@
 # P4		+85%(!)			+45%
 #
 # As you can see Pentium came out as looser:-( Yet I reckoned that
-# improvement on P4 outweights the loss and incorporate this
+# improvement on P4 outweighs the loss and incorporate this
 # re-tuned code to 0.9.7 and later.
 # ----------------------------------------------------------------
 #					<appro@fy.chalmers.se>
@@ -111,10 +111,6 @@ $ymm=1 if ($xmm &&
 		`$ENV{CC} -Wa,-v -c -o /dev/null -x assembler /dev/null 2>&1`
 			=~ /GNU assembler version ([2-9]\.[0-9]+)/ &&
 		$1>=2.19);	# first version supporting AVX
-
-$ymm=1 if ($xmm && !$ymm && $ARGV[0] eq "win32n" && 
-		`nasm -v 2>&1` =~ /NASM version ([2-9]\.[0-9]+)/ &&
-		$1>=2.03);	# first version supporting AVX
 
 &external_label("OPENSSL_ia32cap_P") if ($xmm);
 
@@ -299,23 +295,21 @@ if ($xmm) {
   &static_label("avx_shortcut")		if ($ymm);
   &static_label("K_XX_XX");
 
-	&call	(&label("pic_point"));	# make it PIC!
-  &set_label("pic_point");
-	&blindpop($tmp1);
-	&picmeup($T,"OPENSSL_ia32cap_P",$tmp1,&label("pic_point"));
-	&lea	($tmp1,&DWP(&label("K_XX_XX")."-".&label("pic_point"),$tmp1));
+	&picsetup($tmp1);
+	&picsymbol($T, "OPENSSL_ia32cap_P", $tmp1);
+	&picsymbol($tmp1, &label("K_XX_XX"), $tmp1);
 
 	&mov	($A,&DWP(0,$T));
 	&mov	($D,&DWP(4,$T));
-	&test	($D,1<<9);		# check SSSE3 bit
+	&test	($D,"\$IA32CAP_MASK1_SSSE3");	# check SSSE3 bit
 	&jz	(&label("x86"));
-	&test	($A,1<<24);		# check FXSR bit
+	&test	($A,"\$IA32CAP_MASK0_FXSR");	# check FXSR bit
 	&jz	(&label("x86"));
 	if ($ymm) {
-		&and	($D,1<<28);		# mask AVX bit
-		&and	($A,1<<30);		# mask "Intel CPU" bit
+		&and	($D,"\$IA32CAP_MASK1_AVX");	# mask AVX bit
+		&and	($A,"\$IA32CAP_MASK0_INTEL");	# mask "Intel CPU" bit
 		&or	($A,$D);
-		&cmp	($A,1<<28|1<<30);
+		&cmp	($A,"\$(IA32CAP_MASK1_AVX | IA32CAP_MASK0_INTEL)");
 		&je	(&label("avx_shortcut"));
 	}
 	&jmp	(&label("ssse3_shortcut"));
@@ -423,10 +417,9 @@ my $_rol=sub { &rol(@_) };
 my $_ror=sub { &ror(@_) };
 
 &function_begin("_sha1_block_data_order_ssse3");
-	&call	(&label("pic_point"));	# make it PIC!
-	&set_label("pic_point");
-	&blindpop($tmp1);
-	&lea	($tmp1,&DWP(&label("K_XX_XX")."-".&label("pic_point"),$tmp1));
+	&picsetup($tmp1);
+	&picsymbol($tmp1, &label("K_XX_XX"), $tmp1);
+
 &set_label("ssse3_shortcut");
 
 	&movdqa	(@X[3],&QWP(0,$tmp1));		# K_00_19
@@ -506,7 +499,7 @@ my $_ror=sub { &ror(@_) };
 	&jmp	(&label("loop"));
 
 ######################################################################
-# SSE instruction sequence is first broken to groups of indepentent
+# SSE instruction sequence is first broken to groups of independent
 # instructions, independent in respect to their inputs and shifter
 # (not all architectures have more than one). Then IALU instructions
 # are "knitted in" between the SSE groups. Distance is maintained for
@@ -515,14 +508,14 @@ my $_ror=sub { &ror(@_) };
 #
 # Temporary registers usage. X[2] is volatile at the entry and at the
 # end is restored from backtrace ring buffer. X[3] is expected to
-# contain current K_XX_XX constant and is used to caclulate X[-1]+K
+# contain current K_XX_XX constant and is used to calculate X[-1]+K
 # from previous round, it becomes volatile the moment the value is
 # saved to stack for transfer to IALU. X[4] becomes volatile whenever
 # X[-4] is accumulated and offloaded to backtrace ring buffer, at the
 # end it is loaded with next K_XX_XX [which becomes X[3] in next
 # round]...
 #
-sub Xupdate_ssse3_16_31()		# recall that $Xi starts wtih 4
+sub Xupdate_ssse3_16_31()		# recall that $Xi starts with 4
 { use integer;
   my $body = shift;
   my @insns = (&$body,&$body,&$body,&$body);	# 40 instructions
@@ -865,10 +858,9 @@ my $_rol=sub { &shld(@_[0],@_) };
 my $_ror=sub { &shrd(@_[0],@_) };
 
 &function_begin("_sha1_block_data_order_avx");
-	&call	(&label("pic_point"));	# make it PIC!
-	&set_label("pic_point");
-	&blindpop($tmp1);
-	&lea	($tmp1,&DWP(&label("K_XX_XX")."-".&label("pic_point"),$tmp1));
+	&picsetup($tmp1);
+	&picsymbol($tmp1, &label("K_XX_XX"), $tmp1);
+
 &set_label("avx_shortcut");
 	&vzeroall();
 
@@ -944,7 +936,7 @@ my $_ror=sub { &shrd(@_[0],@_) };
 	&vmovdqa(&QWP(0+32,"esp"),@X[2]);
 	&jmp	(&label("loop"));
 
-sub Xupdate_avx_16_31()		# recall that $Xi starts wtih 4
+sub Xupdate_avx_16_31()		# recall that $Xi starts with 4
 { use integer;
   my $body = shift;
   my @insns = (&$body,&$body,&$body,&$body);	# 40 instructions
@@ -1217,13 +1209,15 @@ sub Xtail_avx()
 	&mov	(&DWP(16,@T[1]),$E);
 &function_end("_sha1_block_data_order_avx");
 }
+
+	&rodataseg();
 &set_label("K_XX_XX",64);
 &data_word(0x5a827999,0x5a827999,0x5a827999,0x5a827999);	# K_00_19
 &data_word(0x6ed9eba1,0x6ed9eba1,0x6ed9eba1,0x6ed9eba1);	# K_20_39
 &data_word(0x8f1bbcdc,0x8f1bbcdc,0x8f1bbcdc,0x8f1bbcdc);	# K_40_59
 &data_word(0xca62c1d6,0xca62c1d6,0xca62c1d6,0xca62c1d6);	# K_60_79
 &data_word(0x00010203,0x04050607,0x08090a0b,0x0c0d0e0f);	# pbswap mask
+	&previous();
 }
-&asciz("SHA1 block transform for x86, CRYPTOGAMS by <appro\@openssl.org>");
 
 &asm_finish();

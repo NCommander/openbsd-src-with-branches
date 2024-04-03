@@ -196,6 +196,8 @@ add_llvm_component_library(LLVMCodeGen
   RegUsageInfoPropagate.cpp
   ReplaceWithVeclib.cpp
   ResetMachineFunctionPass.cpp
+  ReturnProtectorLowering.cpp
+  ReturnProtectorPass.cpp
   RegisterBank.cpp
   RegisterBankInfo.cpp
   SafeStack.cpp

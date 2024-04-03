@@ -236,6 +236,11 @@ c_common_init_options (unsigned int argc, const char **argv)
 
   if (c_language == clk_c)
     {
+      /* The default for C is gnu99, without warnings for non-static
+         inline functions.  */
+       set_std_c99 (false /* ISO */);
+       flag_gnu89_inline = 1;
+
       /* If preprocessing assembly language, accept any of the C-family
 	 front end options since the driver may pass them through.  */
       for (i = 1; i < argc; i++)
@@ -385,6 +390,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       set_Wunused (value);
       set_Wformat (value);
       set_Wimplicit (value);
+      warn_bounded = value;
       warn_char_subscripts = value;
       warn_missing_braces = value;
       warn_parentheses = value;
@@ -423,8 +429,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       cpp_opts->warn_num_sign_change = value;
       cpp_opts->warn_multichar = value;	/* Was C++ only.  */
 
-      if (warn_pointer_sign == -1)
-	warn_pointer_sign = 1;
       break;
 
     case OPT_Wcomment:

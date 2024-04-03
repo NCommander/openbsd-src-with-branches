@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: t_pipe2.c,v 1.3 2021/12/13 16:56:48 deraadt Exp $	*/
 /* $NetBSD: t_pipe2.c,v 1.9 2017/01/13 21:19:45 christos Exp $ */
 
 /*-
@@ -39,9 +39,6 @@
 
 #include "macros.h"
 
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: t_pipe2.c,v 1.9 2017/01/13 21:19:45 christos Exp $");
-
 #include "atf-c.h"
 #include <fcntl.h>
 #include <unistd.h>
@@ -81,16 +78,16 @@ run(int flags)
 		ATF_REQUIRE((fcntl(fd[1], F_GETFL) & O_NONBLOCK) == 0);
 	}
 
-	/*
-	 * Adjusted for OpenBSD, not available
-	 * if (flags & O_NOSIGPIPE) {
-	 *	ATF_REQUIRE(fcntl(fd[0], F_GETNOSIGPIPE) != 0);
-	 *	ATF_REQUIRE(fcntl(fd[1], F_GETNOSIGPIPE) != 0);
-	 *} else {
-	 *	ATF_REQUIRE(fcntl(fd[0], F_GETNOSIGPIPE) == 0);
-	 *	ATF_REQUIRE(fcntl(fd[1], F_GETNOSIGPIPE) == 0);
-	 *}
-	 */
+#ifndef __OpenBSD__
+	/* F_GETNOSIGPIPE not available */
+	if (flags & O_NOSIGPIPE) {
+		ATF_REQUIRE(fcntl(fd[0], F_GETNOSIGPIPE) != 0);
+		ATF_REQUIRE(fcntl(fd[1], F_GETNOSIGPIPE) != 0);
+	} else {
+		ATF_REQUIRE(fcntl(fd[0], F_GETNOSIGPIPE) == 0);
+		ATF_REQUIRE(fcntl(fd[1], F_GETNOSIGPIPE) == 0);
+	}
+#endif
 
 	ATF_REQUIRE(close(fd[0]) != -1);
 	ATF_REQUIRE(close(fd[1]) != -1);
@@ -120,8 +117,7 @@ ATF_TC_BODY(pipe2_consume, tc)
 	int err, filedes[2];
 	int old;
 
-	ATF_REQUIRE_MSG(closefrom(4) != -1, "closefrom failed: %s",
-	    strerror(errno));
+	(void)closefrom(4);
 
 	err = getrlimit(RLIMIT_NOFILE, &rl);
 	ATF_REQUIRE(err == 0);
@@ -193,10 +189,10 @@ ATF_TP_ADD_TCS(tp)
 	ATF_TP_ADD_TC(tp, pipe2_consume);
 	ATF_TP_ADD_TC(tp, pipe2_nonblock);
 	ATF_TP_ADD_TC(tp, pipe2_cloexec);
-	/*
-	 * Adjusted for OpenBSD, not available
-	 * ATF_TP_ADD_TC(tp, pipe2_nosigpipe);
-	 */
+#ifndef __OpenBSD__
+	/* O_NOSIGPIPE not available */
+	ATF_TP_ADD_TC(tp, pipe2_nosigpipe);
+#endif
 	ATF_TP_ADD_TC(tp, pipe2_einval);
 
 	return atf_no_error();

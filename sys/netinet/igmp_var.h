@@ -1,4 +1,5 @@
-/*	$NetBSD: igmp_var.h,v 1.8 1995/05/31 06:08:24 mycroft Exp $	*/
+/*	$OpenBSD: igmp_var.h,v 1.14 2020/08/17 16:25:34 gnezdo Exp $	*/
+/*	$NetBSD: igmp_var.h,v 1.9 1996/02/13 23:41:31 christos Exp $	*/
 
 /*
  * Copyright (c) 1988 Stephen Deering.
@@ -16,11 +17,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,6 +35,9 @@
  *
  *	@(#)igmp_var.h	8.1 (Berkeley) 7/19/93
  */
+
+#ifndef _NETINET_IGMP_VAR_H_
+#define _NETINET_IGMP_VAR_H_
 
 /*
  * Internet Group Management Protocol (IGMP),
@@ -62,20 +62,55 @@ struct igmpstat {
 	u_long	igps_snd_reports;	/* sent membership reports */
 };
 
+/*
+ * Names for IGMP sysctl objects
+ */
+#define IGMPCTL_STATS		1	/* IGMP statistics */
+#define IGMPCTL_MAXID		2
+
+#define IGMPCTL_NAMES { \
+	{ 0, 0 }, \
+	{ "stats",	CTLTYPE_STRUCT } \
+}
+
 #ifdef _KERNEL
-struct igmpstat igmpstat;
+
+#include <sys/percpu.h>
+
+enum igmpstat_counters {
+	igps_rcv_total,		/* total IGMP messages received */
+	igps_rcv_tooshort,	/* received with too few bytes */
+	igps_rcv_badsum,	/* received with bad checksum */
+	igps_rcv_queries,	/* received membership queries */
+	igps_rcv_badqueries,	/* received invalid queries */
+	igps_rcv_reports,	/* received membership reports */
+	igps_rcv_badreports,	/* received invalid reports */
+	igps_rcv_ourreports,	/* received reports for our groups */
+	igps_snd_reports,	/* sent membership reports */
+	igps_ncounters
+};
+
+extern struct cpumem *igmpcounters;
+
+static inline void
+igmpstat_inc(enum igmpstat_counters c)
+{
+	counters_inc(igmpcounters, c);
+}
 
 /*
  * Macro to compute a random timer value between 1 and (IGMP_MAX_REPORTING_
  * DELAY * countdown frequency).  We assume that the routine random()
  * is defined somewhere (and that it returns a positive number).
  */
-#define	IGMP_RANDOM_DELAY(X)	(random() % (X) + 1)
+#define	IGMP_RANDOM_DELAY(X)	(arc4random_uniform(X) + 1)
 
-void	igmp_init __P((void));
-void	igmp_input __P((struct mbuf *, int));
-void	igmp_joingroup __P((struct in_multi *));
-void	igmp_leavegroup __P((struct in_multi *));
-void	igmp_fasttimo __P((void));
-void	igmp_slowtimo __P((void));
-#endif
+void	igmp_init(void);
+int	igmp_input(struct mbuf **, int *, int, int);
+void	igmp_joingroup(struct in_multi *, struct ifnet *);
+void	igmp_leavegroup(struct in_multi *, struct ifnet *);
+void	igmp_fasttimo(void);
+void	igmp_slowtimo(void);
+int	igmp_sysctl(int *, u_int, void *, size_t *, void *, size_t);
+#endif /* _KERNEL */
+#endif /* _NETINET_IGMP_VAR_H_ */

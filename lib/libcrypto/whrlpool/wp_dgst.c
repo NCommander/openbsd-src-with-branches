@@ -1,3 +1,4 @@
+/* $OpenBSD: wp_dgst.c,v 1.6 2023/09/04 08:36:48 robert Exp $ */
 /**
  * The Whirlpool hashing function.
  *
@@ -48,14 +49,16 @@
  *
  * Unlike authors' reference implementation, block processing
  * routine whirlpool_block is designed to operate on multi-block
- * input. This is done for perfomance.
+ * input. This is done for performance.
  */
 
-#include "wp_locl.h"
-#include <openssl/crypto.h>
 #include <string.h>
 
-fips_md_init(WHIRLPOOL)
+#include <openssl/crypto.h>
+
+#include "wp_local.h"
+
+int WHIRLPOOL_Init(WHIRLPOOL_CTX *c)
 	{
 	memset (c,0,sizeof(*c));
 	return(1);

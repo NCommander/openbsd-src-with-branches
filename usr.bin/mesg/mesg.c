@@ -1,3 +1,4 @@
+/*	$OpenBSD: mesg.c,v 1.17 2021/07/12 15:09:20 beck Exp $	*/
 /*	$NetBSD: mesg.c,v 1.4 1994/12/23 07:16:32 jtc Exp $	*/
 
 /*
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -38,19 +35,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1987, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)mesg.c	8.2 (Berkeley) 1/21/94";
-#endif
-static char rcsid[] = "$NetBSD: mesg.c,v 1.4 1994/12/23 07:16:32 jtc Exp $";
-#endif /* not lint */
-
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -62,17 +46,14 @@ static char rcsid[] = "$NetBSD: mesg.c,v 1.4 1994/12/23 07:16:32 jtc Exp $";
 #include <unistd.h>
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	struct stat sb;
 	char *tty;
 	int ch;
 
-	while ((ch = getopt(argc, argv, "")) != EOF)
+	while ((ch = getopt(argc, argv, "")) != -1)
 		switch (ch) {
-		case '?':
 		default:
 			goto usage;
 		}
@@ -80,9 +61,17 @@ main(argc, argv)
 	argv += optind;
 
 	if ((tty = ttyname(STDERR_FILENO)) == NULL)
-		err(1, "ttyname");
-	if (stat(tty, &sb) < 0)
-		err(1, "%s", tty);
+		err(2, "ttyname");
+
+	if (unveil(tty, "rw") == -1)
+		err(2, "unveil %s", tty);
+	if (pledge("stdio rpath fattr", NULL) == -1)
+		err(2, "pledge");
+
+	if (stat(tty, &sb) == -1)
+		err(2, "%s", tty);
+
+	sb.st_mode &= ACCESSPERMS;
 
 	if (*argv == NULL) {
 		if (sb.st_mode & S_IWGRP) {
@@ -95,15 +84,15 @@ main(argc, argv)
 
 	switch (*argv[0]) {
 	case 'y':
-		if (chmod(tty, sb.st_mode | S_IWGRP) < 0)
-			err(1, "%s", tty);
+		if (chmod(tty, sb.st_mode | S_IWGRP) == -1)
+			err(2, "%s", tty);
 		exit(0);
 	case 'n':
-		if (chmod(tty, sb.st_mode & ~S_IWGRP) < 0)
-			err(1, "%s", tty);
+		if (chmod(tty, sb.st_mode & ~S_IWGRP) == -1)
+			err(2, "%s", tty);
 		exit(1);
 	}
 
-usage:	(void)fprintf(stderr, "usage: mesg [y | n]\n");
+usage:	(void)fprintf(stderr, "usage: mesg [n | y]\n");
 	exit(2);
 }

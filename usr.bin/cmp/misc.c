@@ -1,3 +1,4 @@
+/*      $OpenBSD: misc.c,v 1.6 2011/01/19 13:01:25 okan Exp $      */
 /*      $NetBSD: misc.c,v 1.2 1995/09/08 03:22:58 tls Exp $      */
 
 /*-
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -33,25 +30,17 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)misc.c	8.3 (Berkeley) 4/2/94";
-#else
-static char rcsid[] = "$NetBSD: misc.c,v 1.2 1995/09/08 03:22:58 tls Exp $";
-#endif
-#endif /* not lint */
-
 #include <sys/types.h>
 
 #include <err.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "extern.h"
 
 void
-eofmsg(file)
-	char *file;
+eofmsg(char *file)
 {
 	if (!sflag)
 		warnx("EOF on %s", file);
@@ -59,12 +48,36 @@ eofmsg(file)
 }
 
 void
-diffmsg(file1, file2, byte, line)
-	char *file1, *file2;
-	off_t byte, line;
+diffmsg(char *file1, char *file2, off_t byte, off_t line)
 {
 	if (!sflag)
-		(void)printf("%s %s differ: char %qd, line %qd\n",
-		    file1, file2, byte, line);
+		(void)printf("%s %s differ: char %lld, line %lld\n",
+		    file1, file2, (long long)byte, (long long)line);
 	exit(DIFF_EXIT);
+}
+
+void
+fatal(const char *fmt, ...)
+{
+	va_list ap;
+
+	if (!sflag) {
+		va_start(ap, fmt);
+		vwarn(fmt, ap);
+		va_end(ap);
+	}
+	exit(ERR_EXIT);
+}
+
+void
+fatalx(const char *fmt, ...)
+{
+	va_list ap;
+
+	if (!sflag) {
+		va_start(ap, fmt);
+		vwarnx(fmt, ap);
+		va_end(ap);
+	}
+	exit(ERR_EXIT);
 }

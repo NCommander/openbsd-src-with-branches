@@ -1,5 +1,5 @@
 /* Demangler test program,
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002 Free Software Foundation, Inc.
    Written by Zack Weinberg <zack@codesourcery.com
 
    This file is part of GNU libiberty.
@@ -16,7 +16,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. 
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -26,12 +26,8 @@
 #include <stdio.h>
 #include "libiberty.h"
 #include "demangle.h"
-#ifdef HAVE_STRING_H
 #include <string.h>
-#endif
-#if HAVE_STDLIB_H
-# include <stdlib.h>
-#endif
+#include <stdlib.h>
 
 struct line
 {
@@ -46,7 +42,7 @@ static unsigned int lineno;
 #define LINELEN 80
 
 static void
-getline(buf)
+get_line(buf)
      struct line *buf;
 {
   char *data = buf->data;
@@ -86,54 +82,27 @@ getline(buf)
   buf->alloced = alloc;
 }
 
-static void
-fail (lineno, opts, in, out, exp)
-     int lineno;
-     const char *opts;
-     const char *in;
-     const char *out;
-     const char *exp;
-{
-  printf ("\
-FAIL at line %d, options %s:\n\
-in:  %s\n\
-out: %s\n\
-exp: %s\n",
-	  lineno, opts, in, out != NULL ? out : "(null)", exp);
-}
-
-/* The tester operates on a data file consisting of groups of lines:
-   options
+/* The tester operates on a data file consisting of triples of lines:
+   format switch
    input to be demangled
    expected output
 
-   Supported options:
-     --format=<name>     Sets the demangling style.
-     --no-params         There are two lines of expected output; the first
-                         is with DMGL_PARAMS, the second is without it.
-     --is-v3-ctor        Calls is_gnu_v3_mangled_ctor on input; expected
-                         output is an integer representing ctor_kind.
-     --is-v3-dtor        Likewise, but for dtors.
-     --ret-postfix       Passes the DMGL_RET_POSTFIX option
+   The format switch is expected to be either the empty string, a
+   line of the form --format=<name>, or just <name> by itself.  */
 
-   For compatibility, just in case it matters, the options line may be
-   empty, to mean --format=auto.  If it doesn't start with --, then it
-   may contain only a format name.
-*/
+#define FORMATS "--format="
+#define FORMATL (sizeof FORMATS - 1)
 
 int
 main(argc, argv)
      int argc;
      char **argv;
 {
-  enum demangling_styles style = auto_demangling;
-  int no_params;
-  int is_v3_ctor;
-  int is_v3_dtor;
-  int ret_postfix;
+  enum demangling_styles style;
   struct line format;
   struct line input;
   struct line expect;
+  char *fstyle;
   char *result;
   int failures = 0;
   int tests = 0;
@@ -150,142 +119,53 @@ main(argc, argv)
 
   for (;;)
     {
-      getline (&format);
+      get_line (&format);
       if (feof (stdin))
 	break;
 
-      getline (&input);
-      getline (&expect);
+      get_line (&input);
+      get_line (&expect);
 
       tests++;
 
-      no_params = 0;
-      ret_postfix = 0;
-      is_v3_ctor = 0;
-      is_v3_dtor = 0;
-      if (format.data[0] == '\0')
+      fstyle = format.data;
+      if (!strncmp (fstyle, FORMATS, FORMATL))
+	fstyle += FORMATL;
+
+      if (fstyle[0] == '\0')
 	style = auto_demangling;
-      else if (format.data[0] != '-')
-	{
-	  style = cplus_demangle_name_to_style (format.data);
-	  if (style == unknown_demangling)
-	    {
-	      printf ("FAIL at line %d: unknown demangling style %s\n",
-		      lineno, format.data);
-	      failures++;
-	      continue;
-	    }
-	}
       else
+	style = cplus_demangle_name_to_style (fstyle);
+
+      if (style == unknown_demangling)
 	{
-	  char *p;
-	  char *opt;
-
-	  p = format.data;
-	  while (*p != '\0')
-	    {
-	      char c;
-
-	      opt = p;
-	      p += strcspn (p, " \t=");
-	      c = *p;
-	      *p = '\0';
-	      if (strcmp (opt, "--format") == 0 && c == '=')
-		{
-		  char *fstyle;
-
-		  *p = c;
-		  ++p;
-		  fstyle = p;
-		  p += strcspn (p, " \t");
-		  c = *p;
-		  *p = '\0';
-		  style = cplus_demangle_name_to_style (fstyle);
-		  if (style == unknown_demangling)
-		    {
-		      printf ("FAIL at line %d: unknown demangling style %s\n",
-			      lineno, fstyle);
-		      failures++;
-		      continue;
-		    }
-		}
-	      else if (strcmp (opt, "--no-params") == 0)
-		no_params = 1;
-	      else if (strcmp (opt, "--is-v3-ctor") == 0)
-		is_v3_ctor = 1;
-	      else if (strcmp (opt, "--is-v3-dtor") == 0)
-		is_v3_dtor = 1;
-	      else if (strcmp (opt, "--ret-postfix") == 0)
-		ret_postfix = 1;
-	      else
-		{
-		  printf ("FAIL at line %d: unrecognized option %s\n",
-			  lineno, opt);
-		  failures++;
-		  continue;
-		}
-	      *p = c;
-	      p += strspn (p, " \t");
-	    }
-	}
-
-      if (is_v3_ctor || is_v3_dtor)
-	{
-	  char buf[20];
-
-	  if (is_v3_ctor)
-	    {
-	      enum gnu_v3_ctor_kinds kc;
-
-	      kc = is_gnu_v3_mangled_ctor (input.data);
-	      sprintf (buf, "%d", (int) kc);
-	    }
-	  else
-	    {
-	      enum gnu_v3_dtor_kinds kd;
-
-	      kd = is_gnu_v3_mangled_dtor (input.data);
-	      sprintf (buf, "%d", (int) kd);
-	    }
-
-	  if (strcmp (buf, expect.data) != 0)
-	    {
-	      fail (lineno, format.data, input.data, buf, expect.data);
-	      failures++;
-	    }
-
+	  printf ("FAIL at line %d: unknown demangling style %s\n",
+		  lineno, fstyle);
+	  failures++;
 	  continue;
 	}
 
       cplus_demangle_set_style (style);
 
       result = cplus_demangle (input.data,
-			       DMGL_PARAMS|DMGL_ANSI|DMGL_TYPES
-			       |(ret_postfix ? DMGL_RET_POSTFIX : 0));
+			       DMGL_PARAMS|DMGL_ANSI|DMGL_VERBOSE|DMGL_TYPES);
 
       if (result
 	  ? strcmp (result, expect.data)
 	  : strcmp (input.data, expect.data))
 	{
-	  fail (lineno, format.data, input.data, result, expect.data);
+	  printf ("\
+FAIL at line %d, style %s:\n\
+in:  %s\n\
+out: %s\n\
+exp: %s\n",
+		   lineno, fstyle,
+		   input.data,
+		   result,
+		   expect.data);
 	  failures++;
 	}
       free (result);
-
-      if (no_params)
-	{
-	  getline (&expect);
-	  result = cplus_demangle (input.data, DMGL_ANSI|DMGL_TYPES);
-
-	  if (result
-	      ? strcmp (result, expect.data)
-	      : strcmp (input.data, expect.data))
-	    {
-	      fail (lineno, format.data, input.data, result, expect.data);
-	      failures++;
-	    }
-	  free (result);
-	}
     }
 
   free (format.data);

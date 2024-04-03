@@ -1,5 +1,5 @@
 # $FreeBSD: src/gnu/usr.bin/cc/cc_tools/Makefile,v 1.88.8.1 2009/04/15 03:14:26 kensmith Exp $
-# $OpenBSD$
+# $OpenBSD: Makefile,v 1.18 2017/07/19 12:50:32 espie Exp $
 
 .include <bsd.own.mk>
 
@@ -27,7 +27,14 @@ TARGET_INC+=	options.h
 .if ${TARGET_ARCH} == "amd64"
 TARGET_INC+=	i386/biarch64.h
 .endif
-.if ${TARGET_ARCH} != "arm"
+.if ${TARGET_ARCH} == "hppa64"
+TARGET_INC+=	pa/pa64-start.h
+.endif
+.if ${TARGET_ARCH} == "sh"
+TARGET_INC+=	sh/little.h
+.endif
+.if ${TARGET_ARCH} != "arm" && ${TARGET_ARCH} != "mips64" && \
+    ${TARGET_ARCH} != "mips64el"
 TARGET_INC+=	${GCC_CPU}/${GCC_CPU}.h
 .endif
 .if ${TARGET_ARCH} == "i386" || ${TARGET_ARCH} == "amd64"
@@ -35,18 +42,51 @@ TARGET_INC+=	${GCC_CPU}/unix.h
 TARGET_INC+=	${GCC_CPU}/att.h
 .endif
 TARGET_INC+=	dbxelf.h
+.if ${TARGET_ARCH} == "alpha"
+TARGET_INC+=	alpha/elf.h
+TARGET_INC+=	alpha/openbsd1.h
+.else
 TARGET_INC+=	elfos.h
+.endif
+.if ${TARGET_ARCH} == "arm"
+TARGET_INC+=	arm/elf.h
+TARGET_INC+=	arm/aout.h
+TARGET_INC+=	arm/openbsd1.h
+TARGET_INC+=	arm/arm.h
+.endif
+.if ${TARGET_ARCH} == "sh"
+TARGET_INC+=	sh/elf.h
+.endif
 TARGET_INC+=	openbsd.h
 TARGET_INC+=	openbsd-libpthread.h
 TARGET_INC+=	openbsd-native.h
+.if ${TARGET_ARCH} == "powerpc"
+TARGET_INC+=	rs6000/secureplt.h
+TARGET_INC+=	freebsd-spec.h
+.endif
 .if ${TARGET_ARCH} != "i386" && ${TARGET_ARCH} != "amd64"
 .if exists(${GCCDIR}/config/${GCC_CPU}/sysv4.h)
 TARGET_INC+=	${GCC_CPU}/sysv4.h
 .endif
 .endif
+.if ${TARGET_ARCH} == "mips64" || ${TARGET_ARCH} == "mips64el"
+TARGET_INC+=	${GCC_CPU}/${GCC_CPU}.h
+TM_DEFINES= MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_64
+.if ${TARGET_ARCH} == "mips64el"
+TM_DEFINES+= TARGET_ENDIAN_DEFAULT=0
+.endif
+.endif
 .if ${TARGET_ARCH} == "amd64"
-TARgET_INC+=	${GCC_CPU}/x86-64.h
+TARGET_INC+=	${GCC_CPU}/x86-64.h
 TARGET_INC+=	${GCC_CPU}/openbsd64.h
+.elif ${TARGET_ARCH} == "hppa64"
+TARGET_INC+=	${GCC_CPU}/openbsd64.h
+.elif ${TARGET_ARCH} == "sparc64"
+TARGET_INC+=	${GCC_CPU}/openbsd64.h
+.elif ${TARGET_ARCH} == "i386"
+TARGET_INC+=	${GCC_CPU}/openbsdelf.h
+.elif ${TARGET_ARCH} == "m88k"
+TARGET_INC+=	${GCC_CPU}/openbsdelf.h
 .else
 TARGET_INC+=	${GCC_CPU}/openbsd.h
 .endif
@@ -213,7 +253,7 @@ GENONLY+=	optionlist options.h options.c
 tm.h:
 	TARGET_CPU_DEFAULT="${TARGET_CPU_DEFAULT}" \
 	HEADERS="${TARGET_INC}" \
-	DEFINES="" \
+	DEFINES="${TM_DEFINES}" \
 	/bin/sh ${GCCDIR}/mkconfig.sh ${.TARGET}
 .if exists(${GCCDIR}/config/${GCC_CPU}/${GCC_CPU}-modes.def)
 	echo '#define EXTRA_MODES_FILE "${GCC_CPU}/${GCC_CPU}-modes.def"' >> ${.TARGET}
@@ -322,8 +362,13 @@ gthr-default.h: ${GCCDIR}/gthr-posix.h
 
 GENSRCS+=	gthr-default.h
 
+.if ${TARGET_ARCH} == "arm"
+unwind.h: ${GCCDIR}/config/arm/unwind-arm.h
+	ln -sf ${.ALLSRC} ${.TARGET}
+.else
 unwind.h: ${GCCDIR}/unwind-generic.h
 	ln -sf ${.ALLSRC} ${.TARGET}
+.endif
 
 GENSRCS+=	unwind.h
 
@@ -333,10 +378,8 @@ GENSRCS+=	unwind.h
 gengtype-lex.c:	gengtype-lex.l
 	flex -ogengtype-lex.c ${.ALLSRC}
 
-gengtype-yacc.h: gengtype-yacc.y
+gengtype-yacc.h gengtype-yacc.c: gengtype-yacc.y
 	yacc -d -o gengtype-yacc.c ${.ALLSRC}
-
-gengtype-yacc.c: gengtype-yacc.h
 
 gengtype-yacc+%DIKED.c: gengtype-yacc.c
 	cat    ${.ALLSRC} > ${.TARGET}
@@ -347,11 +390,12 @@ gengtype-yacc+%DIKED.c: gengtype-yacc.c
 	    ${.ALLSRC} > ${.TARGET}
 
 GENSRCS+= gengtype-lex.c gengtype-yacc.h gengtype-yacc+%DIKED.c
-CLEANFILES+= gengtype-yacc.c
+CLEANFILES+= gengtype-yacc.c gengtype-lex.d gengtype-yacc+%DIKED.d
 
 gengtype: gengtype.o gengtype-yacc+%DIKED.o gengtype-lex.o errors.o \
 	  ${LIBIBERTY}
 	${CC} ${CFLAGS} ${LDFLAGS} -o ${.TARGET} ${.ALLSRC}
+CLEANFILES+= gengtype.d
 
 gtype-desc.h:	gengtype
 	./gengtype
@@ -368,17 +412,23 @@ CLEANFILES+=	gt-*.h gtype-*.h
 .for F in check checksum genrtl modes
 gen$F:	gen$F.o errors.o ${LIBIBERTY}
 	${CC} ${CFLAGS} ${LDFLAGS} -o ${.TARGET} ${.ALLSRC}
+CLEANFILES+=	gen$F.d
 .endfor
+CLEANFILES+=	errors.d
 
 .for F in attr attrtab automata codes conditions config constants emit \
 	extract flags  opinit output peep preds recog
 gen$F:	gen$F.o rtl.o read-rtl.o ggc-none.o vec.o min-insn-modes.o \
 	gensupport.o print-rtl.o errors.o ${LIBIBERTY}
 	${CC} ${CFLAGS} ${LDFLAGS} -o ${.TARGET} ${.ALLSRC} -lm
+CLEANFILES+=	gen$F.d
 .endfor
+CLEANFILES+=	rtl.d read-rtl.d ggc-none.d vec.d min-insn-modes.d \
+	gensupport.d print-rtl.d
 
 gencondmd:	gencondmd.o
 	${CC} ${CFLAGS} ${LDFLAGS} -o ${.TARGET} ${.ALLSRC}
+CLEANFILES+=	gencondmd.d
 
 #
 # Generated .md files.
@@ -465,7 +515,6 @@ GNTOOLS+=	genattr genattrtab genautomata gencodes gencheck genchecksum \
 		genoutput genpeep genpreds genrecog
 
 all: ${GNTOOLS} ${GENSRCS} ${GENONLY}
-beforedepend: ${GENONLY}
 
 #-----------------------------------------------------------------------
 # Fixups.
@@ -488,9 +537,7 @@ CLEANFILES+=	${GENSRCS} ${GENONLY} ${GENOBJS} ${GNTOOLS}
 
 #-----------------------------------------------------------------------
 # Manual dependencies.
-.if !exists(${DEPENDFILE})
 .include  "Makefile.dep"
-.endif
 
 .include <bsd.prog.mk>
 # DO NOT DELETE

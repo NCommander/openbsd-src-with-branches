@@ -45,6 +45,15 @@ Boston, MA 02110-1301, USA.  */
 #include "libiberty.h"
 #include "dyn-string.h"
 
+/* If this file is being compiled for inclusion in the C++ runtime
+   library, as part of the demangler implementation, we don't want to
+   abort if an allocation fails.  Instead, percolate an error code up
+   through the call chain.  */
+
+#if defined(IN_LIBGCC2) || defined(IN_GLIBCPP_V3)
+#define RETURN_ON_ALLOCATION_FAILURE
+#endif
+
 /* Performs in-place initialization of a dyn_string struct.  This
    function can be used with a dyn_string struct on the stack or
    embedded in another object.  The contents of of the string itself
@@ -190,7 +199,7 @@ dyn_string_copy (dyn_string_t dest, dyn_string_t src)
   if (dyn_string_resize (dest, src->length) == NULL)
     return 0;
   /* Copy DEST into SRC.  */
-  strcpy (dest->s, src->s);
+  strlcpy (dest->s, src->s, dest->allocated);
   /* Update the size of DEST.  */
   dest->length = src->length;
   return 1;
@@ -208,7 +217,7 @@ dyn_string_copy_cstr (dyn_string_t dest, const char *src)
   if (dyn_string_resize (dest, length) == NULL)
     return 0;
   /* Copy DEST into SRC.  */
-  strcpy (dest->s, src);
+  strlcpy (dest->s, src, dest->allocated);
   /* Update the size of DEST.  */
   dest->length = length;
   return 1;
@@ -313,7 +322,7 @@ dyn_string_append (dyn_string_t dest, dyn_string_t s)
 {
   if (dyn_string_resize (dest, dest->length + s->length) == 0)
     return 0;
-  strcpy (dest->s + dest->length, s->s);
+  strlcpy (dest->s + dest->length, s->s, dest->allocated - dest->length);
   dest->length += s->length;
   return 1;
 }
@@ -331,7 +340,7 @@ dyn_string_append_cstr (dyn_string_t dest, const char *s)
      one for the null at the end.  */
   if (dyn_string_resize (dest, dest->length + len) == NULL)
     return 0;
-  strcpy (dest->s + dest->length, s);
+  strlcpy (dest->s + dest->length, s, dest->allocated - dest->length);
   dest->length += len;
   return 1;
 }

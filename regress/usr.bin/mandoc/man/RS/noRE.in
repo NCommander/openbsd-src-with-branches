@@ -1,0 +1,10 @@
+.\" $OpenBSD$
+.TH RS-NORE 1 "June 20, 2014"
+.SH NAME
+RS-noRE \- unclosed indented block
+.SH DESCRIPTION
+regular
+text
+.RS 8n
+indented
+text

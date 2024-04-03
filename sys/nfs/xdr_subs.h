@@ -1,4 +1,5 @@
-/*	$NetBSD: xdr_subs.h,v 1.8 1995/01/13 16:15:02 mycroft Exp $	*/
+/*	$OpenBSD: xdr_subs.h,v 1.9 2013/08/13 05:52:25 guenther Exp $	*/
+/*	$NetBSD: xdr_subs.h,v 1.11 1996/02/18 11:54:12 fvdl Exp $	*/
 
 /*
  * Copyright (c) 1989, 1993
@@ -15,11 +16,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,8 +32,12 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)xdr_subs.h	8.1 (Berkeley) 6/10/93
+ *	@(#)xdr_subs.h	8.3 (Berkeley) 3/30/95
  */
+
+
+#ifndef _NFS_XDR_SUBS_H_
+#define _NFS_XDR_SUBS_H_
 
 /*
  * Macros used for conversion to/from xdr representation by nfs...
@@ -49,35 +50,37 @@
  * but we cannot count on their alignment anyway.
  */
 
-#define	fxdr_unsigned(t, v)	((t)ntohl((long)(v)))
-#define	txdr_unsigned(v)	(htonl((long)(v)))
+#define	fxdr_unsigned(t, v)	((t)ntohl((int32_t)(v)))
+#define	txdr_unsigned(v)	(htonl((int32_t)(v)))
 
-#define	fxdr_nfstime(f, t) { \
-	(t)->ts_sec = ntohl(((struct nfsv2_time *)(f))->nfs_sec); \
-	if (((struct nfsv2_time *)(f))->nfs_usec != 0xffffffff) \
-		(t)->ts_nsec = 1000 * ntohl(((struct nfsv2_time *)(f))->nfs_usec); \
+#define	fxdr_nfsv2time(f, t) do { \
+	(t)->tv_sec = ntohl(((struct nfsv2_time *)(f))->nfsv2_sec); \
+	if (((struct nfsv2_time *)(f))->nfsv2_usec != 0xffffffff) \
+		(t)->tv_nsec = 1000 * ntohl(((struct nfsv2_time *)(f))->nfsv2_usec); \
 	else \
-		(t)->ts_nsec = 0; \
-}
-#define	txdr_nfstime(f, t) { \
-	((struct nfsv2_time *)(t))->nfs_sec = htonl((f)->ts_sec); \
-	((struct nfsv2_time *)(t))->nfs_usec = htonl((f)->ts_nsec) / 1000; \
-}
+		(t)->tv_nsec = 0; \
+} while (0)
 
-#define	fxdr_nqtime(f, t) { \
-	(t)->ts_sec = ntohl(((struct nqnfs_time *)(f))->nq_sec); \
-	(t)->ts_nsec = ntohl(((struct nqnfs_time *)(f))->nq_nsec); \
-}
-#define	txdr_nqtime(f, t) { \
-	((struct nqnfs_time *)(t))->nq_sec = htonl((f)->ts_sec); \
-	((struct nqnfs_time *)(t))->nq_nsec = htonl((f)->ts_nsec); \
-}
+struct nfsv2_time;
+void txdr_nfsv2time(const struct timespec *_from, struct nfsv2_time *_to);
 
-#define	fxdr_hyper(f, t) { \
-	((long *)(t))[_QUAD_HIGHWORD] = ntohl(((long *)(f))[0]); \
-	((long *)(t))[_QUAD_LOWWORD] = ntohl(((long *)(f))[1]); \
-}
-#define	txdr_hyper(f, t) { \
-	((long *)(t))[0] = htonl(((long *)(f))[_QUAD_HIGHWORD]); \
-	((long *)(t))[1] = htonl(((long *)(f))[_QUAD_LOWWORD]); \
-}
+#define	fxdr_nfsv3time(f, t) do { \
+	(t)->tv_sec = ntohl(((struct nfsv3_time *)(f))->nfsv3_sec); \
+	(t)->tv_nsec = ntohl(((struct nfsv3_time *)(f))->nfsv3_nsec); \
+} while (0)
+#define	txdr_nfsv3time(f, t) do { \
+	((struct nfsv3_time *)(t))->nfsv3_sec = htonl((f)->tv_sec); \
+	((struct nfsv3_time *)(t))->nfsv3_nsec = htonl((f)->tv_nsec); \
+} while (0)
+
+#define	fxdr_hyper(f) 						\
+        ((((u_quad_t)ntohl(((u_int32_t *)(f))[0])) << 32) |	\
+	 (u_quad_t)(ntohl(((u_int32_t *)(f))[1])))
+
+
+#define	txdr_hyper(f, t) do {						\
+	((u_int32_t *)(t))[0] = htonl((u_int32_t)((f) >> 32));		\
+	((u_int32_t *)(t))[1] = htonl((u_int32_t)((f) & 0xffffffff));	\
+} while (0)
+
+#endif

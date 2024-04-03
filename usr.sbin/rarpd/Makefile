@@ -1,14 +1,7 @@
-# @(#) $Id: Makefile,v 1.3 1995/09/01 21:55:44 thorpej Exp $
+#	$OpenBSD: Makefile,v 1.8 2015/10/26 10:34:18 tedu Exp $
 
 PROG=	rarpd
-SRCS=	rarpd.c
-
-CFLAGS+=-I${.CURDIR}
-
-# Uncomment the following to require a boot file in TFTP_DIR
-# to exist for a rarp reply to be sent.
-# CFLAGS+=-DREQUIRE_TFTPBOOT -DTFTP_DIR=\"/tftpboot\"
-
+SRCS=	rarpd.c arptab.c
 MAN=	rarpd.8
 
 .include <bsd.prog.mk>

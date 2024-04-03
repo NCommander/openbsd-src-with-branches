@@ -1,3 +1,4 @@
+/*	$OpenBSD: ip.h,v 1.19 2020/01/26 09:39:36 djm Exp $	*/
 /*	$NetBSD: ip.h,v 1.9 1995/05/15 01:22:44 cgd Exp $	*/
 
 /*
@@ -12,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -35,6 +32,9 @@
  *	@(#)ip.h	8.1 (Berkeley) 6/10/93
  */
 
+#ifndef _NETINET_IP_H_
+#define _NETINET_IP_H_
+
 /*
  * Definitions for internet protocol version 4.
  * Per RFC 791, September 1981.
@@ -43,24 +43,21 @@
 
 /*
  * Structure of an internet header, naked of options.
- *
- * We declare ip_len and ip_off to be short, rather than u_short
- * pragmatically since otherwise unsigned comparisons can result
- * against negative integers quite easily, and fail in subtle ways.
  */
 struct ip {
-#if BYTE_ORDER == LITTLE_ENDIAN
-	u_int8_t  ip_hl:4,		/* header length */
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	u_int     ip_hl:4,		/* header length */
 		  ip_v:4;		/* version */
 #endif
-#if BYTE_ORDER == BIG_ENDIAN
-	u_int8_t  ip_v:4,		/* version */
+#if _BYTE_ORDER == _BIG_ENDIAN
+	u_int     ip_v:4,		/* version */
 		  ip_hl:4;		/* header length */
 #endif
 	u_int8_t  ip_tos;		/* type of service */
-	int16_t	  ip_len;		/* total length */
+	u_int16_t ip_len;		/* total length */
 	u_int16_t ip_id;		/* identification */
-	int16_t	  ip_off;		/* fragment offset field */
+	u_int16_t ip_off;		/* fragment offset field */
+#define	IP_RF 0x8000			/* reserved fragment flag */
 #define	IP_DF 0x4000			/* dont fragment flag */
 #define	IP_MF 0x2000			/* more fragments flag */
 #define	IP_OFFMASK 0x1fff		/* mask for fragmenting bits */
@@ -79,6 +76,11 @@ struct ip {
 #define	IPTOS_THROUGHPUT	0x08
 #define	IPTOS_RELIABILITY	0x04
 /*	IPTOS_LOWCOST		0x02 XXX */
+#if 1
+/* ECN RFC3168 obsoletes RFC2481, and these will be deprecated soon. */
+#define	IPTOS_CE		0x01	/* congestion experienced */
+#define	IPTOS_ECT		0x02	/* ECN-capable transport */
+#endif
 
 /*
  * Definitions for IP precedence (also in ip_tos) (hopefully unused)
@@ -91,6 +93,44 @@ struct ip {
 #define	IPTOS_PREC_IMMEDIATE		0x40
 #define	IPTOS_PREC_PRIORITY		0x20
 #define	IPTOS_PREC_ROUTINE		0x00
+
+/*
+ * Definitions for DiffServ Codepoints as per RFCs 2474, 3246, 4594 & 8622.
+ * These are the 6 most significant bits as they appear on the wire, so the
+ * two least significant bits must be zero.
+ */
+#define	IPTOS_DSCP_CS0		0x00
+#define	IPTOS_DSCP_LE		0x04
+#define	IPTOS_DSCP_CS1		0x20
+#define	IPTOS_DSCP_AF11		0x28
+#define	IPTOS_DSCP_AF12		0x30
+#define	IPTOS_DSCP_AF13		0x38
+#define	IPTOS_DSCP_CS2		0x40
+#define	IPTOS_DSCP_AF21		0x48
+#define	IPTOS_DSCP_AF22		0x50
+#define	IPTOS_DSCP_AF23		0x58
+#define	IPTOS_DSCP_CS3		0x60
+#define	IPTOS_DSCP_AF31		0x68
+#define	IPTOS_DSCP_AF32		0x70
+#define	IPTOS_DSCP_AF33		0x78
+#define	IPTOS_DSCP_CS4		0x80
+#define	IPTOS_DSCP_AF41		0x88
+#define	IPTOS_DSCP_AF42		0x90
+#define	IPTOS_DSCP_AF43		0x98
+#define	IPTOS_DSCP_CS5		0xa0
+#define	IPTOS_DSCP_EF		0xb8
+#define	IPTOS_DSCP_CS6		0xc0
+#define	IPTOS_DSCP_CS7		0xe0
+
+/*
+ * ECN (Explicit Congestion Notification) codepoints in RFC3168
+ * mapped to the lower 2 bits of the TOS field.
+ */
+#define	IPTOS_ECN_NOTECT	0x00	/* not-ECT */
+#define	IPTOS_ECN_ECT1		0x01	/* ECN-capable transport (1) */
+#define	IPTOS_ECN_ECT0		0x02	/* ECN-capable transport (0) */
+#define	IPTOS_ECN_CE		0x03	/* congestion experienced */
+#define	IPTOS_ECN_MASK		0x03	/* ECN field mask */
 
 /*
  * Definitions for options.
@@ -113,6 +153,7 @@ struct ip {
 #define	IPOPT_LSRR		131		/* loose source route */
 #define	IPOPT_SATID		136		/* satnet id */
 #define	IPOPT_SSRR		137		/* strict source route */
+#define	IPOPT_RA		148		/* router alert */
 
 /*
  * Offsets to fields in options other than EOL and NOP.
@@ -129,19 +170,19 @@ struct	ip_timestamp {
 	u_int8_t ipt_code;		/* IPOPT_TS */
 	u_int8_t ipt_len;		/* size of structure (variable) */
 	u_int8_t ipt_ptr;		/* index of current entry */
-#if BYTE_ORDER == LITTLE_ENDIAN
-	u_int8_t ipt_flg:4,		/* flags, see below */
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+	u_int    ipt_flg:4,		/* flags, see below */
 		 ipt_oflw:4;		/* overflow counter */
 #endif
-#if BYTE_ORDER == BIG_ENDIAN
-	u_int8_t ipt_oflw:4,		/* overflow counter */
+#if _BYTE_ORDER == _BIG_ENDIAN
+	u_int    ipt_oflw:4,		/* overflow counter */
 		 ipt_flg:4;		/* flags, see below */
 #endif
 	union ipt_timestamp {
-		 n_time	ipt_time[1];
+		 u_int32_t ipt_time[1];
 		 struct	ipt_ta {
 			struct in_addr ipt_addr;
-			n_time ipt_time;
+			u_int32_t ipt_time;
 		 } ipt_ta[1];
 	} ipt_timestamp;
 };
@@ -169,3 +210,24 @@ struct	ip_timestamp {
 #define	IPTTLDEC	1		/* subtracted when forwarding */
 
 #define	IP_MSS		576		/* default maximum segment size */
+
+#ifdef _KERNEL
+
+/* Maximum length for IP protocol queues */
+#define IPQ_MAXLEN	2048
+
+/*
+ * This is the real IPv4 pseudo header, used for computing the TCP and UDP
+ * checksums. For the Internet checksum, struct ipovly can be used instead.
+ * For stronger checksums, the real thing must be used.
+ */
+struct ippseudo {
+	struct    in_addr ippseudo_src;	/* source internet address */
+	struct    in_addr ippseudo_dst;	/* destination internet address */
+	u_int8_t  ippseudo_pad;		/* pad, must be zero */
+	u_int8_t  ippseudo_p;		/* protocol */
+	u_int16_t ippseudo_len;		/* protocol length */
+};
+#endif /* _KERNEL */
+
+#endif /* _NETINET_IP_H_ */

@@ -1,3 +1,4 @@
+/*	$OpenBSD: sgl_float.h,v 1.12 2013/11/26 20:33:12 deraadt Exp $	*/
 /*
   (c) Copyright 1986 HEWLETT-PACKARD COMPANY
   To anyone who acknowledges that this file is provided "AS IS"
@@ -11,16 +12,15 @@
   Hewlett-Packard Company makes no representations about the
   suitability of this software for any purpose.
 */
-/*
- * @(#)sgl_float.h: $Revision: 2.8.88.1 $ $Date: 93/12/07 15:07:17 $
- * $Locker:  $
- * 
- */
+/* @(#)sgl_float.h: Revision: 2.8.88.1 Date: 93/12/07 15:07:17 */
+
+#include <sys/cdefs.h>
+
 /******************************
  * Single precision functions *
  ******************************/
 
-/* 32-bit word grabing functions */
+/* 32-bit word grabbing functions */
 #define Sgl_firstword(value) Sall(value)
 #define Sgl_secondword(value) dummy_location
 #define Sgl_thirdword(value) dummy_location
@@ -54,16 +54,16 @@
     Sall(srcdst) <<= varamount
 #define Sgl_rightshift_exponentmantissa(srcdst, varamount) \
     Sall(srcdst) = \
-	(Sexponentmantissa(srcdst) >> varamount) | (Sall(srcdst) & (1<<31))
+	(Sexponentmantissa(srcdst) >> (varamount)) | (Sall(srcdst) & (1<<31))
 
 #define Sgl_leftshiftby1_withextent(left,right,result) \
     Shiftdouble(Sall(left),Extall(right),31,Sall(result))
-    
+
 #define Sgl_rightshiftby1_withextent(left,right,dst)		\
     Shiftdouble(Sall(left),Extall(right),1,Extall(right))
 #define Sgl_arithrightshiftby1(srcdst)	\
     Sall(srcdst) = (int)Sall(srcdst) >> 1
-    
+
 /* Sign extend the sign bit with an integer destination */
 #define Sgl_signextendedsign(value) Ssignedsign(value)
 
@@ -101,9 +101,9 @@
 #define Sgl_iszero_mantissa(sgl_value) (Smantissa(sgl_value)==0)
 #define Sgl_iszero_exponentmantissa(sgl_value) \
     (Sexponentmantissa(sgl_value)==0)
-#define Sgl_isinfinity_exponent(sgl_value) 		\
+#define Sgl_isinfinity_exponent(sgl_value)		\
     (Sgl_exponent(sgl_value)==SGL_INFINITY_EXPONENT)
-#define Sgl_isnotinfinity_exponent(sgl_value) 		\
+#define Sgl_isnotinfinity_exponent(sgl_value)		\
     (Sgl_exponent(sgl_value)!=SGL_INFINITY_EXPONENT)
 #define Sgl_isinfinity(sgl_value)			\
     (Sgl_exponent(sgl_value)==SGL_INFINITY_EXPONENT &&	\
@@ -139,11 +139,11 @@
     Sall(sgl_value) >>= 4
 #define Sgl_rightshiftby8(sgl_value) \
     Sall(sgl_value) >>= 8
-    
+
 #define Sgl_ismagnitudeless(signlessleft,signlessright)			\
 /*  unsigned int signlessleft, signlessright; */			\
-      (signlessleft < signlessright)  
-    
+      (signlessleft < signlessright)
+
 
 #define Sgl_copytoint_exponentmantissa(source,dest)     \
     dest = Sexponentmantissa(source)
@@ -183,7 +183,7 @@
 #define Sgl_setzero_mantissa(sgl_value) Sall(sgl_value) &= 0xff800000
 #define Sgl_setzero_exponentmantissa(sgl_value)  Sall(sgl_value) &= 0x80000000
 #define Sgl_setzero(sgl_value) Sall(sgl_value) = 0
-#define Sgl_setnegativezero(sgl_value) Sall(sgl_value) = 1 << 31
+#define Sgl_setnegativezero(sgl_value) Sall(sgl_value) = 1U << 31
 
 /* Use following macro for both overflow & underflow conditions */
 #define ovfl -
@@ -191,23 +191,23 @@
 #define Sgl_setwrapped_exponent(sgl_value,exponent,op) \
     Deposit_sexponent(sgl_value,(exponent op SGL_WRAP))
 
-#define Sgl_setlargestpositive(sgl_value) 				\
+#define Sgl_setlargestpositive(sgl_value)				\
     Sall(sgl_value) = ((SGL_EMAX+SGL_BIAS) << (32-(1+SGL_EXP_LENGTH)))	\
-                      | ((1<<(32-(1+SGL_EXP_LENGTH))) - 1 )
+			| ((1<<(32-(1+SGL_EXP_LENGTH))) - 1)
 #define Sgl_setlargestnegative(sgl_value)				\
     Sall(sgl_value) = ((SGL_EMAX+SGL_BIAS) << (32-(1+SGL_EXP_LENGTH)))	\
-                      | ((1<<(32-(1+SGL_EXP_LENGTH))) - 1 ) | (1<<31)
+			| ((1<<(32-(1+SGL_EXP_LENGTH))) - 1 ) | (1<<31)
 
 #define Sgl_setnegativeinfinity(sgl_value)	\
-    Sall(sgl_value) = 				\
+    Sall(sgl_value) =				\
     ((1<<SGL_EXP_LENGTH) | SGL_INFINITY_EXPONENT) << (32-(1+SGL_EXP_LENGTH))
-#define Sgl_setlargest(sgl_value,sign) 					\
-    Sall(sgl_value) = sign << 31 |					\
-        (((SGL_EMAX+SGL_BIAS) << (32-(1+SGL_EXP_LENGTH)))		\
+#define Sgl_setlargest(sgl_value,sign)					\
+    Sall(sgl_value) = ((sign) << 31) |					\
+	(((SGL_EMAX+SGL_BIAS) << (32-(1+SGL_EXP_LENGTH)))		\
 	  | ((1 << (32-(1+SGL_EXP_LENGTH))) - 1 ))
 #define Sgl_setlargest_exponentmantissa(sgl_value)			\
-    Sall(sgl_value) = Sall(sgl_value) & (1<<31) |			\
-        (((SGL_EMAX+SGL_BIAS) << (32-(1+SGL_EXP_LENGTH)))		\
+    Sall(sgl_value) = (Sall(sgl_value) & (1<<31)) |			\
+	(((SGL_EMAX+SGL_BIAS) << (32-(1+SGL_EXP_LENGTH)))		\
 	  | ((1 << (32-(1+SGL_EXP_LENGTH))) - 1 ))
 
 /* The high bit is always zero so arithmetic or logical shifts will work. */
@@ -215,7 +215,7 @@
     /* sgl_floating_point srcdst; int shift; extension extent */	\
     if (shift < 32) {							\
 	Extall(extent) = Sall(srcdst) << (32-(shift));			\
-    	Sall(srcdst) >>= shift;						\
+	Sall(srcdst) >>= shift;						\
     }									\
     else {								\
 	Extall(extent) = Sall(srcdst);					\
@@ -249,10 +249,10 @@
 /* Need to Initialize */
 #define Sgl_makequietnan(dest)						\
     Sall(dest) = ((SGL_EMAX+SGL_BIAS)+1)<< (32-(1+SGL_EXP_LENGTH))	\
-                 | (1<<(32-(1+SGL_EXP_LENGTH+2)))
+		| (1<<(32-(1+SGL_EXP_LENGTH+2)))
 #define Sgl_makesignalingnan(dest)					\
     Sall(dest) = ((SGL_EMAX+SGL_BIAS)+1)<< (32-(1+SGL_EXP_LENGTH))	\
-                 | (1<<(32-(1+SGL_EXP_LENGTH+1)))
+		| (1<<(32-(1+SGL_EXP_LENGTH+1)))
 
 #define Sgl_normalize(sgl_opnd,exponent)			\
 	while(Sgl_iszero_hiddenhigh7mantissa(sgl_opnd)) {	\
@@ -297,9 +297,9 @@
 #define Sgl_denormalize(opnd,exponent,guard,sticky,inexact)		\
 	Sgl_clear_signexponent_set_hidden(opnd);			\
 	if (exponent >= (1 - SGL_P)) {					\
-		guard = (Sall(opnd) >> -exponent) & 1;			\
+		guard = (Sall(opnd) >> (-(exponent))) & 1;		\
 		if (exponent < 0) sticky |= Sall(opnd) << (32+exponent); \
-		inexact = guard | sticky;				\
+		inexact = (guard) | (sticky);				\
 		Sall(opnd) >>= (1-exponent);				\
 	}								\
 	else {								\
@@ -308,3 +308,12 @@
 		inexact = sticky;					\
 		Sgl_setzero(opnd);					\
 	}
+
+int sgl_fadd(sgl_floating_point *, sgl_floating_point *, sgl_floating_point *, unsigned int *);
+int sgl_fcmp(sgl_floating_point *, sgl_floating_point *, unsigned int, unsigned int *);
+int sgl_fdiv(sgl_floating_point *, sgl_floating_point *, sgl_floating_point *, unsigned int *);
+int sgl_fmpy(sgl_floating_point *, sgl_floating_point *, sgl_floating_point *, unsigned int *);
+int sgl_frem(sgl_floating_point *, sgl_floating_point *, sgl_floating_point *, unsigned int *);
+int sgl_fsqrt(sgl_floating_point *, sgl_floating_point *, sgl_floating_point *, unsigned int *);
+int sgl_fsub(sgl_floating_point *, sgl_floating_point *, sgl_floating_point *, unsigned int *);
+int sgl_frnd(sgl_floating_point *, sgl_floating_point *, sgl_floating_point *, unsigned int *);

@@ -1,0 +1,113 @@
+#	$OpenBSD: Makefile.bsd-wrapper,v 1.89 2019/12/21 21:40:00 espie Exp $
+
+.include <bsd.own.mk>
+
+CFLAGS+=	-std=gnu89
+CFLAGS+=	${PIE_DEFAULT}
+XCFLAGS=	CC="${CC}" CFLAGS="${CFLAGS} ${COPTS}" LDFLAGS="${LDSTATIC}"
+# This allows moving the whole binutils installation around for 
+# testing purposes
+PREFIX=/usr
+.if ${PREFIX} != "/usr"
+MANDIR=${PREFIX}/share/man/man
+.endif
+
+SUBDIRS=	opcodes bfd gdb
+CONF_SUBDIRS=	${SUBDIRS}
+INST_SUBDIRS=	gdb
+MAN=		gdb/gdb.1
+
+# Used by the GNU Makefile
+ALL_MODULES=${SUBDIRS:S/^/all-/g}
+CONFIGURE_MODULES=${CONF_SUBDIRS:S/^/configure-/g}
+CONFIGURE_HOST_MODULES=${CONF_SUBDIRS:S/^/configure-/g}
+ALL_HOST_MODULES=${SUBDIRS:S/^/all-/g}
+INSTALL_MODULES=${INST_SUBDIRS:S/^/install-/g}
+INFO_HOST_MODULES=${SUBDIRS:S/^/info-/g}
+INSTALL_INFO_HOST_MODULES=${INST_SUBDIRS:S/^/install-info-/g}
+
+# cross-compilation
+.if defined(TARGET_ARCH)
+CONFIGTARGET=--target=${TARGET_ARCH}-unknown-openbsd${OSREV}
+.else
+CONFIGTARGET=
+.endif
+
+all:	config.status
+	SUBDIRS='${SUBDIRS}' \
+	  CONFIGURE_HOST_MODULES='${CONFIGURE_HOST_MODULES}' \
+	  ${MAKE} ${XCFLAGS} \
+	    scriptdir=${PREFIX}/libdata \
+	    tooldir=${PREFIX} \
+	    MAKEINFO='makeinfo --no-split' \
+	    MAKEINFOFLAGS='' \
+	    BSDSRCDIR=${BSDSRCDIR} \
+	    ALL_MODULES="${ALL_MODULES}" \
+	    ALL_HOST_MODULES='${ALL_HOST_MODULES}' \
+	    INFO_HOST_MODULES='${INFO_HOST_MODULES}' all info
+
+.include <bsd.own.mk>
+
+.ifdef GLOBAL_AUTOCONF_CACHE
+CF=	--cache-file=${GLOBAL_AUTOCONF_CACHE}
+.else
+CF=
+.endif
+
+do-config: .USE
+	PATH="/bin:/usr/bin:/sbin:/usr/sbin" \
+	MAKEINFO='makeinfo --no-split' \
+	${XCFLAGS} \
+	sh ${.CURDIR}/configure --prefix=${PREFIX} \
+	    --infodir='$${prefix}/share/info' \
+	    --disable-nls --disable-gdbtk --disable-install-libbfd ${CF} \
+	    ${CONFIGTARGET}
+	cd ${.OBJDIR} && \
+	    sed -e 's,SUBDIRS *=,SUBDIRS ?=,' <Makefile >Makefile.tmp && \
+	    mv -f Makefile.tmp Makefile
+	cd ${.OBJDIR} && \
+	    ${XCFLAGS} \
+	    ${MAKE} ${CONFIGURE_MODULES}
+
+config: do-config
+.ifndef GLOBAL_AUTOCONF_CACHE
+	-rm -f config.cache
+.endif
+
+config.status: do-config
+
+# Need to pass SUBDIRS because of install-info
+install: maninstall
+	SUBDIRS='${INST_SUBDIRS}' ${MAKE} DESTDIR='${DESTDIR}' \
+	    INSTALL_MAN= \
+	    scriptdir=${PREFIX}/libdata \
+	    tooldir=${PREFIX} \
+	    BSDSRCDIR=${BSDSRCDIR} \
+	    INSTALL_MODULES='${INSTALL_MODULES}' \
+	    INSTALL_PROGRAM='${INSTALL} -c ${INSTALL_STRIP} -o ${BINOWN} -g ${BINGRP} -m ${BINMODE}' \
+	    INSTALL_DATA='${INSTALL} -c -o ${DOCOWN} -g ${DOCGRP} -m ${NONBINMODE}' \
+	    INSTALL_INFO_HOST_MODULES='${INSTALL_INFO_HOST_MODULES}' \
+	      install install-info
+
+clean cleandir:
+	-@if [ -e Makefile ]; then ${MAKE} distclean; fi
+
+c++filt.1: binutils/cxxfilt.man
+	sed -e 's,@PROGRAM@,c++filt,' <${.CURDIR}/binutils/cxxfilt.man >$@
+
+tags:
+	# Nothing here so far...
+
+BEFOREMAN=config.status
+
+.PHONY: config
+
+.include <bsd.obj.mk>
+.include <bsd.subdir.mk>
+
+.ifdef NOMAN
+maninstall:
+	@echo NOMAN is set
+.else
+.include <bsd.man.mk>
+.endif

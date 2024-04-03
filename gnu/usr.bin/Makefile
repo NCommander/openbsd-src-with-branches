@@ -1,18 +1,39 @@
-#	$NetBSD: Makefile,v 1.24 1995/09/27 12:46:07 cgd Exp $
+#	$OpenBSD: Makefile,v 1.63 2021/05/03 03:45:40 jsg Exp $
+#	$NetBSD: Makefile,v 1.35 1996/04/03 21:20:52 chuck Exp $
 
-SUBDIR+=	bc cpio dc diff diff3 gawk grep groff
-SUBDIR+=	gzip rcs sdiff send-pr sort tar
+.include <bsd.own.mk>
 
-# some ports don't use the tool chain in /usr/src
-.if (${MACHINE_ARCH} != "alpha") && (${MACHINE_ARCH} != "mips")
-SUBDIR+=	gas gcc2 gdb ld
+.if make(obj)
+SUBDIR+=	cc clang gcc
+.else
+.  if ${BUILD_GCC3:L} == "yes"
+SUBDIR+=	gcc
+.  endif
+.  if ${BUILD_GCC4:L} == "yes"
+SUBDIR+=	cc
+.  endif
+.  if ${BUILD_CLANG:L} == "yes"
+SUBDIR+=	clang
+.  endif
 .endif
 
-# XXX alpha still needs the /usr/bin/cpp script.
-.if (${MACHINE_ARCH} == "alpha")
-afterinstall:
-	install -c -o $(BINOWN) -g $(BINGRP) -m $(BINMODE) \
-	    $(.CURDIR)/gcc2/cpp/usr.bin.cpp.sh $(DESTDIR)/usr/bin/cpp
+SUBDIR+=	cvs
+# binutils-2.17 needs to build gdb in binutils at the moment
+.if make(obj)
+SUBDIR+=	binutils
+.elif ${MACHINE_CPU} != "aarch64" && ${MACHINE_CPU} != "powerpc64" && \
+      ${MACHINE_CPU} != "riscv64"
+SUBDIR+=	binutils
 .endif
+SUBDIR+=	binutils-2.17
+
+# Do these last; texinfo builds the info 'dir' file, perl must be after binutils
+SUBDIR+=	perl texinfo
+
+maninstall:
+	${INSTALL} ${INSTALL_COPY} -o ${MANOWN} -g ${MANGRP} -m ${MANMODE} \
+		gcc/protoize.1 ${DESTDIR}${MANDIR}1/protoize.1
+	@rm -f ${DESTDIR}${MANDIR}1/unprotoize.1
+	ln ${DESTDIR}${MANDIR}1/protoize.1 ${DESTDIR}${MANDIR}1/unprotoize.1
 
 .include <bsd.subdir.mk>

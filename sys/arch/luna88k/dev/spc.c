@@ -1,4 +1,4 @@
-/* $OpenBSD$ */
+/* $OpenBSD: spc.c,v 1.12 2022/04/06 18:59:26 naddy Exp $ */
 /* $NetBSD: spc.c,v 1.4 2003/07/05 19:00:17 tsutsui Exp $ */
 
 /*-
@@ -16,13 +16,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the NetBSD
- *	Foundation, Inc. and its contributors.
- * 4. Neither the name of The NetBSD Foundation nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
@@ -40,6 +33,7 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/device.h>
+#include <sys/buf.h>
 
 #include <machine/bus.h>
 #include <machine/cpu.h>
@@ -57,7 +51,7 @@
 int  spc_mainbus_match(struct device *, void *, void *);
 void spc_mainbus_attach(struct device *, struct device *, void *);
 
-struct cfattach spc_ca = {
+const struct cfattach spc_ca = {
 	sizeof(struct spc_softc), spc_mainbus_match, spc_mainbus_attach
 };
 
@@ -65,17 +59,21 @@ struct cfdriver spc_cd = {
 	NULL, "spc", DV_DULL
 };
 
-struct scsi_adapter spc_switch = {
-	spc_scsi_cmd,
-        spc_minphys,		/* no max at this level; handled by DMA code */
-	NULL,
-	NULL,
+const struct scsi_adapter spc_switch = {
+	spc_scsi_cmd, NULL, NULL, NULL, NULL
+};
+
+/* bus space tag for spc */
+struct luna88k_bus_space_tag spc_bst = {
+	2,	/* when reading/writing 1 byte, the stride is 4. */
+	0,	/* not used */
+	0,	/* not used */
+	0,	/* not used */
+	0,	/* no offset */
 };
 
 int
-spc_mainbus_match(parent, cf, aux)
-	struct device *parent;
-	void *cf, *aux;
+spc_mainbus_match(struct device *parent, void *cf, void *aux)
 {
 	struct mainbus_attach_args *ma = aux;
 
@@ -90,22 +88,21 @@ spc_mainbus_match(parent, cf, aux)
 }
 
 void
-spc_mainbus_attach(parent, self, aux)
-	struct device *parent, *self;
-	void *aux;
+spc_mainbus_attach(struct device *parent, struct device *self, void *aux)
 {
 	struct spc_softc *sc = (void *)self;
 	struct mainbus_attach_args *ma = aux;
 
 	printf ("\n");
 
-	sc->sc_iot = LUNA88K_BUS_SPACE_MEM;
+	sc->sc_iot = &spc_bst;
 	sc->sc_ioh = ma->ma_addr;
 	sc->sc_initiator = 7;
 	sc->sc_dma_start = NULL;
 	sc->sc_dma_done = NULL;
 
-	isrlink_autovec(spc_intr, (void *)sc, ma->ma_ilvl, ISRPRI_BIO);
+	isrlink_autovec(spc_intr, (void *)sc, ma->ma_ilvl, ISRPRI_BIO,
+	    self->dv_xname);
 
 	spc_attach(sc, &spc_switch);
 }

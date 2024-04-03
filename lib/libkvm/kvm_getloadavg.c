@@ -1,3 +1,6 @@
+/*	$OpenBSD: kvm_getloadavg.c,v 1.9 2009/10/27 23:59:28 deraadt Exp $ */
+/*	$NetBSD: kvm_getloadavg.c,v 1.2 1996/03/18 22:33:31 thorpej Exp $	*/
+
 /*-
  * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,21 +30,17 @@
  * SUCH DAMAGE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)kvm_getloadavg.c	8.1 (Berkeley) 6/4/93";
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/param.h>
+#include <sys/signal.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/proc.h>
 #include <sys/sysctl.h>
-#include <vm/vm_param.h>
 
 #include <db.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <nlist.h>
+#include <stdlib.h>
 #include <kvm.h>
 
 #include "kvm_private.h"
@@ -58,6 +53,8 @@ static struct nlist nl[] = {
 	{ "" },
 };
 
+#define MINIMUM(a, b)	(((a) < (b)) ? (a) : (b))
+
 /*
  * kvm_getloadavg() -- Get system load averages, from live or dead kernels.
  *
@@ -65,10 +62,7 @@ static struct nlist nl[] = {
  * Return number of samples retrieved, or -1 on error.
  */
 int
-kvm_getloadavg(kd, loadavg, nelem)
-	kvm_t *kd;
-	double loadavg[];
-	int nelem;
+kvm_getloadavg(kvm_t *kd, double loadavg[], int nelem)
 {
 	struct loadavg loadinfo;
 	struct nlist *p;
@@ -78,14 +72,13 @@ kvm_getloadavg(kd, loadavg, nelem)
 		return (getloadavg(loadavg, nelem));
 
 	if (kvm_nlist(kd, nl) != 0) {
-		for (p = nl; p->n_type != 0; ++p);
+		for (p = nl; p->n_type != 0; ++p)
+			;
 		_kvm_err(kd, kd->program,
 		    "%s: no such symbol", p->n_name);
 		return (-1);
 	}
 
-#define KREAD(kd, addr, obj) \
-	(kvm_read(kd, addr, (char *)(obj), sizeof(*obj)) != sizeof(*obj))
 	if (KREAD(kd, nl[X_AVERUNNABLE].n_value, &loadinfo)) {
 		_kvm_err(kd, kd->program, "can't read averunnable");
 		return (-1);
@@ -98,7 +91,7 @@ kvm_getloadavg(kd, loadavg, nelem)
 	if (!KREAD(kd, nl[X_FSCALE].n_value, &fscale))
 		loadinfo.fscale = fscale;
 
-	nelem = MIN(nelem, sizeof(loadinfo.ldavg) / sizeof(fixpt_t));
+	nelem = MINIMUM(nelem, sizeof(loadinfo.ldavg) / sizeof(fixpt_t));
 	for (i = 0; i < nelem; i++)
 		loadavg[i] = (double) loadinfo.ldavg[i] / loadinfo.fscale;
 	return (nelem);

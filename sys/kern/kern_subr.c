@@ -1,4 +1,5 @@
-/*	$NetBSD: kern_subr.c,v 1.14 1995/05/31 20:41:44 cgd Exp $	*/
+/*	$OpenBSD: kern_subr.c,v 1.51 2022/08/14 01:58:27 jsg Exp $	*/
+/*	$NetBSD: kern_subr.c,v 1.15 1996/04/09 17:21:56 ragge Exp $	*/
 
 /*
  * Copyright (c) 1982, 1986, 1991, 1993
@@ -17,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -43,29 +40,93 @@
 #include <sys/param.h>
 #include <sys/systm.h>
 #include <sys/proc.h>
+#include <sys/sched.h>
 #include <sys/malloc.h>
 #include <sys/queue.h>
+#include <uvm/uvm_extern.h>
+
+#ifdef PMAP_CHECK_COPYIN
+
+static inline int check_copyin(struct proc *, const void *, size_t);
+extern int _copyinstr(const void *, void *, size_t, size_t *);
+extern int _copyin(const void *uaddr, void *kaddr, size_t len);
+
+/*
+ * If range overlaps an check_copyin region, return EFAULT
+ */
+static inline int
+check_copyin(struct proc *p, const void *vstart, size_t len)
+{
+	struct vm_map *map = &p->p_vmspace->vm_map;
+	const vaddr_t start = (vaddr_t)vstart;
+	const vaddr_t end = start + len;
+	int i, max;
+
+	/* XXX if the array was sorted, we could shortcut */
+	max = map->check_copyin_count;
+	membar_consumer();
+	for (i = 0; i < max; i++) {
+		vaddr_t s = map->check_copyin[i].start;
+		vaddr_t e = map->check_copyin[i].end;
+		if ((start >= s && start < e) || (end > s && end < e))
+			return EFAULT;
+	}
+	return (0);
+}
 
 int
-uiomove(cp, n, uio)
-	register caddr_t cp;
-	register int n;
-	register struct uio *uio;
+copyinstr(const void *uaddr, void *kaddr, size_t len, size_t *done)
 {
-	register struct iovec *iov;
-	u_int cnt;
+	size_t alen;
+	int error;
+
+	/*
+	 * Must do the copyin checks after figuring out the string length,
+	 * the buffer size length may cross into another ELF segment
+	 */
+	error = _copyinstr(uaddr, kaddr, len, &alen);
+	if (PMAP_CHECK_COPYIN && error == 0)
+		error = check_copyin(curproc, uaddr, alen);
+	if (done)
+		*done = alen;
+	return (error);
+}
+
+int
+copyin(const void *uaddr, void *kaddr, size_t len)
+{
+	int error = 0;
+
+	if (PMAP_CHECK_COPYIN)
+		error = check_copyin(curproc, uaddr, len);
+	if (error == 0)
+		error = _copyin(uaddr, kaddr, len);
+	return (error);
+}
+#endif /* PMAP_CHECK_COPYIN */
+
+int
+uiomove(void *cp, size_t n, struct uio *uio)
+{
+	struct iovec *iov;
+	size_t cnt;
 	int error = 0;
 
 #ifdef DIAGNOSTIC
 	if (uio->uio_rw != UIO_READ && uio->uio_rw != UIO_WRITE)
 		panic("uiomove: mode");
 	if (uio->uio_segflg == UIO_USERSPACE && uio->uio_procp != curproc)
-		panic("uiomove proc");
+		panic("uiomove: proc");
 #endif
-	while (n > 0 && uio->uio_resid) {
+
+	if (n > uio->uio_resid)
+		n = uio->uio_resid;
+
+	while (n > 0) {
 		iov = uio->uio_iov;
 		cnt = iov->iov_len;
 		if (cnt == 0) {
+			KASSERT(uio->uio_iovcnt > 0);
 			uio->uio_iov++;
 			uio->uio_iovcnt--;
 			continue;
@@ -75,6 +136,7 @@ uiomove(cp, n, uio)
 		switch (uio->uio_segflg) {
 
 		case UIO_USERSPACE:
+			sched_pause(preempt);
 			if (uio->uio_rw == UIO_READ)
 				error = copyout(cp, iov->iov_base, cnt);
 			else
@@ -85,16 +147,17 @@ uiomove(cp, n, uio)
 
 		case UIO_SYSSPACE:
 			if (uio->uio_rw == UIO_READ)
-				bcopy((caddr_t)cp, iov->iov_base, cnt);
+				error = kcopy(cp, iov->iov_base, cnt);
 			else
-				bcopy(iov->iov_base, (caddr_t)cp, cnt);
-			break;
+				error = kcopy(iov->iov_base, cp, cnt);
+			if (error)
+				return(error);
 		}
-		iov->iov_base += cnt;
+		iov->iov_base = (caddr_t)iov->iov_base + cnt;
 		iov->iov_len -= cnt;
 		uio->uio_resid -= cnt;
 		uio->uio_offset += cnt;
-		cp += cnt;
+		cp = (caddr_t)cp + cnt;
 		n -= cnt;
 	}
 	return (error);
@@ -104,17 +167,23 @@ uiomove(cp, n, uio)
  * Give next character to user as result of read.
  */
 int
-ureadc(c, uio)
-	register int c;
-	register struct uio *uio;
+ureadc(int c, struct uio *uio)
 {
-	register struct iovec *iov;
+	struct iovec *iov;
 
-	if (uio->uio_resid <= 0)
-		panic("ureadc: non-positive resid");
+	if (uio->uio_resid == 0)
+#ifdef DIAGNOSTIC
+		panic("ureadc: zero resid");
+#else
+		return (EINVAL);
+#endif
 again:
 	if (uio->uio_iovcnt <= 0)
+#ifdef DIAGNOSTIC
 		panic("ureadc: non-positive iovcnt");
+#else
+		return (EINVAL);
+#endif
 	iov = uio->uio_iov;
 	if (iov->iov_len <= 0) {
 		uio->uio_iovcnt--;
@@ -124,153 +193,133 @@ again:
 	switch (uio->uio_segflg) {
 
 	case UIO_USERSPACE:
-		if (subyte(iov->iov_base, c) < 0)
+	{
+		char tmp = c;
+
+		if (copyout(&tmp, iov->iov_base, sizeof(char)) != 0)
 			return (EFAULT);
+	}
 		break;
 
 	case UIO_SYSSPACE:
-		*iov->iov_base = c;
+		*(char *)iov->iov_base = c;
 		break;
 	}
-	iov->iov_base++;
+	iov->iov_base = (caddr_t)iov->iov_base + 1;
 	iov->iov_len--;
 	uio->uio_resid--;
 	uio->uio_offset++;
 	return (0);
 }
 
-#ifdef vax	/* unused except by ct.c, other oddities XXX */
-/*
- * Get next character written in by user from uio.
- */
-int
-uwritec(uio)
-	struct uio *uio;
-{
-	register struct iovec *iov;
-	register int c;
-
-	if (uio->uio_resid <= 0)
-		return (-1);
-again:
-	if (uio->uio_iovcnt <= 0)
-		panic("ureadc: non-positive iovcnt");
-	iov = uio->uio_iov;
-	if (iov->iov_len == 0) {
-		uio->uio_iov++;
-		if (--uio->uio_iovcnt == 0)
-			return (-1);
-		goto again;
-	}
-	switch (uio->uio_segflg) {
-
-	case UIO_USERSPACE:
-		c = fubyte(iov->iov_base);
-		break;
-
-	case UIO_SYSSPACE:
-		c = *(u_char *) iov->iov_base;
-		break;
-	}
-	if (c < 0)
-		return (-1);
-	iov->iov_base++;
-	iov->iov_len--;
-	uio->uio_resid--;
-	uio->uio_offset++;
-	return (c);
-}
-#endif /* vax */
-
 /*
  * General routine to allocate a hash table.
  */
 void *
-hashinit(elements, type, hashmask)
-	int elements, type;
-	u_long *hashmask;
+hashinit(int elements, int type, int flags, u_long *hashmask)
 {
-	long hashsize;
+	u_long hashsize, i;
 	LIST_HEAD(generic, generic) *hashtbl;
-	int i;
 
 	if (elements <= 0)
 		panic("hashinit: bad cnt");
-	for (hashsize = 1; hashsize <= elements; hashsize <<= 1)
-		continue;
-	hashsize >>= 1;
-	hashtbl = malloc((u_long)hashsize * sizeof(*hashtbl), type, M_WAITOK);
+	if ((elements & (elements - 1)) == 0)
+		hashsize = elements;
+	else
+		for (hashsize = 1; hashsize < elements; hashsize <<= 1)
+			continue;
+	hashtbl = mallocarray(hashsize, sizeof(*hashtbl), type, flags);
+	if (hashtbl == NULL)
+		return NULL;
 	for (i = 0; i < hashsize; i++)
 		LIST_INIT(&hashtbl[i]);
 	*hashmask = hashsize - 1;
 	return (hashtbl);
 }
 
+void
+hashfree(void *hash, int elements, int type)
+{
+	u_long hashsize;
+	LIST_HEAD(generic, generic) *hashtbl = hash;
+
+	if (elements <= 0)
+		panic("hashfree: bad cnt");
+	if ((elements & (elements - 1)) == 0)
+		hashsize = elements;
+	else
+		for (hashsize = 1; hashsize < elements; hashsize <<= 1)
+			continue;
+
+	free(hashtbl, type, sizeof(*hashtbl) * hashsize);
+}
+
 /*
- * "Shutdown hook" types, functions, and variables.
+ * "startup hook" types, functions, and variables.
  */
 
-struct shutdownhook_desc {
-	LIST_ENTRY(shutdownhook_desc) sfd_list;
-	void	(*sfd_fn) __P((void *));
-	void	*sfd_arg;
-};
-
-LIST_HEAD(, shutdownhook_desc) shutdownhook_list;
-
-int shutdownhooks_done;
+struct hook_desc_head startuphook_list =
+    TAILQ_HEAD_INITIALIZER(startuphook_list);
 
 void *
-shutdownhook_establish(fn, arg)
-	void (*fn) __P((void *));
-	void *arg;
+hook_establish(struct hook_desc_head *head, int tail, void (*fn)(void *),
+    void *arg)
 {
-	struct shutdownhook_desc *ndp;
+	struct hook_desc *hdp;
 
-	ndp = (struct shutdownhook_desc *)
-	    malloc(sizeof (*ndp), M_DEVBUF, M_NOWAIT);
-	if (ndp == NULL)
-		return NULL;
+	hdp = malloc(sizeof(*hdp), M_DEVBUF, M_NOWAIT);
+	if (hdp == NULL)
+		return (NULL);
 
-	ndp->sfd_fn = fn;
-	ndp->sfd_arg = arg;
-	LIST_INSERT_HEAD(&shutdownhook_list, ndp, sfd_list);
+	hdp->hd_fn = fn;
+	hdp->hd_arg = arg;
+	if (tail)
+		TAILQ_INSERT_TAIL(head, hdp, hd_list);
+	else
+		TAILQ_INSERT_HEAD(head, hdp, hd_list);
 
-	return (ndp);
+	return (hdp);
 }
 
 void
-shutdownhook_disestablish(vhook)
-	void *vhook;
+hook_disestablish(struct hook_desc_head *head, void *vhook)
 {
+	struct hook_desc *hdp;
+
 #ifdef DIAGNOSTIC
-	struct shutdownhook_desc *dp;
-
-	for (dp = shutdownhook_list.lh_first; dp != NULL;
-	    dp = dp->sfd_list.le_next)
-                if (dp == vhook)
+	for (hdp = TAILQ_FIRST(head); hdp != NULL;
+	    hdp = TAILQ_NEXT(hdp, hd_list))
+                if (hdp == vhook)
 			break;
-	if (dp == NULL)
-		panic("shutdownhook_disestablish: hook not established");
+	if (hdp == NULL)
+		return;
 #endif
-
-	LIST_REMOVE((struct shutdownhook_desc *)vhook, sfd_list);
+	hdp = vhook;
+	TAILQ_REMOVE(head, hdp, hd_list);
+	free(hdp, M_DEVBUF, sizeof(*hdp));
 }
 
 /*
- * Run shutdown hooks.  Should be invoked immediately before the
+ * Run hooks.  Startup hooks are invoked right after scheduler_start but
+ * before root is mounted.  Shutdown hooks are invoked immediately before the
  * system is halted or rebooted, i.e. after file systems unmounted,
  * after crash dump done, etc.
  */
 void
-doshutdownhooks()
+dohooks(struct hook_desc_head *head, int flags)
 {
-	struct shutdownhook_desc *dp;
+	struct hook_desc *hdp, *hdp_temp;
 
-	if (shutdownhooks_done)
-		return;
-
-	for (dp = shutdownhook_list.lh_first; dp != NULL; dp =
-	    dp->sfd_list.le_next)
-		(*dp->sfd_fn)(dp->sfd_arg);
+	if ((flags & HOOK_REMOVE) == 0) {
+		TAILQ_FOREACH_SAFE(hdp, head, hd_list, hdp_temp) {
+			(*hdp->hd_fn)(hdp->hd_arg);
+		}
+	} else {
+		while ((hdp = TAILQ_FIRST(head)) != NULL) {
+			TAILQ_REMOVE(head, hdp, hd_list);
+			(*hdp->hd_fn)(hdp->hd_arg);
+			if ((flags & HOOK_FREE) != 0)
+				free(hdp, M_DEVBUF, sizeof(*hdp));
+		}
+	}
 }

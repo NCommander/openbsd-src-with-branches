@@ -1,3 +1,6 @@
+/*	$OpenBSD: lpc.c,v 1.19 2015/01/16 06:40:18 deraadt Exp $	*/
+/*	$NetBSD: lpc.c,v 1.11 2001/11/14 03:01:15 enami Exp $	*/
+
 /*
  * Copyright (c) 1983, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -11,11 +14,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -32,30 +31,26 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1983, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-static char sccsid[] = "@(#)lpc.c	8.1 (Berkeley) 6/6/93";
-#endif /* not lint */
-
-#include <sys/param.h>
-
 #include <dirent.h>
 #include <signal.h>
-#include <setjmp.h>
 #include <syslog.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <err.h>
+#include <errno.h>
+#include <limits.h>
 #include <ctype.h>
 #include <string.h>
+#include <grp.h>
+
 #include "lp.h"
 #include "lpc.h"
 #include "extern.h"
+
+#ifndef LPR_OPER
+#define LPR_OPER	"operator"	/* group name of lpr operators */
+#endif
 
 /*
  * lpc -- line printer control program
@@ -68,29 +63,25 @@ int	fromatty;
 char	cmdline[MAX_CMDLINE];
 int	margc;
 char	*margv[MAX_MARGV];
-int	top;
-uid_t	uid, euid;
 
-jmp_buf	toplevel;
-
-static void		 cmdscanner __P((int));
-static struct cmd	*getcmd __P((char *));
-static void		 intr __P((int));
-static void		 makeargv __P((void));
+static void		 cmdscanner(void);
+static struct cmd	*getcmd(char *);
+static void		 intr(int);
+static void		 makeargv(void);
+static int		 ingroup(char *);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char **argv)
 {
-	register struct cmd *c;
+	struct cmd *c;
 
-	euid = geteuid();
-	uid = getuid();
-	seteuid(uid);
-	name = argv[0];
-	openlog("lpd", 0, LOG_LPR);
+	effective_uid = geteuid();
+	real_uid = getuid();
+	effective_gid = getegid();
+	real_gid = getgid();
+	PRIV_END;	/* be safe */
 
+	openlog("lpc", 0, LOG_LPR);
 	if (--argc > 0) {
 		c = getcmd(*++argv);
 		if (c == (struct cmd *)-1) {
@@ -101,7 +92,7 @@ main(argc, argv)
 			printf("?Invalid command\n");
 			exit(1);
 		}
-		if (c->c_priv && getuid()) {
+		if (c->c_priv && real_uid && ingroup(LPR_OPER) == 0) {
 			printf("?Privileged command\n");
 			exit(1);
 		}
@@ -109,45 +100,53 @@ main(argc, argv)
 		exit(0);
 	}
 	fromatty = isatty(fileno(stdin));
-	top = setjmp(toplevel) == 0;
-	if (top)
-		signal(SIGINT, intr);
-	for (;;) {
-		cmdscanner(top);
-		top = 1;
-	}
+	signal(SIGINT, intr);
+	for (;;)
+		cmdscanner();
 }
 
+volatile sig_atomic_t gotintr;
+
 static void
-intr(signo)
-	int signo;
+intr(int signo)
 {
 	if (!fromatty)
-		exit(0);
-	longjmp(toplevel, 1);
+		_exit(0);
+	gotintr = 1;
 }
 
 /*
  * Command parser.
  */
 static void
-cmdscanner(top)
-	int top;
+cmdscanner(void)
 {
-	register struct cmd *c;
+	struct cmd *c;
 
-	if (!top)
-		putchar('\n');
 	for (;;) {
+		if (gotintr) {
+			putchar('\n');
+			gotintr = 0;
+		}
 		if (fromatty) {
 			printf("lpc> ");
 			fflush(stdout);
 		}
-		if (fgets(cmdline, MAX_CMDLINE, stdin) == 0)
+
+		siginterrupt(SIGINT, 1);
+		if (fgets(cmdline, MAX_CMDLINE, stdin) == NULL) {
+			if (errno == EINTR && gotintr) {
+				siginterrupt(SIGINT, 0);
+				return;
+			}
+			siginterrupt(SIGINT, 0);
 			quit(0, NULL);
-		if (cmdline[0] == 0 || cmdline[0] == '\n')
-			break;
+		}
+		siginterrupt(SIGINT, 0);
+
 		makeargv();
+		if (margc == 0)
+			break;
 		c = getcmd(margv[0]);
 		if (c == (struct cmd *)-1) {
 			printf("?Ambiguous command\n");
@@ -157,27 +156,25 @@ cmdscanner(top)
 			printf("?Invalid command\n");
 			continue;
 		}
-		if (c->c_priv && getuid()) {
+		if (c->c_priv && getuid() && ingroup(LPR_OPER) == 0) {
 			printf("?Privileged command\n");
 			continue;
 		}
 		(*c->c_handler)(margc, margv);
 	}
-	longjmp(toplevel, 0);
 }
 
-struct cmd *
-getcmd(name)
-	register char *name;
+static struct cmd *
+getcmd(char *name)
 {
-	register char *p, *q;
-	register struct cmd *c, *found;
-	register int nmatches, longest;
+	char *p, *q;
+	struct cmd *c, *found;
+	int nmatches, longest;
 
 	longest = 0;
 	nmatches = 0;
 	found = 0;
-	for (c = cmdtab; p = c->c_name; c++) {
+	for (c = cmdtab; (p = c->c_name) != NULL; c++) {
 		for (q = name; *q == *p++; q++)
 			if (*q == 0)		/* exact match? */
 				return(c);
@@ -199,45 +196,34 @@ getcmd(name)
  * Slice a string up into argc/argv.
  */
 static void
-makeargv()
+makeargv(void)
 {
-	register char *cp;
-	register char **argp = margv;
-	register int n = 0;
+	char *cp = cmdline;
+	char **ap = margv;
 
 	margc = 0;
-	for (cp = cmdline; *cp && n < MAX_MARGV; n++) {
-		while (isspace(*cp))
-			cp++;
-		if (*cp == '\0')
-			break;
-		*argp++ = cp;
-		margc += 1;
-		while (*cp != '\0' && !isspace(*cp))
-			cp++;
-		if (*cp == '\0')
-			break;
-		*cp++ = '\0';
+	while (margc < MAX_MARGV - 1 && (*ap = strsep(&cp, " \t\n")) != NULL) {
+		if (**ap != '\0') {
+			ap++;
+			margc++;
+		}
 	}
-	*argp++ = 0;
+	*ap = NULL;
 }
 
-#define HELPINDENT (sizeof ("directory"))
+#define HELPINDENT ((int)sizeof("directory"))
 
 /*
  * Help command.
  */
 void
-help(argc, argv)
-	int argc;
-	char *argv[];
+help(int argc, char **argv)
 {
-	register struct cmd *c;
+	struct cmd *c;
 
 	if (argc == 1) {
-		register int i, j, w;
+		int i, j, w;
 		int columns, width = 0, lines;
-		extern int NCMDS;
 
 		printf("Commands may be abbreviated.  Commands are:\n\n");
 		for (c = cmdtab; c->c_name; c++) {
@@ -270,15 +256,43 @@ help(argc, argv)
 		return;
 	}
 	while (--argc > 0) {
-		register char *arg;
+		char *arg;
+
 		arg = *++argv;
 		c = getcmd(arg);
 		if (c == (struct cmd *)-1)
 			printf("?Ambiguous help command %s\n", arg);
-		else if (c == (struct cmd *)0)
+		else if (c == NULL)
 			printf("?Invalid help command %s\n", arg);
 		else
 			printf("%-*s\t%s\n", HELPINDENT,
 				c->c_name, c->c_help);
 	}
+}
+
+/*
+ * return non-zero if the user is a member of the given group
+ */
+static int
+ingroup(char *grname)
+{
+	static struct group *gptr = NULL;
+	static gid_t groups[NGROUPS_MAX];
+	static int ngroups;
+	gid_t gid;
+	int i;
+
+	if (gptr == NULL) {
+		if ((gptr = getgrnam(grname)) == NULL) {
+			warnx("Warning: unknown group `%s'", grname);
+			return(0);
+		}
+		if ((ngroups = getgroups(NGROUPS_MAX, groups)) < 0)
+			err(1, "getgroups");
+	}
+	gid = gptr->gr_gid;
+	for (i = 0; i < ngroups; i++)
+		if (gid == groups[i])
+			return(1);
+	return(0);
 }

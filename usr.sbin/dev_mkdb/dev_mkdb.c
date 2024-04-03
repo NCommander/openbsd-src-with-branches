@@ -1,3 +1,5 @@
+/*	$OpenBSD: dev_mkdb.c,v 1.19 2022/12/04 23:50:50 cheloha Exp $	*/
+
 /*-
  * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -10,11 +12,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -31,56 +29,51 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char copyright[] =
-"@(#) Copyright (c) 1990, 1993\n\
-	The Regents of the University of California.  All rights reserved.\n";
-#endif /* not lint */
-
-#ifndef lint
-/*static char sccsid[] = "from: @(#)dev_mkdb.c	8.1 (Berkeley) 6/6/93";*/
-static char rcsid[] = "$Id: dev_mkdb.c,v 1.5 1995/01/30 21:12:44 mycroft Exp $";
-#endif /* not lint */
-
-#include <sys/param.h>
 #include <sys/stat.h>
 
 #include <db.h>
-#include <dirent.h>
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <kvm.h>
-#include <nlist.h>
+#include <fts.h>
 #include <paths.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-void	usage __P((void));
+void	usage(void);
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
-	register DIR *dirp;
-	register struct dirent *dp;
-	struct stat sb;
+	FTS *fts;
+	FTSENT *dp;
+	char *paths[] = { ".", NULL };
 	struct {
 		mode_t type;
 		dev_t dev;
 	} bkey;
 	DB *db;
 	DBT data, key;
+	HASHINFO info;
 	int ch;
-	u_char buf[MAXNAMLEN + 1];
-	char dbtmp[MAXPATHLEN + 1], dbname[MAXPATHLEN + 1];
+	char dbtmp[PATH_MAX], dbname[PATH_MAX];
 
-	while ((ch = getopt(argc, argv, "")) != EOF)
-		switch((char)ch) {
-		case '?':
+	(void)snprintf(dbtmp, sizeof(dbtmp), "%sdev.tmp", _PATH_VARRUN);
+	(void)snprintf(dbname, sizeof(dbname), "%sdev.db", _PATH_VARRUN);
+
+	if (unveil(_PATH_DEV, "r") == -1)
+		err(1, "unveil %s", _PATH_DEV);
+	if (unveil(dbtmp, "rwc") == -1)
+		err(1, "unveil %s", dbtmp);
+	if (unveil(dbname, "wc") == -1)
+		err(1, "unveil %s", dbname);
+	if (pledge("stdio rpath wpath cpath flock", NULL) == -1)
+		err(1, "pledge");
+
+	while ((ch = getopt(argc, argv, "")) != -1)
+		switch(ch) {
 		default:
 			usage();
 		}
@@ -93,12 +86,15 @@ main(argc, argv)
 	if (chdir(_PATH_DEV))
 		err(1, "%s", _PATH_DEV);
 
-	dirp = opendir(".");
+	fts = fts_open(paths, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
+	if (!fts)
+		err(1, "fts_open");
 
-	(void)snprintf(dbtmp, sizeof(dbtmp), "%sdev.tmp", _PATH_VARRUN);
-	(void)snprintf(dbname, sizeof(dbtmp), "%sdev.db", _PATH_VARRUN);
+
+	bzero(&info, sizeof(info));
+	info.bsize = 8192;
 	db = dbopen(dbtmp, O_CREAT|O_EXLOCK|O_RDWR|O_TRUNC,
-	    S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH, DB_HASH, NULL);
+	    S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH, DB_HASH, &info);
 	if (db == NULL)
 		err(1, "%s", dbtmp);
 
@@ -111,40 +107,40 @@ main(argc, argv)
 	bzero(&bkey, sizeof(bkey));
 	key.data = &bkey;
 	key.size = sizeof(bkey);
-	data.data = buf;
-	while (dp = readdir(dirp)) {
-		if (lstat(dp->d_name, &sb)) {
-			warn("%s", dp->d_name);
+	while ((dp = fts_read(fts))) {
+		if (dp->fts_info != FTS_DEFAULT)
 			continue;
-		}
 
 		/* Create the key. */
-		if (S_ISCHR(sb.st_mode))
+		if (S_ISCHR(dp->fts_statp->st_mode))
 			bkey.type = S_IFCHR;
-		else if (S_ISBLK(sb.st_mode))
+		else if (S_ISBLK(dp->fts_statp->st_mode))
 			bkey.type = S_IFBLK;
 		else
 			continue;
-		bkey.dev = sb.st_rdev;
+		bkey.dev = dp->fts_statp->st_rdev;
 
 		/*
 		 * Create the data; nul terminate the name so caller doesn't
-		 * have to.
+		 * have to. strlen("./") is 2, which is stripped to remove the
+		 * traversal root name.
 		 */
-		bcopy(dp->d_name, buf, dp->d_namlen);
-		buf[dp->d_namlen] = '\0';
-		data.size = dp->d_namlen + 1;
+		data.data = dp->fts_path + 2;
+		data.size = dp->fts_pathlen - 2 + 1;
 		if ((db->put)(db, &key, &data, 0))
 			err(1, "dbput %s", dbtmp);
 	}
+	fts_close(fts);
+
 	(void)(db->close)(db);
 	if (rename(dbtmp, dbname))
 		err(1, "rename %s to %s", dbtmp, dbname);
-	exit(0);
+
+	return (0);
 }
 
 void
-usage()
+usage(void)
 {
 
 	(void)fprintf(stderr, "usage: dev_mkdb\n");

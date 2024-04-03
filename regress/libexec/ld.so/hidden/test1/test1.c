@@ -1,4 +1,4 @@
-/*      $OpenBSD$       */
+/*      $OpenBSD: test1.c,v 1.2 2007/08/01 12:53:28 kurt Exp $       */
 
 /*
  * Copyright (c) 2007 Kurt Miller <kurt@openbsd.org>
@@ -21,14 +21,16 @@
 #include <stdio.h>
 
 void *hidden_check = NULL;
-__asm(".hidden  hidden_check");
+__asm(".hidden hidden_check");
+
+void *libaa_hidden_val = NULL;
+void *libab_hidden_val = NULL;
 
 int
 main()
 {
 	void *libaa, *libab;
 	void (*hidden_test)();
-	int i;
 
 	libaa = dlopen(LIBAA, RTLD_LAZY);
 	libab = dlopen(LIBAB, RTLD_LAZY);
@@ -49,9 +51,12 @@ main()
 
 	(*hidden_test)();
 
-	printf("test1:\thidden_check = %p\n", hidden_check);
 	if (hidden_check != NULL)
 		errx(1, "hidden_check != NULL in main prog\n");
+
+	if (libaa_hidden_val == NULL || libab_hidden_val == NULL ||
+	    libaa_hidden_val == libab_hidden_val)
+		errx(1, "incorrect hidden_check detected in libs\n");
 
 	dlclose(libaa);
 	dlclose(libab);

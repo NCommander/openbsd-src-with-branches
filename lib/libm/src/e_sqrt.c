@@ -10,11 +10,7 @@
  * ====================================================
  */
 
-#if defined(LIBM_SCCS) && !defined(lint)
-static char rcsid[] = "$NetBSD: e_sqrt.c,v 1.8 1995/05/10 20:46:17 jtc Exp $";
-#endif
-
-/* __ieee754_sqrt(x)
+/* sqrt(x)
  * Return correctly rounded sqrt.
  *           ------------------------------------------
  *	     |  Use the hardware sqrt if you have one |
@@ -42,7 +38,7 @@ static char rcsid[] = "$NetBSD: e_sqrt.c,v 1.8 1995/05/10 20:46:17 jtc Exp $";
  *	If (2) is false, then q   = q ; otherwise q   = q  + 2      .
  *		 	       i+1   i             i+1   i
  *
- *	With some algebric manipulation, it is not difficult to see
+ *	With some algebraic manipulation, it is not difficult to see
  *	that (2) is equivalent to 
  *                             -(i+1)
  *			s  +  2       <= y			(3)
@@ -84,21 +80,15 @@ static char rcsid[] = "$NetBSD: e_sqrt.c,v 1.8 1995/05/10 20:46:17 jtc Exp $";
  *---------------
  */
 
-#include "math.h"
+#include <float.h>
+#include <math.h>
+
 #include "math_private.h"
 
-#ifdef __STDC__
 static	const double	one	= 1.0, tiny=1.0e-300;
-#else
-static	double	one	= 1.0, tiny=1.0e-300;
-#endif
 
-#ifdef __STDC__
-	double __ieee754_sqrt(double x)
-#else
-	double __ieee754_sqrt(x)
-	double x;
-#endif
+double
+sqrt(double x)
 {
 	double z;
 	int32_t sign = (int)0x80000000; 
@@ -193,6 +183,8 @@ static	double	one	= 1.0, tiny=1.0e-300;
 	INSERT_WORDS(z,ix0,ix1);
 	return z;
 }
+DEF_STD(sqrt);
+LDBL_MAYBE_CLONE(sqrt);
 
 /*
 Other methods  (use floating-point arithmetic)
@@ -275,7 +267,7 @@ A.  sqrt(x) by Newton Iteration
 	This formula has one division fewer than the one above; however,
 	it requires more multiplications and additions. Also x must be
 	scaled in advance to avoid spurious overflow in evaluating the
-	expression 3y*y+x. Hence it is not recommended uless division
+	expression 3y*y+x. Hence it is not recommended unless division
 	is slow. If division is very slow, then one should use the 
 	reciproot algorithm given in section B.
 
@@ -450,4 +442,3 @@ B.  sqrt(x) by Reciproot Iteration
     (4)	Special cases (see (4) of Section A).	
  
  */
- 

@@ -1,7 +1,7 @@
 #
 # Override default paths when building in the OpenBSD src tree
 #
-# $OpenBSD: config.over,v 1.12 2003/12/03 03:02:19 millert Exp $
+# $OpenBSD: config.over,v 1.22 2017/02/05 00:33:38 afresh1 Exp $
 #
 
 # We use a different architecture name than the default
@@ -17,34 +17,34 @@ siteprefix='/usr/local'
 siteprefixexp='/usr/local'
 installsitebin='/usr/local/bin'
 
-installarchlib="/usr/libdata/perl5/${archname}/${version}"
-archlib="${installarchlib}:/usr/local/libdata/perl5/${archname}/${version}"
+installarchlib="/usr/libdata/perl5/${archname}"
+archlib="${installarchlib}"
 archlibexp="${archlib}"
 
 test $useshrplib = "true" && ccdlflags="-Wl,-R${installarchlib}/CORE"   
 
 installprivlib="/usr/libdata/perl5"
-privlib="${installprivlib}:/usr/local/libdata/perl5"
+privlib="${installprivlib}"
 privlibexp="${privlib}"
 
-# NOTE: primary dir for sitearch lives in /usr/local
 installsitearch="/usr/local/libdata/perl5/site_perl/${archname}"
-sitearch="${installsitearch}:/usr/libdata/perl5/site_perl/${archname}"
+sitearch="${installsitearch}"
 sitearchexp="${sitearch}"
 
-# NOTE: primary dir for sitelib lives in /usr/local
 installsitelib="/usr/local/libdata/perl5/site_perl"
-sitelib="${installsitelib}:/usr/libdata/perl5/site_perl"
+sitelib="${installsitelib}"
 sitelibexp="${sitelib}"
 
+installstyle="${privlib}"
+
 # We install the man pages ourselves until installman gets smarter
-man1dir=''
-man1direxp=''
-installman1dir=''
+man1dir='/usr/share/man/man1'
+man1direxp='/usr/share/man/man1'
+installman1dir='/usr/share/man/man1'
 man1ext='1'
-man3dir=''
-man3direxp=''
-installman3dir=''
+man3dir='/usr/share/man/man3p'
+man3direxp='/usr/share/man/man3p'
+installman3dir='/usr/share/man/man3p'
 man3ext='3p'
 siteman1dir='/usr/local/man/man1'
 siteman1direxp='/usr/local/man/man1'
@@ -56,6 +56,7 @@ installsiteman3dir='/usr/local/man/man3p'
 # Never hardcode developer info into a distribution
 cf_by='root'
 cf_email='root@localhost'
+cf_time='Thu Jan  1  0:00:00 UTC 1970'
 perladmin='root@localhost'
 mydomain=''
 myhostname=''
@@ -63,3 +64,9 @@ myuname='openbsd'
 
 # force to use ranlib
 ranlib='ranlib'
+
+# Enable the syscall emulator,
+# enabling syscall even if we don't have it
+d_syscall=define
+d_syscallproto=define
+

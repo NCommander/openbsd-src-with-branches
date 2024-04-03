@@ -10,11 +10,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by Christos Zoulas.
- * 4. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -29,10 +24,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static char *rcsid = "$Id: str.c,v 1.2 1995/04/24 13:25:55 cgd Exp $";
-#endif
-
 /*
  * Counted strings
  */
@@ -46,8 +37,7 @@ static char *rcsid = "$Id: str.c,v 1.2 1995/04/24 13:25:55 cgd Exp $";
  * str_init(): Initialize string
  */
 void
-str_init(s)
-	struct string  *s;
+str_init(struct string *s)
 {
 	s->s_str = NULL;
 	s->s_len = 0;
@@ -58,18 +48,15 @@ str_init(s)
  * str_append(): Append string allocating buffer as necessary
  */
 void
-str_append(buf, str, del)
-	struct string  *buf;
-	const char     *str;
-	int             del;
+str_append(struct string *buf, const char *str, int del)
 {
 	size_t          len = strlen(str) + 1;
 
 	if (buf->s_str == NULL)
 		buf->s_str = emalloc(len);
 	else {
-		buf->s_str = erealloc(buf->s_str, buf->s_len + len +
-						  (del ? 2 : 1));
+		buf->s_str = erealloc(buf->s_str, buf->s_len +
+		    len + (del ? 2 : 1));
 		if (del)
 			buf->s_str[buf->s_len++] = del;
 	}
@@ -82,10 +69,7 @@ str_append(buf, str, del)
  * str_prepend(): Prepend string allocating buffer as necessary
  */
 void
-str_prepend(buf, str, del)
-	struct string  *buf;
-	const char     *str;
-	int             del;
+str_prepend(struct string *buf, const char *str, int del)
 {
 	char           *ptr, *sptr;
 	size_t          len = strlen(str) + 1;
@@ -110,8 +94,7 @@ str_prepend(buf, str, del)
  * str_free(): Free a string
  */
 void
-str_free(s)
-	struct string  *s;
+str_free(struct string *s)
 {
 	free(s->s_str);
 	s->s_str = NULL;

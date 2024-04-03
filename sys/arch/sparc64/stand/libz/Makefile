@@ -1,28 +1,10 @@
-#	$OpenBSD: Makefile,v 1.1 1997/09/17 10:46:24 downsj Exp $
+#	$OpenBSD: Makefile,v 1.9 2022/10/06 23:32:17 kn Exp $
 
-LIB=	z
+S=${.CURDIR}/../../../..
+ZDST=${.OBJDIR}
 
-.PATH:  ${.CURDIR}/../../../../lib/libz
+.PATH: ${S}/lib/libz
 
-CLEANFILES+= machine
-
-CFLAGS= -nostdinc ${CEXTRAFLAGS} ${AFLAGS} -O2 -D_ZLIB_PRIVATE -I${.CURDIR}/../../../.. -I${.CURDIR}/../../../../lib/libz -I${.CURDIR}/.
-
-SRCS=	adler32.c crc32.c infblock.c infcodes.c inffast.c \
-	inflate.c inftrees.c infutil.c
-
-.NOPATH:machine
-${SRCS}: machine
-
-${OBJS}:	${.CURDIR}/../Makefile.inc
-
-install:
-
-NOPIC=
-NOPROFILE=
-
-.include <bsd.lib.mk>
-
-machine:
-	rm -f $@
-	ln -s ${.CURDIR}/../../include $@
+.include "${S}/lib/libz/Makefile"
+CFLAGS+=${CEXTRAFLAGS} ${AFLAGS} -I${S} -fno-pie -fno-stack-protector
+CPPFLAGS+=-DDYNAMIC_CRC_TABLE -DBUILDFIXED

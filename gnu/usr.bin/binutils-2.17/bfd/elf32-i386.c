@@ -136,9 +136,14 @@ static reloc_howto_type elf_howto_table[]=
   HOWTO(R_386_TLS_DESC, 0, 2, 32, FALSE, 0, complain_overflow_bitfield,
 	bfd_elf_generic_reloc, "R_386_TLS_DESC",
 	TRUE, 0xffffffff, 0xffffffff, FALSE),
+  EMPTY_HOWTO (42), /* R_386_IRELATIVE */
+  HOWTO(R_386_GOT32X, 0, 2, 32, FALSE, 0, complain_overflow_bitfield,
+	bfd_elf_generic_reloc, "R_386_GOT32X",
+	TRUE, 0xffffffff, 0xffffffff, FALSE),
 
   /* Another gap.  */
-#define R_386_tls (R_386_TLS_DESC + 1 - R_386_tls_offset)
+  /* XXX R_386_GOT32X isn't really a TLS relocation */
+#define R_386_tls (R_386_GOT32X + 1 - R_386_tls_offset)
 #define R_386_vt_offset (R_386_GNU_VTINHERIT - R_386_tls)
 
 /* GNU extension to record C++ vtable hierarchy.  */
@@ -313,6 +318,10 @@ elf_i386_reloc_type_lookup (bfd *abfd ATTRIBUTE_UNUSED,
     case BFD_RELOC_386_TLS_DESC:
       TRACE ("BFD_RELOC_386_TLS_DESC");
       return &elf_howto_table[R_386_TLS_DESC - R_386_tls_offset];
+
+    case BFD_RELOC_386_GOT32X:
+      TRACE ("BFD_RELOC_386_GOT32X");
+      return &elf_howto_table[R_386_GOT32X - R_386_tls_offset];
 
     case BFD_RELOC_VTABLE_INHERIT:
       TRACE ("BFD_RELOC_VTABLE_INHERIT");
@@ -882,7 +891,7 @@ elf_i386_copy_indirect_symbol (struct bfd_link_info *info,
 static int
 elf_i386_tls_transition (struct bfd_link_info *info, int r_type, int is_local)
 {
-  if (info->shared)
+  if (info->shared && !info->executable)
     return r_type;
 
   switch (r_type)
@@ -988,11 +997,12 @@ elf_i386_check_relocs (bfd *abfd,
 	case R_386_TLS_IE_32:
 	case R_386_TLS_IE:
 	case R_386_TLS_GOTIE:
-	  if (info->shared)
+	  if (info->shared && !info->executable)
 	    info->flags |= DF_STATIC_TLS;
 	  /* Fall through */
 
 	case R_386_GOT32:
+	case R_386_GOT32X:
 	case R_386_TLS_GD:
 	case R_386_TLS_GOTDESC:
 	case R_386_TLS_DESC_CALL:
@@ -1004,6 +1014,7 @@ elf_i386_check_relocs (bfd *abfd,
 	      {
 	      default:
 	      case R_386_GOT32: tls_type = GOT_NORMAL; break;
+	      case R_386_GOT32X: tls_type = GOT_NORMAL; break;
 	      case R_386_TLS_GD: tls_type = GOT_TLS_GD; break;
 	      case R_386_TLS_GOTDESC:
 	      case R_386_TLS_DESC_CALL:
@@ -1116,7 +1127,7 @@ elf_i386_check_relocs (bfd *abfd,
 
 	case R_386_TLS_LE_32:
 	case R_386_TLS_LE:
-	  if (!info->shared)
+	  if (!info->shared || info->executable)
 	    break;
 	  info->flags |= DF_STATIC_TLS;
 	  /* Fall through */
@@ -1392,6 +1403,7 @@ elf_i386_gc_sweep_hook (bfd *abfd,
 	case R_386_TLS_IE:
 	case R_386_TLS_GOTIE:
 	case R_386_GOT32:
+	case R_386_GOT32X:
 	  if (h != NULL)
 	    {
 	      if (h->got.refcount > 0)
@@ -1691,7 +1703,7 @@ allocate_dynrelocs (struct elf_link_hash_entry *h, void *inf)
   /* If R_386_TLS_{IE_32,IE,GOTIE} symbol is now local to the binary,
      make it a R_386_TLS_LE_32 requiring no TLS entry.  */
   if (h->got.refcount > 0
-      && !info->shared
+      && (!info->shared || info->executable)
       && h->dynindx == -1
       && (elf_i386_hash_entry(h)->tls_type & GOT_TLS_IE))
     h->got.offset = (bfd_vma) -1;
@@ -1902,7 +1914,7 @@ elf_i386_size_dynamic_sections (bfd *output_bfd ATTRIBUTE_UNUSED,
   if (htab->elf.dynamic_sections_created)
     {
       /* Set the contents of the .interp section to the interpreter.  */
-      if (info->executable)
+      if (info->executable && !info->static_link)
 	{
 	  s = bfd_get_section_by_name (dynobj, ".interp");
 	  if (s == NULL)
@@ -2452,6 +2464,7 @@ elf_i386_relocate_section (bfd *output_bfd,
       switch (r_type)
 	{
 	case R_386_GOT32:
+	case R_386_GOT32X:
 	  /* Relocation is to the entry for this symbol in the global
 	     offset table.  */
 	  if (htab->sgot == NULL)
@@ -3279,7 +3292,7 @@ elf_i386_relocate_section (bfd *output_bfd,
 	  break;
 
 	case R_386_TLS_LDM:
-	  if (! info->shared)
+	  if (! info->shared || info->executable)
 	    {
 	      unsigned int val;
 
@@ -3340,7 +3353,8 @@ elf_i386_relocate_section (bfd *output_bfd,
 	  break;
 
 	case R_386_TLS_LDO_32:
-	  if (info->shared || (input_section->flags & SEC_CODE) == 0)
+	  if ((info->shared && !info->executable)
+	      || (input_section->flags & SEC_CODE) == 0)
 	    relocation -= dtpoff_base (info);
 	  else
 	    /* When converting LDO to LE, we must negate.  */
@@ -3349,7 +3363,7 @@ elf_i386_relocate_section (bfd *output_bfd,
 
 	case R_386_TLS_LE_32:
 	case R_386_TLS_LE:
-	  if (info->shared)
+	  if (info->shared && !info->executable)
 	    {
 	      Elf_Internal_Rela outrel;
 	      asection *sreloc;
@@ -3872,6 +3886,18 @@ elf_i386_plt_sym_val (bfd_vma i, const asection *plt,
   return plt->vma + (i + 1) * PLT_ENTRY_SIZE;
 }
 
+/* Return TRUE if symbol should be hashed in the `.gnu.hash' section.  */
+
+static bfd_boolean
+elf_i386_hash_symbol (struct elf_link_hash_entry *h)
+{
+  if (h->plt.offset != (bfd_vma) -1
+      && !h->def_regular
+      && !h->pointer_equality_needed)
+    return FALSE;
+
+  return _bfd_elf_hash_symbol (h);
+}
 
 #define TARGET_LITTLE_SYM		bfd_elf32_i386_vec
 #define TARGET_LITTLE_NAME		"elf32-i386"
@@ -3912,6 +3938,7 @@ elf_i386_plt_sym_val (bfd_vma i, const asection *plt,
 #define elf_backend_size_dynamic_sections     elf_i386_size_dynamic_sections
 #define elf_backend_always_size_sections      elf_i386_always_size_sections
 #define elf_backend_plt_sym_val		      elf_i386_plt_sym_val
+#define elf_backend_hash_symbol		      elf_i386_hash_symbol
 
 #include "elf32-target.h"
 
