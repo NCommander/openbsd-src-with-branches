@@ -1,4 +1,4 @@
-/*	$OpenBSD: cacheinfo.c,v 1.11 2022/07/12 04:46:00 jsg Exp $	*/
+/*	$OpenBSD: cacheinfo.c,v 1.12 2024/02/03 09:53:15 jsg Exp $	*/
 
 /*
  * Copyright (c) 2022 Jonathan Gray <jsg@openbsd.org>
@@ -210,14 +210,14 @@ x86_print_cacheinfo(struct cpu_info *ci)
 {
 	uint64_t msr;
 
-	if (strcmp(cpu_vendor, "GenuineIntel") == 0 &&
+	if (ci->ci_vendor == CPUV_INTEL &&
 	    rdmsr_safe(MSR_MISC_ENABLE, &msr) == 0 &&
 	    (msr & MISC_ENABLE_LIMIT_CPUID_MAXVAL) == 0) {
 		intel_print_cacheinfo(ci, 4);
 		return;
 	}
 
-	if (strcmp(cpu_vendor, "AuthenticAMD") == 0 &&
+	if (ci->ci_vendor == CPUV_AMD &&
 	    (ecpu_ecxfeature & CPUIDECX_TOPEXT)) {
 		intel_print_cacheinfo(ci, 0x8000001d);
 		return;

@@ -1,4 +1,4 @@
-/*	$OpenBSD: lapic.c,v 1.70 2023/09/14 19:39:47 cheloha Exp $	*/
+/*	$OpenBSD: lapic.c,v 1.71 2023/09/17 14:50:50 cheloha Exp $	*/
 /* $NetBSD: lapic.c,v 1.2 2003/05/08 01:04:35 fvdl Exp $ */
 
 /*-
@@ -284,7 +284,7 @@ lapic_set_lvt(void)
 	}
 #endif
 
-	if (strcmp(cpu_vendor, "AuthenticAMD") == 0) {
+	if (ci->ci_vendor == CPUV_AMD) {
 		/*
 		 * Detect the presence of C1E capability mostly on latest
 		 * dual-cores (or future) k8 family. This mis-feature renders
