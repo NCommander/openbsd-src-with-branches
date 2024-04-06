@@ -1,4 +1,4 @@
-/*	$OpenBSD: dt_prov_static.c,v 1.21 2023/08/14 08:33:24 mpi Exp $ */
+/*	$OpenBSD: dt_prov_static.c,v 1.22 2023/08/28 14:50:01 bluhm Exp $ */
 
 /*
  * Copyright (c) 2019 Martin Pieuchot <mpi@openbsd.org>
@@ -179,14 +179,12 @@ dt_prov_static_alloc(struct dt_probe *dtp, struct dt_softc *sc,
 {
 	struct dt_pcb *dp;
 
-	KASSERT(dtioc_req_isvalid(dtrq));
 	KASSERT(TAILQ_EMPTY(plist));
 
 	dp = dt_pcb_alloc(dtp, sc);
 	if (dp == NULL)
 		return ENOMEM;
 
-	dp->dp_filter = dtrq->dtrq_filter;
 	dp->dp_evtflags = dtrq->dtrq_evtflags;
 	TAILQ_INSERT_HEAD(plist, dp, dp_snext);
 
