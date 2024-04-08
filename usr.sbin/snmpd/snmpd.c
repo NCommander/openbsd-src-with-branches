@@ -1,4 +1,4 @@
-/*	$OpenBSD: snmpd.c,v 1.49 2023/12/21 12:43:31 martijn Exp $	*/
+/*	$OpenBSD: snmpd.c,v 1.50 2023/12/22 13:04:30 martijn Exp $	*/
 
 /*
  * Copyright (c) 2007, 2008, 2012 Reyk Floeter <reyk@openbsd.org>
@@ -222,8 +222,6 @@ main(int argc, char *argv[])
 	env->sc_engine_boots = 0;
 
 	proc_init(ps, procs, nitems(procs), debug, argc0, argv0, proc_id);
-	if (!debug && daemon(0, 0) == -1)
-		err(1, "failed to daemonize");
 
 	log_procinit("parent");
 	log_info("startup");
