@@ -1,4 +1,4 @@
-/*	$OpenBSD: repo.c,v 1.54 2024/02/26 15:40:33 job Exp $ */
+/*	$OpenBSD: repo.c,v 1.55 2024/03/22 03:38:12 job Exp $ */
 /*
  * Copyright (c) 2021 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -1489,6 +1489,9 @@ repo_stat_inc(struct repo *rp, int talid, enum rtype type, enum stype subtype)
 			break;
 		case STYPE_PROVIDERS:
 			rp->stats[talid].vaps_pas++;
+			break;
+		case STYPE_OVERFLOW:
+			rp->stats[talid].vaps_overflowed++;
 			break;
 		default:
 			break;
