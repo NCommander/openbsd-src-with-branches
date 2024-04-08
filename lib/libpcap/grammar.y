@@ -1,5 +1,5 @@
 %{
-/*	$OpenBSD: grammar.y,v 1.22 2020/08/03 03:40:02 dlg Exp $	*/
+/*	$OpenBSD: grammar.y,v 1.23 2021/12/01 18:28:45 deraadt Exp $	*/
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996
@@ -68,7 +68,7 @@ yyerror(char *msg)
 int yyparse(void);
 
 int
-pcap_parse()
+pcap_parse(void)
 {
 	return (yyparse());
 }
