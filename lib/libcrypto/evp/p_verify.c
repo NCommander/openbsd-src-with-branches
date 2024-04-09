@@ -1,4 +1,4 @@
-/* $OpenBSD: p_verify.c,v 1.19 2024/02/18 15:45:42 tb Exp $ */
+/* $OpenBSD: p_verify.c,v 1.20 2024/03/26 05:50:49 joshua Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -96,3 +96,4 @@ EVP_VerifyFinal(EVP_MD_CTX *ctx, const unsigned char *sigbuf,
 	EVP_PKEY_CTX_free(pkctx);
 	return ret;
 }
+LCRYPTO_ALIAS(EVP_VerifyFinal);

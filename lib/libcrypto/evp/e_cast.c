@@ -1,4 +1,4 @@
-/* $OpenBSD: e_cast.c,v 1.16 2023/07/07 19:37:53 beck Exp $ */
+/* $OpenBSD: e_cast.c,v 1.17 2024/01/04 17:38:36 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -177,6 +177,7 @@ EVP_cast5_cbc(void)
 {
 	return &cast5_cbc;
 }
+LCRYPTO_ALIAS(EVP_cast5_cbc);
 
 static const EVP_CIPHER cast5_cfb64 = {
 	.nid = NID_cast5_cfb64,
@@ -198,6 +199,7 @@ EVP_cast5_cfb64(void)
 {
 	return &cast5_cfb64;
 }
+LCRYPTO_ALIAS(EVP_cast5_cfb64);
 
 static const EVP_CIPHER cast5_ofb = {
 	.nid = NID_cast5_ofb64,
@@ -219,6 +221,7 @@ EVP_cast5_ofb(void)
 {
 	return &cast5_ofb;
 }
+LCRYPTO_ALIAS(EVP_cast5_ofb);
 
 static const EVP_CIPHER cast5_ecb = {
 	.nid = NID_cast5_ecb,
@@ -240,4 +243,5 @@ EVP_cast5_ecb(void)
 {
 	return &cast5_ecb;
 }
+LCRYPTO_ALIAS(EVP_cast5_ecb);
 #endif
