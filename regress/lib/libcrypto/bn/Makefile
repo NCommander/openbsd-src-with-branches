@@ -1,6 +1,7 @@
-#	$OpenBSD: Makefile,v 1.36 2023/10/19 10:17:24 tb Exp $
+#	$OpenBSD: Makefile,v 1.37 2023/10/19 10:23:38 tb Exp $
 
 PROGS +=	bn_add_sub
+PROGS +=	bn_bits
 PROGS +=	bn_cmp
 PROGS +=	bn_convert
 PROGS +=	bn_gcd
