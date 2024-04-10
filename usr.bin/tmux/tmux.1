@@ -1,4 +1,4 @@
-.\" $OpenBSD: tmux.1,v 1.939 2024/03/21 11:51:32 nicm Exp $
+.\" $OpenBSD: tmux.1,v 1.940 2024/03/21 11:53:11 nicm Exp $
 .\"
 .\" Copyright (c) 2007 Nicholas Marriott <nicholas.marriott@gmail.com>
 .\"
@@ -4749,6 +4749,12 @@ they will be allowed even if the pane is invisible.
 .Xc
 Allow programs in the pane to change the window name using a terminal escape
 sequence (\eek...\ee\e\e).
+.Pp
+.It Xo Ic allow-set-title
+.Op Ic on | off
+.Xc
+Allow programs in the pane to change the title using the terminal escape
+sequences (\ee]2;...\ee\e\e or \ee]0;...\ee\e\e).
 .Pp
 .It Xo Ic alternate-screen
 .Op Ic on | off
