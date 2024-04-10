@@ -1,4 +1,4 @@
-/* $OpenBSD: mem_dbg.c,v 1.26 2024/03/02 11:28:46 tb Exp $ */
+/* $OpenBSD: mem_dbg.c,v 1.27 2024/03/02 11:32:31 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -116,3 +116,4 @@ CRYPTO_mem_ctrl(int mode)
 {
 	return (CRYPTO_MEM_CHECK_OFF);
 }
+LCRYPTO_ALIAS(CRYPTO_mem_ctrl);
