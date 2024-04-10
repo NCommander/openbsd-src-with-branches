@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_div.c,v 1.39 2023/02/16 10:41:03 jsing Exp $ */
+/* $OpenBSD: bn_div.c,v 1.40 2023/03/27 10:21:23 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -441,6 +441,7 @@ BN_div(BIGNUM *quotient, BIGNUM *remainder, const BIGNUM *numerator,
 
 	return BN_div_internal(quotient, remainder, numerator, divisor, ctx, ct);
 }
+LCRYPTO_ALIAS(BN_div);
 
 int
 BN_div_nonct(BIGNUM *quotient, BIGNUM *remainder, const BIGNUM *numerator,
