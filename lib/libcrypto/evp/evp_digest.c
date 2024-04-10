@@ -1,4 +1,4 @@
-/* $OpenBSD: evp_digest.c,v 1.12 2024/03/02 09:59:56 tb Exp $ */
+/* $OpenBSD: evp_digest.c,v 1.13 2024/04/09 13:52:41 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -267,6 +267,7 @@ EVP_MD_CTX_init(EVP_MD_CTX *ctx)
 {
 	return EVP_MD_CTX_cleanup(ctx);
 }
+LCRYPTO_ALIAS(EVP_MD_CTX_init);
 
 int
 EVP_MD_CTX_reset(EVP_MD_CTX *ctx)
