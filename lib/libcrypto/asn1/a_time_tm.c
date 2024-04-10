@@ -1,4 +1,4 @@
-/* $OpenBSD: a_time_tm.c,v 1.34 2024/04/08 19:57:40 beck Exp $ */
+/* $OpenBSD: a_time_tm.c,v 1.35 2024/04/09 13:56:00 tb Exp $ */
 /*
  * Copyright (c) 2015 Bob Beck <beck@openbsd.org>
  *
@@ -552,6 +552,7 @@ ASN1_UTCTIME_cmp_time_t(const ASN1_UTCTIME *s, time_t t)
 		return ASN1_TIME_cmp_time_t_internal(s, t, V_ASN1_UTCTIME);
 	return -2;
 }
+LCRYPTO_ALIAS(ASN1_UTCTIME_cmp_time_t);
 
 /*
  * ASN1_GENERALIZEDTIME wrappers
