@@ -1,4 +1,4 @@
-/*	$OpenBSD: pmap.c,v 1.117 2024/03/30 07:45:21 miod Exp $	*/
+/*	$OpenBSD: pmap.c,v 1.118 2024/04/08 20:00:27 miod Exp $	*/
 /*	$NetBSD: pmap.c,v 1.107 2001/08/31 16:47:41 eeh Exp $	*/
 /*
  * 
@@ -45,6 +45,7 @@
 #include <machine/hypervisor.h>
 #include <machine/openfirm.h>
 #include <machine/kcore.h>
+#include <machine/pte.h>
 
 #include <sparc64/sparc64/cache.h>
 

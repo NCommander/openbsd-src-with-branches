@@ -1,4 +1,4 @@
-/*	$OpenBSD: ipifuncs.c,v 1.19 2019/08/06 18:06:32 kettenis Exp $	*/
+/*	$OpenBSD: ipifuncs.c,v 1.20 2024/04/08 20:00:27 miod Exp $	*/
 /*	$NetBSD: ipifuncs.c,v 1.8 2006/10/07 18:11:36 rjs Exp $ */
 
 /*-
@@ -36,7 +36,7 @@
 #include <machine/cpu.h>
 #include <machine/ctlreg.h>
 #include <machine/hypervisor.h>
-#include <machine/pmap.h>
+#include <machine/pte.h>
 #include <machine/sparc64.h>
 
 #define SPARC64_IPI_RETRIES	10000
