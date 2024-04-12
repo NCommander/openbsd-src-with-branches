@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ngbe.c,v 1.1 2023/03/31 08:19:41 kevlo Exp $	*/
+/*	$OpenBSD: if_ngbe.c,v 1.2 2023/11/10 15:51:20 bluhm Exp $	*/
 
 /*
  * Copyright (c) 2015-2017 Beijing WangXun Technology Co., Ltd.
@@ -37,8 +37,6 @@
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <netinet/ip.h>
-#include <netinet/ip6.h>
 
 #if NBPFILTER > 0
 #include <net/bpf.h>

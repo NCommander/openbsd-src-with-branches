@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_bnxt.c,v 1.46 2024/02/13 13:58:19 bluhm Exp $	*/
+/*	$OpenBSD: if_bnxt.c,v 1.47 2024/02/14 22:41:48 bluhm Exp $	*/
 /*-
  * Broadcom NetXtreme-C/E network driver.
  *
@@ -76,8 +76,6 @@
 #endif
 
 #include <netinet/in.h>
-#include <netinet/ip.h>
-#include <netinet/ip6.h>
 #include <netinet/if_ether.h>
 #include <netinet/tcp.h>
 #include <netinet/tcp_timer.h>

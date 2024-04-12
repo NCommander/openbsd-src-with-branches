@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_igc.c,v 1.18 2024/02/23 01:06:18 kevlo Exp $	*/
+/*	$OpenBSD: if_igc.c,v 1.19 2024/03/25 20:25:13 mbuhl Exp $	*/
 /*-
  * SPDX-License-Identifier: BSD-2-Clause
  *
@@ -48,8 +48,6 @@
 
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
-#include <netinet/ip.h>
-#include <netinet/ip6.h>
 
 #if NBPFILTER > 0
 #include <net/bpf.h>
