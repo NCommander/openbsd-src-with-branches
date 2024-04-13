@@ -1,4 +1,4 @@
-/* $OpenBSD: wsdisplay_compat_usl.c,v 1.32 2017/01/23 04:43:46 deraadt Exp $ */
+/* $OpenBSD: wsdisplay_compat_usl.c,v 1.33 2020/09/03 15:30:17 kettenis Exp $ */
 /* $NetBSD: wsdisplay_compat_usl.c,v 1.12 2000/03/23 07:01:47 thorpej Exp $ */
 
 /*
@@ -440,9 +440,8 @@ wsdisplay_usl_ioctl2(struct wsdisplay_softc *sc, struct wsscreen *scr,
 #define PCVT_SYSBEEPF	1193182
 			if (d >> 16) {
 				bd.which = WSKBD_BELL_DOPERIOD;
-			bd.period = d >> 16; /* ms */
-			}
-			else
+				bd.period = d >> 16; /* ms */
+			} else
 				bd.which = 0;
 			if (d & 0xffff) {
 				bd.which |= WSKBD_BELL_DOPITCH;

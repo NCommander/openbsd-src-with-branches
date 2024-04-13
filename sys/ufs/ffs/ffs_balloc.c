@@ -1,4 +1,4 @@
-/*	$OpenBSD: ffs_balloc.c,v 1.45 2019/07/19 00:24:31 cheloha Exp $	*/
+/*	$OpenBSD: ffs_balloc.c,v 1.46 2024/02/03 18:51:58 beck Exp $	*/
 /*	$NetBSD: ffs_balloc.c,v 1.3 1996/02/09 22:22:21 christos Exp $	*/
 
 /*
@@ -750,7 +750,7 @@ fail:
 		 * that we resolve the dependencies in one pass.
 		 * Write the cylinder group buffers for these buffers too.
 		 */
-		 for (i = num; i >= unwindidx; i--) {
+		for (i = num; i >= unwindidx; i--) {
 		 	if (i == 0)
 				break;
 

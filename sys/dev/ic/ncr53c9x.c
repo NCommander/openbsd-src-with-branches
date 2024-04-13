@@ -1,4 +1,4 @@
-/*	$OpenBSD: ncr53c9x.c,v 1.80 2022/04/16 19:19:59 naddy Exp $	*/
+/*	$OpenBSD: ncr53c9x.c,v 1.81 2024/04/03 18:41:38 miod Exp $	*/
 /*     $NetBSD: ncr53c9x.c,v 1.56 2000/11/30 14:41:46 thorpej Exp $    */
 
 /*
@@ -2456,7 +2456,7 @@ printf("<<RESELECT CONT'd>>");
 		if (sc->sc_state == NCR_IDLE) {
 			printf("%s: stray interrupt\n",
 			    sc->sc_dev.dv_xname);
-				return (0);
+			return (0);
 		}
 		break;
 

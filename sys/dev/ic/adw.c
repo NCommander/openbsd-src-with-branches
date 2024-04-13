@@ -1,4 +1,4 @@
-/*	$OpenBSD: adw.c,v 1.68 2020/09/22 19:32:52 krw Exp $ */
+/*	$OpenBSD: adw.c,v 1.69 2022/04/16 19:19:58 naddy Exp $ */
 /* $NetBSD: adw.c,v 1.23 2000/05/27 18:24:50 dante Exp $	 */
 
 /*
@@ -449,7 +449,7 @@ adw_attach(ADW_SOFTC *sc)
 	/*
 	 * Zero's the freeze_device status
 	 */
-	 bzero(sc->sc_freeze_dev, sizeof(sc->sc_freeze_dev));
+	bzero(sc->sc_freeze_dev, sizeof(sc->sc_freeze_dev));
 
 	/*
 	 * Initialize the adapter

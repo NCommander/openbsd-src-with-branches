@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_acct.c,v 1.46 2022/02/22 17:22:29 deraadt Exp $	*/
+/*	$OpenBSD: kern_acct.c,v 1.47 2022/08/14 01:58:27 jsg Exp $	*/
 /*	$NetBSD: kern_acct.c,v 1.42 1996/02/04 02:15:12 christos Exp $	*/
 
 /*-
@@ -270,7 +270,7 @@ encode_comp_t(u_long s, u_long ns)
 	s += ns / (1000000000 / AHZ);	/* Maximize precision. */
 
 	while (s > MAXFRACT) {
-	rnd = s & (1 << (EXPSIZE - 1));	/* Round up? */
+		rnd = s & (1 << (EXPSIZE - 1));	/* Round up? */
 		s >>= EXPSIZE;		/* Base 8 exponent == 3 bit shift. */
 		exp++;
 	}

@@ -1,4 +1,4 @@
-/*	$OpenBSD: uvm_addr.c,v 1.31 2022/02/21 10:26:20 jsg Exp $	*/
+/*	$OpenBSD: uvm_addr.c,v 1.32 2022/11/04 09:36:44 mpi Exp $	*/
 
 /*
  * Copyright (c) 2011 Ariane van der Steldt <ariane@stack.nl>
@@ -1406,7 +1406,7 @@ uaddr_stack_brk_select(struct vm_map *map, struct uvm_addr_state *uaddr,
 		if (uvm_addr_linsearch(map, uaddr, entry_out, addr_out,
 		    0, sz, align, offset, dir, start, end - sz,
 		    before_gap, after_gap) == 0)
-		return 0;
+			return 0;
 	}
 
 	return ENOMEM;

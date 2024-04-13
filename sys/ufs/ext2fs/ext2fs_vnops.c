@@ -1,4 +1,4 @@
-/*	$OpenBSD: ext2fs_vnops.c,v 1.91 2023/03/08 04:43:09 guenther Exp $	*/
+/*	$OpenBSD: ext2fs_vnops.c,v 1.92 2024/03/25 17:57:07 guenther Exp $	*/
 /*	$NetBSD: ext2fs_vnops.c,v 1.1 1997/06/11 09:34:09 bouyer Exp $	*/
 
 /*
@@ -819,7 +819,7 @@ abortit:
 				UIO_SYSSPACE, IO_NODELOCKED,
 				tcnp->cn_cred, NULL, curproc);
 			if (error == 0) {
-					namlen = dirbuf.dotdot_namlen;
+				namlen = dirbuf.dotdot_namlen;
 				if (namlen != 2 ||
 				    dirbuf.dotdot_name[0] != '.' ||
 				    dirbuf.dotdot_name[1] != '.') {

@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_ure.c,v 1.32 2023/05/06 08:07:10 kevlo Exp $	*/
+/*	$OpenBSD: if_ure.c,v 1.33 2023/09/09 14:23:37 kevlo Exp $	*/
 /*-
  * Copyright (c) 2015, 2016, 2019 Kevin Lo <kevlo@openbsd.org>
  * Copyright (c) 2020 Jonathon Fletcher <jonathon.fletcher@gmail.com>
@@ -2078,7 +2078,7 @@ ure_rxeof(struct usbd_xfer *xfer, void *priv, usbd_status status)
 		if (rxvlan & URE_RXPKT_VLAN_TAG) {
 			m->m_pkthdr.ether_vtag =
 			    swap16(rxvlan & URE_RXPKT_VLAN_DATA);
-			 m->m_flags |= M_VLANTAG;
+			m->m_flags |= M_VLANTAG;
 		}
 #endif
 
