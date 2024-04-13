@@ -1,4 +1,4 @@
-.\" $OpenBSD: iked.conf.5,v 1.94 2022/07/22 15:53:33 tobhe Exp $
+.\" $OpenBSD: iked.conf.5,v 1.95 2022/07/22 20:31:39 jmc Exp $
 .\"
 .\" Copyright (c) 2010 - 2014 Reyk Floeter <reyk@openbsd.org>
 .\" Copyright (c) 2004 Mathieu Sauve-Frankel  All rights reserved.
@@ -663,6 +663,10 @@ Use ECDSA with a 521-bit elliptic curve key and SHA2-512 for authentication.
 Use a pre-shared key
 .Ar string
 or hex value (starting with 0x) for authentication.
+.It Ic psk file Ar path
+Use a pre-shared hex key (without leading 0x) read from
+.Ar path
+for authentication.
 .It Ic rfc7427
 Only use RFC 7427 signatures for authentication.
 RFC 7427 signatures currently only support SHA2-256 as the hash.
