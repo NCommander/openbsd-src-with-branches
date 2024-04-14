@@ -1,4 +1,4 @@
-/*	$OpenBSD: biosdev.c,v 1.35 2022/08/12 20:17:46 stsp Exp $	*/
+/*	$OpenBSD: biosdev.c,v 1.36 2023/04/25 10:06:12 kn Exp $	*/
 
 /*
  * Copyright (c) 1996 Michael Shalayeff
@@ -724,7 +724,8 @@ biosdisk_errno(u_int error)
 	if (error == 0)
 		return 0;
 
-	for (p = tab; p->error && p->error != error; p++);
+	for (p = tab; p->error && p->error != error; p++)
+		;
 
 	return p->errno;
 }
