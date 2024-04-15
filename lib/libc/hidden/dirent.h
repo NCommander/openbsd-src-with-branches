@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: dirent.h,v 1.1 2015/09/12 13:34:22 guenther Exp $	*/
 /*
  * Copyright (c) 2015 Philip Guenther <guenther@openbsd.org>
  *
@@ -20,6 +20,10 @@
 
 #include_next <dirent.h>
 
+__BEGIN_HIDDEN_DECLS
+DIR	*__fdopendir(int fd);
+__END_HIDDEN_DECLS
+
 PROTO_DEPRECATED(alphasort);
 PROTO_NORMAL(closedir);
 PROTO_NORMAL(dirfd);
@@ -30,6 +34,7 @@ PROTO_NORMAL(readdir);
 PROTO_DEPRECATED(readdir_r);
 PROTO_DEPRECATED(rewinddir);
 PROTO_DEPRECATED(scandir);
+PROTO_DEPRECATED(scandirat);
 PROTO_NORMAL(seekdir);
 PROTO_NORMAL(telldir);
 
