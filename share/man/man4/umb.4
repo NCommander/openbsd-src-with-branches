@@ -1,4 +1,4 @@
-.\"	$OpenBSD: umb.4,v 1.16 2023/02/21 07:47:24 jmc Exp $
+.\"	$OpenBSD: umb.4,v 1.17 2024/01/01 13:04:35 kevlo Exp $
 .\"
 .\" Copyright (c) 2016 genua mbH
 .\"
@@ -14,7 +14,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd $Mdocdate: February 21 2023 $
+.Dd $Mdocdate: January 1 2024 $
 .Dt UMB 4
 .Os
 .Sh NAME
@@ -64,6 +64,19 @@ The following devices should work:
 .It Sierra Wireless EM8805
 .It Sierra Wireless MC8305
 .El
+.Sh EXAMPLES
+The following
+.Xr hostname.if 5
+example configures umb0 to set the APN to
+.Dq internet ,
+enabling data roaming,
+and obtaining an IP address using IPv6 stateless address autoconfiguration:
+.Bd -literal -offset indent
+pin 1234
+apn internet
+inet6 autoconf
+roaming
+.Ed
 .Sh SEE ALSO
 .Xr intro 4 ,
 .Xr netintro 4 ,
