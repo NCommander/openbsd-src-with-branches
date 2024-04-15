@@ -1,4 +1,4 @@
-/* $OpenBSD: x_name.c,v 1.41 2023/07/24 06:56:54 tb Exp $ */
+/* $OpenBSD: x_name.c,v 1.42 2024/04/09 13:55:02 beck Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -159,7 +159,7 @@ static const ASN1_TEMPLATE X509_NAME_ENTRIES_item_tt = {
 	.item = &X509_NAME_ENTRY_it,
 };
 
-const ASN1_ITEM X509_NAME_ENTRIES_it = {
+static const ASN1_ITEM X509_NAME_ENTRIES_it = {
 	.itype = ASN1_ITYPE_PRIMITIVE,
 	.utype = -1,
 	.templates = &X509_NAME_ENTRIES_item_tt,
@@ -177,7 +177,7 @@ static const ASN1_TEMPLATE X509_NAME_INTERNAL_item_tt = {
 	.item = &X509_NAME_ENTRIES_it,
 };
 
-const ASN1_ITEM X509_NAME_INTERNAL_it = {
+static const ASN1_ITEM X509_NAME_INTERNAL_it = {
 	.itype = ASN1_ITYPE_PRIMITIVE,
 	.utype = -1,
 	.templates = &X509_NAME_INTERNAL_item_tt,
