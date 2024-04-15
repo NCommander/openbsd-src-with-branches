@@ -1,4 +1,4 @@
-/* $OpenBSD: cmd-command-prompt.c,v 1.65 2022/05/30 12:55:25 nicm Exp $ */
+/* $OpenBSD: cmd-command-prompt.c,v 1.66 2023/03/15 08:15:39 nicm Exp $ */
 
 /*
  * Copyright (c) 2008 Nicholas Marriott <nicholas.marriott@gmail.com>
@@ -143,6 +143,7 @@ cmd_command_prompt_exec(struct cmd *self, struct cmdq_item *item)
 		cdata->prompt_type = status_prompt_type(type);
 		if (cdata->prompt_type == PROMPT_TYPE_INVALID) {
 			cmdq_error(item, "unknown type: %s", type);
+			cmd_command_prompt_free(cdata);
 			return (CMD_RETURN_ERROR);
 		}
 	} else
