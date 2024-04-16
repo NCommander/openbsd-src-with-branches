@@ -1588,15 +1588,7 @@ rd_size(off_t *size, const char *keyword, char *p)
 static int
 rd_xheader(ARCHD *arcn, int global, off_t size)
 {
-	/*
-	 * We want a buffer big enough to store
-	 * a large path.  Avert your eyes...
-	 */
-	char buf[
-	    14 /* strlen("1xxx linkpath=") */
-	    + PATH_MAX + 100000
-	    + 1 /* strlen("\n") */
-	];
+	char buf[MAXXHDRSZ];
 	long len;
 	char *delim, *keyword;
 	char *nextp, *p, *end;
