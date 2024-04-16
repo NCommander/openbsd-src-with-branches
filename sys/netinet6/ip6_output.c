@@ -1,4 +1,4 @@
-/*	$OpenBSD: ip6_output.c,v 1.288 2024/02/28 10:57:20 bluhm Exp $	*/
+/*	$OpenBSD: ip6_output.c,v 1.289 2024/04/09 11:05:05 bluhm Exp $	*/
 /*	$KAME: ip6_output.c,v 1.172 2001/03/25 09:55:56 itojun Exp $	*/
 
 /*
@@ -391,7 +391,7 @@ reroute:
 	/* initialize cached route */
 	if (ro == NULL) {
 		ro = &iproute;
-		bzero((caddr_t)ro, sizeof(*ro));
+		ro->ro_rt = NULL;
 	}
 	ro_pmtu = ro;
 	if (opt && opt->ip6po_rthdr)
