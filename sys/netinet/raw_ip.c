@@ -1,4 +1,4 @@
-/*	$OpenBSD: raw_ip.c,v 1.157 2024/03/05 09:45:13 bluhm Exp $	*/
+/*	$OpenBSD: raw_ip.c,v 1.158 2024/04/12 12:25:58 bluhm Exp $	*/
 /*	$NetBSD: raw_ip.c,v 1.25 1996/02/18 18:58:33 christos Exp $	*/
 
 /*
@@ -332,7 +332,7 @@ rip_output(struct mbuf *m, struct socket *so, struct sockaddr *dstaddr,
 #endif
 
 	error = ip_output(m, inp->inp_options, &inp->inp_route, flags,
-	    inp->inp_moptions, inp->inp_seclevel, 0);
+	    inp->inp_moptions, &inp->inp_seclevel, 0);
 	return (error);
 }
 
