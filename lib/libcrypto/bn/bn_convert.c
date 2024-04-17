@@ -1,4 +1,4 @@
-/* $OpenBSD: bn_convert.c,v 1.18 2024/04/16 13:14:46 jsing Exp $ */
+/* $OpenBSD: bn_convert.c,v 1.20 2024/04/17 14:47:17 jsing Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -736,7 +736,6 @@ BN_mpi2bn(const unsigned char *d, int n, BIGNUM *bn_in)
 	if (!CBS_get_u32(&cbs, &mpi_len)) {
 		BNerror(BN_R_INVALID_LENGTH);
 		return NULL;
-
 	}
 	if (CBS_len(&cbs) != mpi_len) {
 		BNerror(BN_R_ENCODING_ERROR);
