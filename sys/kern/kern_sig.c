@@ -1,4 +1,4 @@
-/*	$OpenBSD: kern_sig.c,v 1.323 2024/03/30 13:33:20 mpi Exp $	*/
+/*	$OpenBSD: kern_sig.c,v 1.324 2024/04/10 10:05:26 claudio Exp $	*/
 /*	$NetBSD: kern_sig.c,v 1.54 1996/04/22 01:38:32 christos Exp $	*/
 
 /*
@@ -1443,6 +1443,9 @@ proc_stop(struct proc *p, int sw)
 #ifdef MULTIPROCESSOR
 	SCHED_ASSERT_LOCKED();
 #endif
+	/* do not stop exiting procs */
+	if (ISSET(p->p_flag, P_WEXIT))
+		return;
 
 	p->p_stat = SSTOP;
 	atomic_clearbits_int(&pr->ps_flags, PS_WAITED);
