@@ -1,4 +1,4 @@
-/*	$OpenBSD: proc.h,v 1.358 2024/04/02 08:39:16 deraadt Exp $	*/
+/*	$OpenBSD: proc.h,v 1.359 2024/04/10 10:05:26 claudio Exp $	*/
 /*	$NetBSD: proc.h,v 1.44 1996/04/22 01:23:21 christos Exp $	*/
 
 /*-
@@ -604,9 +604,7 @@ struct cond {
 
 #define COND_INITIALIZER()		{ .c_wait = 1 }
 
-#if defined(MULTIPROCESSOR)
-void	proc_trampoline_mp(void);	/* XXX */
-#endif
+void	proc_trampoline_mi(void);
 
 /*
  * functions to handle sets of cpus.
