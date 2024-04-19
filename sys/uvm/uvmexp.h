@@ -66,7 +66,7 @@ struct uvmexp {
 	int zeropages;		/* [F] number of zero'd pages */
 	int reserve_pagedaemon; /* [I] # of pages reserved for pagedaemon */
 	int reserve_kernel;	/* [I] # of pages reserved for kernel */
-	int percpucaches;	/* [a] # of pages in per-CPU caches */
+	int unused01;		/* formerly anonpages */
 	int vnodepages;		/* XXX # of pages used by vnode page cache */
 	int vtextpages;		/* XXX # of pages used by vtext vnodes */
 
@@ -101,8 +101,8 @@ struct uvmexp {
 	int syscalls;		/* system calls */
 	int pageins;		/* [p] pagein operation count */
 				/* pageouts are in pdpageouts below */
-	int pcphit;		/* [a] # of pagealloc from per-CPU cache */
-	int pcpmiss;		/* [a] # of times a per-CPU cache was empty */
+	int unused07;           /* formerly obsolete_swapins */
+	int unused08;           /* formerly obsolete_swapouts */
 	int pgswapin;		/* pages swapped in */
 	int pgswapout;		/* pages swapped out */
 	int forks;  		/* forks */

@@ -262,8 +262,6 @@ uvm_pageout(void *arg)
 #if NDRM > 0
 		drmbackoff(size * 2);
 #endif
-		uvm_pmr_cache_drain();
-
 		/*
 		 * scan if needed
 		 */

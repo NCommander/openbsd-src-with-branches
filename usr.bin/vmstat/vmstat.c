@@ -513,12 +513,7 @@ dosum(void)
 		     uvmexp.reserve_pagedaemon);
 	(void)printf("%11u pages reserved for kernel\n",
 		     uvmexp.reserve_kernel);
-	(void)printf("%11u pages in per-cpu caches\n",
-		     uvmexp.percpucaches);
 
-	/* per-cpu cache */
-	(void)printf("%11u per-cpu cache hits\n", uvmexp.pcphit);
-	(void)printf("%11u per-cpu cache misses\n", uvmexp.pcpmiss);
 	/* swap */
 	(void)printf("%11u swap pages\n", uvmexp.swpages);
 	(void)printf("%11u swap pages in use\n", uvmexp.swpginuse);

@@ -53,7 +53,6 @@
 #include <sys/sched.h>
 #include <sys/sensors.h>
 #include <sys/srp.h>
-#include <uvm/uvm_percpu.h>
 
 #ifdef _KERNEL
 
@@ -211,8 +210,6 @@ struct cpu_info {
 
 #ifdef MULTIPROCESSOR
 	struct srp_hazard	ci_srp_hazards[SRP_HAZARD_NUM];
-#define __HAVE_UVM_PERCPU
-	struct uvm_pmr_cache	ci_uvm;		/* [o] page cache */
 #endif
 
 	struct ksensordev	ci_sensordev;
