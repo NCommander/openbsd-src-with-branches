@@ -1,4 +1,4 @@
-/*	$OpenBSD: in6_src.c,v 1.97 2024/02/29 12:01:59 naddy Exp $	*/
+/*	$OpenBSD: in6_src.c,v 1.98 2024/03/31 15:53:12 bluhm Exp $	*/
 /*	$KAME: in6_src.c,v 1.36 2001/02/06 04:08:17 itojun Exp $	*/
 
 /*
@@ -162,7 +162,7 @@ in6_pcbselsrc(const struct in6_addr **in6src, struct sockaddr_in6 *dstsock,
 		if (ifp == NULL)
 			return (ENXIO); /* XXX: better error? */
 
-		ia6 = in6_ifawithscope(ifp, dst, rtableid);
+		ia6 = in6_ifawithscope(ifp, dst, rtableid, NULL);
 		if_put(ifp);
 
 		if (ia6 == NULL)
@@ -192,7 +192,7 @@ in6_pcbselsrc(const struct in6_addr **in6src, struct sockaddr_in6 *dstsock,
 	if (rt != NULL) {
 		ifp = if_get(rt->rt_ifidx);
 		if (ifp != NULL) {
-			ia6 = in6_ifawithscope(ifp, dst, rtableid);
+			ia6 = in6_ifawithscope(ifp, dst, rtableid, rt);
 			if_put(ifp);
 		}
 		if (ia6 == NULL) /* xxx scope error ?*/
@@ -256,7 +256,7 @@ in6_selectsrc(const struct in6_addr **in6src, struct sockaddr_in6 *dstsock,
 		if (ifp == NULL)
 			return (ENXIO); /* XXX: better error? */
 
-		ia6 = in6_ifawithscope(ifp, dst, rtableid);
+		ia6 = in6_ifawithscope(ifp, dst, rtableid, NULL);
 		if_put(ifp);
 
 		if (ia6 == NULL)
@@ -280,7 +280,7 @@ in6_selectsrc(const struct in6_addr **in6src, struct sockaddr_in6 *dstsock,
 			ifp = if_get(htons(dstsock->sin6_scope_id));
 
 		if (ifp) {
-			ia6 = in6_ifawithscope(ifp, dst, rtableid);
+			ia6 = in6_ifawithscope(ifp, dst, rtableid, NULL);
 			if_put(ifp);
 
 			if (ia6 == NULL)
