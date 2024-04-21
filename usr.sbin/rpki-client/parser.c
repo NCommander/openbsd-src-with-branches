@@ -1,4 +1,4 @@
-/*	$OpenBSD: parser.c,v 1.133 2024/04/17 15:00:50 job Exp $ */
+/*	$OpenBSD: parser.c,v 1.134 2024/04/17 15:03:22 tb Exp $ */
 /*
  * Copyright (c) 2019 Claudio Jeker <claudio@openbsd.org>
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
@@ -37,10 +37,6 @@
 #include <openssl/x509v3.h>
 
 #include "extern.h"
-
-extern int noop;
-extern int experimental;
-extern int verbose;
 
 static X509_STORE_CTX	*ctx;
 static struct auth_tree	 auths = RB_INITIALIZER(&auths);

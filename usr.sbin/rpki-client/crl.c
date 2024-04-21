@@ -1,4 +1,4 @@
-/*	$OpenBSD: crl.c,v 1.32 2024/02/01 15:11:38 tb Exp $ */
+/*	$OpenBSD: crl.c,v 1.33 2024/04/15 13:57:45 job Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -63,7 +63,7 @@ crl_parse(const char *fn, const unsigned char *der, size_t len)
 	}
 	X509_ALGOR_get0(&cobj, NULL, NULL, palg);
 	nid = OBJ_obj2nid(cobj);
-	if (nid == NID_ecdsa_with_SHA256) {
+	if (experimental && nid == NID_ecdsa_with_SHA256) {
 		if (verbose)
 			warnx("%s: P-256 support is experimental", fn);
 	} else if (nid != NID_sha256WithRSAEncryption) {
