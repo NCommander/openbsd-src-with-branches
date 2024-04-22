@@ -1,4 +1,4 @@
-/*	$Id: test-geofeed.c,v 1.4 2023/05/30 12:14:48 claudio Exp $ */
+/*	$Id: test-geofeed.c,v 1.5 2023/09/25 11:09:30 tb Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -33,6 +33,7 @@
 int outformats;
 int verbose;
 int filemode;
+int experimental;
 
 int
 main(int argc, char *argv[])

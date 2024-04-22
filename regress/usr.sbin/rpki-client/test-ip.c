@@ -1,4 +1,4 @@
-/*	$Id: test-ip.c,v 1.7 2023/04/27 06:11:43 claudio Exp $ */
+/*	$Id: test-ip.c,v 1.9 2023/05/30 12:14:48 claudio Exp $ */
 /*
  * Copyright (c) 2019 Kristaps Dzonsons <kristaps@bsd.lv>
  *
@@ -34,6 +34,7 @@
 int outformats;
 int verbose;
 int filemode;
+int experimental;
 
 static void
 test(const char *res, uint16_t afiv, size_t sz, size_t unused, ...)
