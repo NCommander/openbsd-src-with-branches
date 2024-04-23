@@ -1,4 +1,4 @@
-/*	$OpenBSD: msdosfs_fat.c,v 1.6 2021/10/06 00:40:41 deraadt Exp $	*/
+/*	$OpenBSD: msdosfs_fat.c,v 1.7 2022/01/11 05:34:33 jsg Exp $	*/
 /*	$NetBSD: msdosfs_fat.c,v 1.31 2016/05/07 16:43:02 mlelstv Exp $	*/
 
 /*-
@@ -1065,7 +1065,7 @@ extendfile(struct denode *dep, u_long count, struct mkfsbuf **bpp, u_long *ncp, 
 				clrbuf(bp);
 				if (bpp) {
 					*bpp = bp;
-						bpp = NULL;
+					bpp = NULL;
 				} else {
 					bdwrite(bp);
 				}

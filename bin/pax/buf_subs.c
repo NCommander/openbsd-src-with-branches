@@ -1,4 +1,4 @@
-/*	$OpenBSD: buf_subs.c,v 1.31 2019/06/28 13:34:59 deraadt Exp $	*/
+/*	$OpenBSD: buf_subs.c,v 1.32 2023/11/26 16:04:17 espie Exp $	*/
 /*	$NetBSD: buf_subs.c,v 1.5 1995/03/21 09:07:08 cgd Exp $	*/
 
 /*-
@@ -765,7 +765,7 @@ cp_file(ARCHD *arcn, int fd1, int fd2)
 	 * check for holes in the source file. If none, we will use regular
 	 * write instead of file write.
 	 */
-	 if (((off_t)(arcn->sb.st_blocks * BLKMULT)) >= arcn->sb.st_size)
+	if (((off_t)(arcn->sb.st_blocks * BLKMULT)) >= arcn->sb.st_size)
 		++no_hole;
 
 	/*

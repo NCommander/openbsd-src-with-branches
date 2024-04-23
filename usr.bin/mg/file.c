@@ -1,4 +1,4 @@
-/*	$OpenBSD: file.c,v 1.102 2019/06/22 15:03:43 lum Exp $	*/
+/*	$OpenBSD: file.c,v 1.103 2023/03/08 04:43:11 guenther Exp $	*/
 
 /* This file is in the public domain. */
 
@@ -406,8 +406,8 @@ retry:
 					dobeep();
 					ewprintf("Could not allocate %d bytes",
 					    newsize);
-						s = FIOERR;
-						goto endoffile;
+					s = FIOERR;
+					goto endoffile;
 				}
 				bcopy(line, cp, linesize);
 				free(line);

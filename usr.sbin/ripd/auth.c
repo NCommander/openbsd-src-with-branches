@@ -1,4 +1,4 @@
-/*	$OpenBSD: auth.c,v 1.12 2019/12/19 16:47:14 remi Exp $ */
+/*	$OpenBSD: auth.c,v 1.13 2023/06/22 10:38:27 claudio Exp $ */
 
 /*
  * Copyright (c) 2006 Michele Marchetto <mydecay@openbeer.it>
@@ -251,7 +251,7 @@ auth_add_trailer(struct ibuf *buf, struct iface *iface)
 	    iface->auth_keyid)) == NULL) {
 		log_debug("auth_add_trailer: keyid %d not configured, "
 		    "interface %s", iface->auth_keyid, iface->name);
-			return (-1);
+		return (-1);
 	}
 
 	memcpy(digest, md->key, MD5_DIGEST_LENGTH);

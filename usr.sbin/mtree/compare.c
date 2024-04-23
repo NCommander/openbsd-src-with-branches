@@ -1,5 +1,5 @@
 /*	$NetBSD: compare.c,v 1.11 1996/09/05 09:56:48 mycroft Exp $	*/
-/*	$OpenBSD: compare.c,v 1.29 2021/10/24 21:24:19 deraadt Exp $	*/
+/*	$OpenBSD: compare.c,v 1.30 2023/08/11 05:07:28 guenther Exp $	*/
 
 /*-
  * Copyright (c) 1989, 1993
@@ -328,7 +328,7 @@ typeerr:		LABEL;
 						  "-" : db_flags,
 						  (*cur_flags == '\0') ?
 						  "-" : cur_flags);
-				tab = "\t";
+			tab = "\t";
 			if (uflag)
 				if (chflags(p->fts_accpath, s->file_flags))
 					(void)printf(", not modified: %s)\n",

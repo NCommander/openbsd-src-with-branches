@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_ops.c,v 1.26 2014/10/26 03:28:41 guenther Exp $	*/
+/*	$OpenBSD: nfs_ops.c,v 1.27 2021/10/21 10:55:56 deraadt Exp $	*/
 
 /*-
  * Copyright (c) 1990 Jan-Simon Pendry
@@ -377,7 +377,7 @@ call_mountd(fh_cache *fp, u_long proc, fwd_fun f, void *wchan)
  * to be redone.  The quick solution here is to invalidate the MOUNTD
  * port.
  */
-      fp->fh_sin.sin_port = 0;
+	fp->fh_sin.sin_port = 0;
 
 	return error;
 }

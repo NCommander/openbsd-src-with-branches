@@ -1,4 +1,4 @@
-/*	$OpenBSD: print-snmp.c,v 1.28 2021/10/23 10:47:50 martijn Exp $	*/
+/*	$OpenBSD: print-snmp.c,v 1.29 2024/02/03 00:20:21 jsg Exp $	*/
 
 /*
  * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
@@ -662,7 +662,7 @@ asn1_print(struct be *elem)
 	case BE_NULL:
 		break;
 	case BE_OID: {
-	int o = 0, first = -1, i = asnlen;
+		int o = 0, first = -1, i = asnlen;
 
 		if (!nflag && asnlen > 2) {
 			struct obj_abrev *a = &obj_abrev_list[0];

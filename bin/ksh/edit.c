@@ -1,4 +1,4 @@
-/*	$OpenBSD: edit.c,v 1.69 2019/06/28 13:34:59 deraadt Exp $	*/
+/*	$OpenBSD: edit.c,v 1.70 2023/06/21 22:22:08 millert Exp $	*/
 
 /*
  * Command line editing - common code
@@ -451,7 +451,7 @@ x_file_glob(int flags, const char *str, int slen, char ***wordsp)
 		 * which evaluated to an empty string (e.g.,
 		 * "$FOO" when there is no FOO, etc).
 		 */
-		 if ((lstat(words[0], &statb) == -1) ||
+		if ((lstat(words[0], &statb) == -1) ||
 		    words[0][0] == '\0') {
 			x_free_words(nwords, words);
 			words = NULL;

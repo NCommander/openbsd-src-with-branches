@@ -1,4 +1,4 @@
-/*	$OpenBSD: lde.c,v 1.76 2023/03/08 04:43:13 guenther Exp $ */
+/*	$OpenBSD: lde.c,v 1.77 2023/12/14 11:10:19 claudio Exp $ */
 
 /*
  * Copyright (c) 2013, 2016 Renato Westphal <renato@openbsd.org>
@@ -1163,7 +1163,7 @@ lde_nbr_clear(void)
 {
 	struct lde_nbr	*ln;
 
-	 while ((ln = RB_ROOT(&lde_nbrs)) != NULL)
+	while ((ln = RB_ROOT(&lde_nbrs)) != NULL)
 		lde_nbr_del(ln);
 }
 
