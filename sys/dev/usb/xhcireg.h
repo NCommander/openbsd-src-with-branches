@@ -1,4 +1,4 @@
-/* $OpenBSD: xhcireg.h,v 1.17 2019/10/15 03:31:35 visa Exp $ */
+/* $OpenBSD: xhcireg.h,v 1.18 2022/01/09 05:43:02 jsg Exp $ */
 
 /*-
  * Copyright (c) 2014 Martin Pieuchot. All rights reserved.
@@ -335,7 +335,7 @@ struct xhci_inctx {
 
 struct xhci_trb {
 	uint64_t trb_paddr;
-#define XHCI_TRB_PORTID(x)	(((x) & (0xff << 24)) >> 24)	/* Port ID */
+#define XHCI_TRB_PORTID(x)	(((x) >> 24) & 0xff)	/* Port ID */
 #define XHCI_TRB_MAXSIZE	(64 * 1024)
 
 	uint32_t trb_status;
