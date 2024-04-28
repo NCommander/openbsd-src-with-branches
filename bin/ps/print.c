@@ -1,4 +1,4 @@
-/*	$OpenBSD: print.c,v 1.86 2023/03/08 14:47:02 tobhe Exp $	*/
+/*	$OpenBSD: print.c,v 1.88 2024/01/28 19:05:33 deraadt Exp $	*/
 /*	$NetBSD: print.c,v 1.27 1995/09/29 21:58:12 cgd Exp $	*/
 
 /*-
@@ -524,6 +524,10 @@ started(const struct pinfo *pi, VARENT *ve)
 
 	startt = kp->p_ustart_sec;
 	tp = localtime(&startt);
+	if (tp == NULL) {
+		(void)printf("%-*s", v->width, "-");
+		return;
+	}
 	if (!now)
 		(void)time(&now);
 	if (now - kp->p_ustart_sec < 12 * SECSPERHOUR) {
