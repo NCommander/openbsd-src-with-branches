@@ -1,4 +1,4 @@
-/*	$OpenBSD: mib.c,v 1.6 2023/10/24 18:27:26 martijn Exp $	*/
+/*	$OpenBSD: mib.c,v 1.7 2023/11/21 08:49:08 martijn Exp $	*/
 
 /*
  * Copyright (c) 2022 Martijn van Duren <martijn@openbsd.org>
@@ -296,27 +296,29 @@ mib_hrsystemdate(struct agentx_varbind *vb)
 	int		 tzoffset;
 	unsigned short	 year;
 
+	memset(s, 0, sizeof(s));
 	(void)time(&now);
 	ptm = localtime(&now);
 
-	year = htons(ptm->tm_year + 1900);
-	memcpy(s, &year, 2);
-	s[2] = ptm->tm_mon + 1;
-	s[3] = ptm->tm_mday;
-	s[4] = ptm->tm_hour;
-	s[5] = ptm->tm_min;
-	s[6] = ptm->tm_sec;
-	s[7] = 0;
+	if (ptm != NULL) {
+		year = htons(ptm->tm_year + 1900);
+		memcpy(s, &year, 2);
+		s[2] = ptm->tm_mon + 1;
+		s[3] = ptm->tm_mday;
+		s[4] = ptm->tm_hour;
+		s[5] = ptm->tm_min;
+		s[6] = ptm->tm_sec;
+		s[7] = 0;
 
-	tzoffset = ptm->tm_gmtoff;
-	if (tzoffset < 0)
-		s[8] = '-';
-	else
-		s[8] = '+';
+		tzoffset = ptm->tm_gmtoff;
+		if (tzoffset < 0)
+			s[8] = '-';
+		else
+			s[8] = '+';
 
-	s[9] = abs(tzoffset) / 3600;
-	s[10] = (abs(tzoffset) - (s[9] * 3600)) / 60;
-
+		s[9] = abs(tzoffset) / 3600;
+		s[10] = (abs(tzoffset) - (s[9] * 3600)) / 60;
+	}
 	agentx_varbind_nstring(vb, s, sizeof(s));
 }
 
