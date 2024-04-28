@@ -1,4 +1,4 @@
-/*	$OpenBSD: route.c,v 1.264 2023/03/15 08:43:51 claudio Exp $	*/
+/*	$OpenBSD: route.c,v 1.265 2023/03/17 16:11:09 claudio Exp $	*/
 /*	$NetBSD: route.c,v 1.16 1996/04/15 18:27:05 cgd Exp $	*/
 
 /*
@@ -1878,7 +1878,10 @@ bfd_calc_uptime(time_t time)
 		fmt = "%Ss";
 
 	tp = localtime(&time);
-	(void)strftime(buf, sizeof(buf), fmt, tp);
+	if (tp)
+		(void)strftime(buf, sizeof(buf), fmt, tp);
+	else
+		buf[0] = '\0';
 	return (buf);
 }
 

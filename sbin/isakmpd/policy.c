@@ -1,4 +1,4 @@
-/* $OpenBSD: policy.c,v 1.101 2019/07/03 03:24:02 deraadt Exp $	 */
+/* $OpenBSD: policy.c,v 1.102 2021/10/22 12:30:54 bluhm Exp $	 */
 /* $EOM: policy.c,v 1.49 2000/10/24 13:33:39 niklas Exp $ */
 
 /*
@@ -1728,13 +1728,23 @@ policy_callback(char *name)
 		return phase_1;
 
 	if (strcmp(name, "GMTTimeOfDay") == 0) {
+		struct tm *tm;
 		tt = time(NULL);
-		strftime(mytimeofday, 14, "%Y%m%d%H%M%S", gmtime(&tt));
+		if ((tm = gmtime(&tt)) == NULL) {
+			log_error("policy_callback: invalid time %lld", tt);
+			goto bad;
+		}
+		strftime(mytimeofday, 14, "%Y%m%d%H%M%S", tm);
 		return mytimeofday;
 	}
 	if (strcmp(name, "LocalTimeOfDay") == 0) {
+		struct tm *tm;
 		tt = time(NULL);
-		strftime(mytimeofday, 14, "%Y%m%d%H%M%S", localtime(&tt));
+		if ((tm = localtime(&tt)) == NULL) {
+			log_error("policy_callback: invalid time %lld", tt);
+			goto bad;
+		}
+		strftime(mytimeofday, 14, "%Y%m%d%H%M%S", tm);
 		return mytimeofday;
 	}
 	if (strcmp(name, "initiator") == 0)
