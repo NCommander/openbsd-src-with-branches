@@ -1,4 +1,4 @@
-/*	$OpenBSD: sxiintc.c,v 1.10 2021/10/24 17:52:28 mpi Exp $	*/
+/*	$OpenBSD: sxiintc.c,v 1.11 2022/01/03 03:06:50 jsg Exp $	*/
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  * Copyright (c) 2013 Artturi Alm
@@ -130,8 +130,6 @@ struct intrq {
 	int iq_levels;			/* IPL_*'s this IRQ has */
 	int iq_ist;			/* share type */
 };
-
-volatile int a1xsoftint_pending;
 
 struct intrq sxiintc_handler[NIRQ];
 u_int32_t sxiintc_smask[NIPL];
