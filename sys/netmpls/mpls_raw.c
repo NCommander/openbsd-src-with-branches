@@ -1,4 +1,4 @@
-/*	$OpenBSD: mpls_raw.c,v 1.18 2020/08/19 19:22:53 gnezdo Exp $	*/
+/*	$OpenBSD: mpls_raw.c,v 1.19 2022/02/22 01:15:02 guenther Exp $	*/
 
 /*
  * Copyright (C) 1999, 2000 and 2001 AYAME Project, WIDE Project.
@@ -45,8 +45,6 @@
 #include <netmpls/mpls.h>
 
 int mpls_defttl = 255;
-int mpls_push_expnull_ip = 0;
-int mpls_push_expnull_ip6 = 0;
 int mpls_mapttl_ip = 1;
 int mpls_mapttl_ip6 = 0;
 
