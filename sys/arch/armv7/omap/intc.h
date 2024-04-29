@@ -1,4 +1,4 @@
-/*	$OpenBSD: intc.h,v 1.3 2019/05/06 03:45:58 mlarkin Exp $ */
+/*	$OpenBSD: intc.h,v 1.4 2020/07/14 15:34:15 patrick Exp $ */
 /*
  * Copyright (c) 2007,2009 Dale Rahn <drahn@openbsd.org>
  *
@@ -25,16 +25,13 @@
 #include <machine/intr.h>
 #include <arm/softintr.h>
 
-extern volatile int current_spl_level;
 extern volatile int softint_pending;
-void intc_do_pending(void);
 
 #define SI_TO_IRQBIT(si)  (1U<<(si))
 void intc_setipl(int new);
 void intc_splx(int new);
 int intc_splraise(int ipl);
 int intc_spllower(int ipl);
-void intc_setsoftintr(int si);
 
 /*
  * An useful function for interrupt handlers.
