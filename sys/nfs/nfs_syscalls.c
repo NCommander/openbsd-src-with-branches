@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_syscalls.c,v 1.123 2024/03/31 13:50:00 mvs Exp $	*/
+/*	$OpenBSD: nfs_syscalls.c,v 1.124 2024/04/19 06:50:37 ratchov Exp $	*/
 /*	$NetBSD: nfs_syscalls.c,v 1.19 1996/02/18 11:53:52 fvdl Exp $	*/
 
 /*
@@ -84,7 +84,7 @@ struct pool nfsrv_descript_pl;
 int nfsrv_getslp(struct nfsd *nfsd);
 
 static int nfs_numnfsd = 0;
-int (*nfsrv3_procs[NFS_NPROCS])(struct nfsrv_descript *,
+static int (*const nfsrv3_procs[NFS_NPROCS])(struct nfsrv_descript *,
     struct nfssvc_sock *, struct proc *, struct mbuf **) = {
 	nfsrv_null,
 	nfsrv_getattr,
