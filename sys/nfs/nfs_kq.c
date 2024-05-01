@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_kq.c,v 1.35 2023/03/08 04:43:09 guenther Exp $ */
+/*	$OpenBSD: nfs_kq.c,v 1.36 2023/09/08 20:00:28 mvs Exp $ */
 /*	$NetBSD: nfs_kq.c,v 1.7 2003/10/30 01:43:10 simonb Exp $	*/
 
 /*-
@@ -32,18 +32,15 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/kernel.h>
 #include <sys/proc.h>
 #include <sys/mount.h>
 #include <sys/malloc.h>
 #include <sys/vnode.h>
-#include <sys/unistd.h>
 #include <sys/file.h>
 #include <sys/kthread.h>
 #include <sys/rwlock.h>
 #include <sys/queue.h>
 
-#include <nfs/rpcv2.h>
 #include <nfs/nfsproto.h>
 #include <nfs/nfs.h>
 #include <nfs/nfsnode.h>

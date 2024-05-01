@@ -1,4 +1,4 @@
-/*	$OpenBSD: nfs_bio.c,v 1.84 2019/07/25 01:43:21 cheloha Exp $	*/
+/*	$OpenBSD: nfs_bio.c,v 1.85 2024/04/30 16:54:47 miod Exp $	*/
 /*	$NetBSD: nfs_bio.c,v 1.25.4.2 1996/07/08 20:47:04 jtc Exp $	*/
 
 /*
@@ -37,14 +37,11 @@
 
 #include <sys/param.h>
 #include <sys/systm.h>
-#include <sys/resourcevar.h>
 #include <sys/signalvar.h>
 #include <sys/proc.h>
 #include <sys/buf.h>
 #include <sys/vnode.h>
 #include <sys/mount.h>
-#include <sys/kernel.h>
-#include <sys/namei.h>
 #include <sys/queue.h>
 #include <sys/time.h>
 
