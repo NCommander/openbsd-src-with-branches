@@ -1,4 +1,4 @@
-/*	$OpenBSD: lib.c,v 1.54 2023/10/30 17:52:54 millert Exp $	*/
+/*	$OpenBSD: lib.c,v 1.55 2023/11/28 20:54:38 millert Exp $	*/
 /****************************************************************
 Copyright (C) Lucent Technologies 1997
 All Rights Reserved
@@ -845,10 +845,10 @@ int isclvar(const char *s)	/* is s of form var=something ? */
 {
 	const char *os = s;
 
-	if (!isalpha((uschar) *s) && *s != '_')
+	if (!isalpha((uschar)*s) && *s != '_')
 		return 0;
 	for ( ; *s; s++)
-		if (!(isalnum((uschar) *s) || *s == '_'))
+		if (!(isalnum((uschar)*s) || *s == '_'))
 			break;
 	return *s == '=' && s > os;
 }
