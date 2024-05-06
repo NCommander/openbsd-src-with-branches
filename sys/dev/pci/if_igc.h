@@ -1,4 +1,4 @@
-/*	$OpenBSD: if_igc.h,v 1.1 2021/10/31 14:52:57 patrick Exp $	*/
+/*	$OpenBSD: if_igc.h,v 1.2 2022/01/09 05:42:50 jsg Exp $	*/
 /*-
  * SPDX-License-Identifier: BSD-2-Clause
  *
@@ -199,6 +199,7 @@
 
 /* Forward declaration. */
 struct igc_hw;
+struct kstat;
 
 struct igc_osdep {
 	bus_dma_tag_t		os_dmat;
@@ -320,6 +321,11 @@ struct igc_softc {
 
 	/* Multicast array memory */
 	uint8_t			*mta;
+
+	/* Counters */
+	struct mutex		 ks_mtx;
+	struct timeout		 ks_tmo;
+	struct kstat		*ks;
 };
 
 #define DEVNAME(_sc)    ((_sc)->sc_dev.dv_xname)
