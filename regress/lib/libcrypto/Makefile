@@ -1,4 +1,4 @@
-#	$OpenBSD: Makefile,v 1.56 2024/03/29 07:13:38 joshua Exp $
+#	$OpenBSD: Makefile,v 1.57 2024/04/25 14:27:29 jsing Exp $
 
 SUBDIR += aead
 SUBDIR += aes
@@ -32,6 +32,7 @@ SUBDIR += hmac
 SUBDIR += idea
 SUBDIR += ige
 SUBDIR += init
+SUBDIR += lhash
 SUBDIR += md
 SUBDIR += objects
 SUBDIR += pbkdf2
