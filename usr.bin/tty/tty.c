@@ -1,4 +1,4 @@
-/*	$OpenBSD: tty.c,v 1.12 2021/07/12 15:09:20 beck Exp $	*/
+/*	$OpenBSD: tty.c,v 1.13 2022/12/04 23:50:50 cheloha Exp $	*/
 /*	$NetBSD: tty.c,v 1.4 1994/12/07 00:46:57 jtc Exp $	*/
 
 /*
@@ -57,9 +57,9 @@ main(int argc, char *argv[])
 	}
 
 	if (unveil(_PATH_DEVDB, "r") == -1)
-		err(1, "unveil %s", _PATH_DEVDB);
+		err(2, "unveil %s", _PATH_DEVDB);
 	if (pledge("stdio rpath", NULL) == -1)
-		err(1, "pledge");
+		err(2, "pledge");
 
 	t = ttyname(STDIN_FILENO);
 	if (!sflag)
