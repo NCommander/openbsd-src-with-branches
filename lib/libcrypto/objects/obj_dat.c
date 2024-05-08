@@ -1,4 +1,4 @@
-/* $OpenBSD: obj_dat.c,v 1.88 2024/03/02 09:49:45 tb Exp $ */
+/* $OpenBSD: obj_dat.c,v 1.89 2024/03/02 11:11:11 tb Exp $ */
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -167,7 +167,8 @@ cleanup1_doall(ADDED_OBJ *a)
 	    ASN1_OBJECT_FLAG_DYNAMIC_DATA;
 }
 
-static void cleanup2_doall(ADDED_OBJ *a)
+static void
+cleanup2_doall(ADDED_OBJ *a)
 {
 	a->obj->nid++;
 }
